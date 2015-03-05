@@ -17,7 +17,7 @@ class Migration
 
     private $destDb = 'biotech_instru';
     private $destUser = 'flowcyt_user';
-    private $destPass = 'Dlr%8679';
+    private $destPass = 'xxxxx';
     private $destHost = 'localhost';
 
     private $sourcePDOHandler;
