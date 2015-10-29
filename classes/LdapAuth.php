@@ -41,7 +41,7 @@ class LdapAuth
     public function Authenticate($username,$password)
 	{
         //Format username login for ldap search
-        $userNameString = "CN=".$username.",".$this->peopleDN;
+        $userNameString = "uid=".$username.",".$this->peopleDN;
 
         $this->ldap = new Ldap($this->host." ".$this->port);
 
@@ -55,23 +55,29 @@ class LdapAuth
             //Bind using the username and password given
             if($this->ldap->bind($userNameString,$password))
             {
-                //Search filter for the given group to check membership for
-                $searchGroupFilter = "(memberOf=".$this->groupDN.")";
-
-                //Search filter for the member attribute of the group
-                $searchMembersFilter = array("member");
-
-                //Run the search on ldap
-                $groupSearchResults = $this->ldap->searchSubtree($userNameString,$searchGroupFilter,$searchMembersFilter);
-                $entries = $groupSearchResults->getEntries();
-                if($groupSearchResults->countEntries() !='')
-                {
-                    //Return true if a result was returned when the group was searched for the username
-                    if($groupSearchResults->getEntries())
-                    {
-                        return true;
-                    }
-                }
+	            if($this->groupDN != ""){
+	                //Search filter for the given group to check membership for
+	                $searchGroupFilter = "(memberUID=".$username.")";
+	
+	                //Search filter for the member attribute of the group
+	                $searchMembersFilter = array("memberUID");
+	
+	                //Run the search on ldap
+	                $groupSearchResults = $this->ldap->searchSubtree($this->groupDN,$searchGroupFilter,$searchMembersFilter);
+	                $entries = $groupSearchResults->getEntries();
+	                var_dump($groupSearchResults->countEntries());
+	                if($groupSearchResults->countEntries() !='')
+	                {
+	                    //Return true if a result was returned when the group was searched for the username
+	                    if($groupSearchResults->getEntries())
+	                    {
+	                        return true;
+	                    }
+	                }
+	            } else {
+		            // No group check necessary
+		            return true;
+	            }
             }
         }
 
