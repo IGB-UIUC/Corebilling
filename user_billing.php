@@ -1,4 +1,6 @@
 <?php
+require_once 'includes/header.inc.php';
+	
 $rateTypesList = array(Bills::CONTINUOUS_RATE => "Continuous", Bills::MONTHLY_RATE => "Monthly");
 
 $userToBill = new User($sqlDataBase);
@@ -144,3 +146,7 @@ if (isset($_POST['selectedUser'])) {
             </div>";
             }
             ?>
+        </div>
+        <?php
+require_once 'includes/footer.inc.php';
+?>

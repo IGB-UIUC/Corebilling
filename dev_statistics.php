@@ -1,5 +1,6 @@
 <?php
-$department = new Group($sqlDataBase);
+require_once 'includes/header.inc.php';
+$department = new Group($sqlDataBase); // TODO this isn't confusing AT ALL
 $device = new Device($sqlDataBase);
 $user = new User ($sqlDataBase);
 $session = new Session($sqlDataBase);
@@ -169,3 +170,6 @@ if (isset($_POST['filtersSelection'])) {
 
     ?>
 </div>
+<?php
+require_once 'includes/footer.inc.php';
+?>

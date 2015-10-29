@@ -1,4 +1,6 @@
 <?php
+require_once 'includes/header.inc.php';
+
 $adminType = 1;
 $selectedArticle = 0;
 
@@ -87,5 +89,7 @@ $articlesList = $article->GetArticles();
         </div>
 	</div>";
     }
-    ?>
+    
+require_once 'includes/footer.inc.php';
+?>
 

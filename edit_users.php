@@ -1,4 +1,5 @@
 <?php
+require_once 'includes/header.inc.php';
 
 $ldapSearchResults = array();
 
@@ -324,4 +325,6 @@ if ($accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->Ge
     </div>
 <?php
 }
+
+require_once 'includes/footer.inc.php';
 ?>

@@ -1,4 +1,5 @@
 <?php
+require_once 'includes/header.inc.php';
         $department = new Department($sqlDataBase);
 
         if (isset($_POST['Submit'])) {
@@ -116,3 +117,5 @@
         </div>
 
 </form>
+<?php
+	require_once 'includes/footer.inc.php';

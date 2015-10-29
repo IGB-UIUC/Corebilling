@@ -1,4 +1,5 @@
 <?php
+require_once 'includes/header.inc.php';
 
 $group = new Group($sqlDataBase);
 $department = new Department($sqlDataBase);
@@ -145,5 +146,5 @@ if ($group->getGroupId() != 0) {
 
         </div>
 </form>
-</div>
-</div>
+<?php
+	require_once 'includes/footer.inc.php';

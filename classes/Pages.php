@@ -41,7 +41,7 @@ class Pages {
         $this->navigationPages = array();
         foreach($pagesArr as $id=>$page)
         {
-            $this->pages[$page['page_name']]=$page['id'];
+            $this->pages[$page['page_name']]=array('id'=>$page['id'],'file'=>$page['file_name']);
             $this->navigationPages[$page['page_name']]=$page['show_navigation'];
 
         }
@@ -53,7 +53,11 @@ class Pages {
      */
     public function GetPageId($pageName)
     {
-        return $this->pages[$pageName];
+        return $this->pages[$pageName]['id'];
+    }
+    
+    public function GetPageFile($pageName){
+	    return $this->pages[$pageName]['file_name'];
     }
 
     /**Get a list of available pages
@@ -69,7 +73,7 @@ class Pages {
      */
     public function SetDefaultPage($pageName)
     {
-        $this->default = $this->pages[$pageName];
+        $this->default = $this->pages[$pageName]['id'];
     }
 
     /**Get all navigation pages

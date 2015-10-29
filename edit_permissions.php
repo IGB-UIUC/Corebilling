@@ -1,5 +1,5 @@
 <?php
-
+require_once 'includes/header.inc.php';
 //Create lists for constant variables of access control to simplify code
 $participantTypeList = array(AccessControl::PARTICIPANT_ROLE => "Role", AccessControl::PARTICIPANT_GROUP => "Group", AccessControl::PARTICIPANT_USER => "User");
 $resourceTypeList = array(AccessControl::RESOURCE_DEVICE => "Devices", AccessControl::RESOURCE_PAGE => "Pages");
@@ -215,4 +215,6 @@ foreach($resourceTypeList as $resourceTypeId => $resourceTypeName)
         ?>
         </form>
     </div>
-</div>
+
+<?php
+require_once 'includes/footer.inc.php';

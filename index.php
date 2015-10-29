@@ -22,5 +22,5 @@ include('includes/contents.php');
 include('includes/mysql_close.php');
 
 //Show footer
-include('includes/footer.php')
+include('includes/footer.php');
 ?>

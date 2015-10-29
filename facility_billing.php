@@ -1,4 +1,5 @@
 <?php
+require_once 'includes/header.inc.php';
 //Declare objects
 $rateTypesList = array(Bills::CONTINUOUS_RATE => "Continuous", Bills::MONTHLY_RATE => "Monthly");
 $device = new Device($sqlDataBase);
@@ -278,3 +279,5 @@ if ($sessionIdSelected > 0) {
     ?>
     </tbody>
 </form>
+<?php
+require_once 'includes/footer.inc.php';

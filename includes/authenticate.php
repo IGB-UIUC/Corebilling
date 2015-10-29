@@ -1,10 +1,17 @@
 <?php
-//Sets up ldap connection
-$authen = new LdapAuth ( LDAP_HOST, LDAP_PEOPLE_DN, LDAP_GROUP_DN,LDAP_PORT);
 
-//Authenticates to website database
-$authenticate = new Authenticate($sqlDataBase, $authen);
+if(isset($_POST['login']))
+{
+	$loginsuccess = $authenticate->Login($_POST['user_name'],$_POST['password']);
+    if( !$loginsuccess ){
+        header('Location: login.php');
+    }
+}
 
-//Loads access control for website which controls device and web page access
-$accessControl = new AccessControl($sqlDataBase);
+
+$authenticate->VerifySession();
+
+if (!$authenticate->isVerified()){
+	header('Location: login.php');
+}
 ?>

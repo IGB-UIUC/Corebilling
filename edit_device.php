@@ -1,4 +1,5 @@
 <?php
+require_once 'includes/header.inc.php';
 $device = new Device($sqlDataBase);
 $rate = new Rate($sqlDataBase);
 $rateTypes = $rate->GetRateTypes();
@@ -239,3 +240,5 @@ if (isset($_POST['CreateNewDevice'])) {
             </div>
         </div>
 </form>
+<?php
+	require_once 'includes/footer.inc.php';

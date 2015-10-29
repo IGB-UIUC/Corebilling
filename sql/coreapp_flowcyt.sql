@@ -265,30 +265,32 @@ INSERT INTO `groups` (`id`, `group_name`, `description`, `department_id`) VALUES
 --
 
 DROP TABLE IF EXISTS `pages`;
-CREATE TABLE IF NOT EXISTS `pages` (
+CREATE TABLE `pages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `page_name` varchar(45) NOT NULL,
   `show_navigation` int(11) DEFAULT NULL,
+  `file_name` varchar(45) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_id` (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=14 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
---
--- Dumping data for table `pages`
---
+LOCK TABLES `pages` WRITE;
 
-INSERT INTO `pages` (`id`, `page_name`, `show_navigation`) VALUES
-(1, 'Latest News', 1),
-(2, 'User Billing', 1),
-(3, 'Edit Users', 1),
-(4, 'Edit Groups', 1),
-(5, 'Edit Departments', 1),
-(6, 'Edit Devices', 1),
-(7, 'Facility Billing', 1),
-(8, 'Edit Permissions', 1),
-(10, 'Devices In Use', 1),
-(11, 'Statistics', 1),
-(12, 'Calendar', 1);
+INSERT INTO `pages` (`id`, `page_name`, `show_navigation`, `file_name`)
+VALUES
+	(1,'Latest News',1,'news.php'),
+	(2,'User Billing',1,'user_billing.php'),
+	(3,'Edit Users',1,'edit_users.php'),
+	(4,'Edit Groups',1,'edit_groups.php'),
+	(5,'Edit Departments',1,'edit_departments.php'),
+	(6,'Edit Devices',1,'edit_device.php'),
+	(7,'Facility Billing',1,'facility_billing.php'),
+	(8,'Edit Permissions',1,'edit_permissions.php'),
+	(10,'Devices In Use',1,'in_use.php'),
+	(11,'Statistics',1,'dev_statistics.php'),
+	(12,'Calendar',1,'calendar_fullcalendar.php');
+
+UNLOCK TABLES;
 
 -- --------------------------------------------------------
 

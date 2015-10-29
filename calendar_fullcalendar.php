@@ -1,5 +1,5 @@
 <?php
-
+require_once 'includes/header.inc.php';
 $device = new Device($sqlDataBase);
 $accessLevel = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Calendar'));
 if (isset ($_POST ['deviceSelected'])) {
@@ -387,4 +387,5 @@ $(document).ready(function () {
 
 </div>
 
-
+<?php
+require_once 'includes/footer.inc.php';

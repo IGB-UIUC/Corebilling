@@ -65,7 +65,6 @@ class LdapAuth
 	                //Run the search on ldap
 	                $groupSearchResults = $this->ldap->searchSubtree($this->groupDN,$searchGroupFilter,$searchMembersFilter);
 	                $entries = $groupSearchResults->getEntries();
-	                var_dump($groupSearchResults->countEntries());
 	                if($groupSearchResults->countEntries() !='')
 	                {
 	                    //Return true if a result was returned when the group was searched for the username
