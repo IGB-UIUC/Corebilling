@@ -135,9 +135,13 @@ class UserCfop{
     public static function formatCfop($cfop)
     {
 	    //TODO overhaul this
-        $replace_array = array(" ");
-        $cfop = str_replace($replace_array, "-", $cfop);
-//         $cfop = substr($cfop, 0, 1) . "-" . substr($cfop, 1, 6) . "-" . substr($cfop, 7, 6) . "-" . substr($cfop, 13, 6);
+//         $replace_array = array(" ");
+        $cfop = str_replace("-", "", $cfop);
+        if(strlen($cfop)<=19){
+	        $cfop = substr($cfop, 0, 1) . "-" . substr($cfop, 1, 6) . "-" . substr($cfop, 7, 6) . "-" . substr($cfop, 13, 6);
+		} else {
+			$cfop = substr($cfop, 0, 1) . "-" . substr($cfop, 1, 6) . "-" . substr($cfop, 7, 6) . "-" . substr($cfop, 13, 6)."-".substr($cfop, 19);
+		}
         return $cfop;
     }
 

@@ -210,6 +210,10 @@ class User
         $allUserInfo->execute();
         $allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
 
+		for($i=0; $i<count($allUserInfoArr); $i++){
+			$allUserInfoArr[$i]['cfop'] = UserCfop::formatCfop($allUserInfoArr[$i]['cfop']);
+		}
+
         return $allUserInfoArr;
     }
     /**Get all users with a certain status
@@ -220,7 +224,7 @@ class User
     {
         $queryAllUsers = "SELECT id, user_name FROM users WHERE status_id=:status_id ORDER BY user_name";
         $allUsers = $this->sqlDataBase->prepare($queryAllUsers);
-        $allUsers->execute(array(":statud_id"=>$statusId));
+        $allUsers->execute(array(":status_id"=>$statusId));
         $allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
 
         return $allUsersArr;
