@@ -32,7 +32,7 @@ class Pages {
      */
     private function LoadPages()
     {
-        $queryPages = "SELECT * FROM pages";
+        $queryPages = "SELECT * FROM pages order by id";
         $pagesInfo = $this->sqlDataBase->prepare($queryPages);
         $pagesInfo->execute();
         $pagesArr = $pagesInfo->fetchAll(PDO::FETCH_ASSOC);
