@@ -53,7 +53,7 @@ $articlesList = $article->GetArticles();
 // Admin controls
 if ($access == AccessControl::PERM_ADMIN) {
 ?>
-<form name="articlesForms" action="index.php?view=<?php echo $pages->GetPageId('Latest News');?>" method="post">
+<form name="articlesForms" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 	<div class="well">
 		<div class="form-group">
 			<label for="newsTitle">Title:</label><br>
