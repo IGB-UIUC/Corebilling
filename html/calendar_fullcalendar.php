@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/header.inc.php';
 $device = new Device($sqlDataBase);
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Statistics'));
+$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Calendar'));
 if($access == AccessControl::PERM_DISALLOW){
 	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
 	require_once 'includes/footer.inc.php';
