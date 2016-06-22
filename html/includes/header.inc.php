@@ -13,6 +13,7 @@
 		<link href="css/fullcalendar.css" rel='stylesheet' />
 		<link href="css/fullcalendar.print.css" rel='stylesheet' media='print' />
 		<link href="css/jquery.dataTables.css" rel='stylesheet' />
+		<link rel="stylesheet" href="includes/select2/css/select2.css" type="text/css" />
 <!-- 		<link href="css/dataTables.tableTools.min.css" rel='stylesheet' /> -->
 		<link href="css/datepicker.css" rel='stylesheet' />
 <!-- 		<link href="css/jquery.dataTables.css"  rel="stylesheet" /> -->
@@ -22,6 +23,7 @@
 		
 		<script src='js/jquery/jquery-1.11.1.min.js'></script>
 		<script src='js/jquery/jquery-ui.js'></script>
+		<script type="text/javascript" src="includes/select2/js/select2.full.js"></script>
 <!-- 		<script src='js/jquery/jquery.dataTables.min.js'></script> -->
 		<script type="text/javascript" src="https://cdn.datatables.net/r/bs/jszip-2.5.0,pdfmake-0.1.18,dt-1.10.9,b-1.0.3,b-html5-1.0.3,b-print-1.0.3/datatables.js"></script>
 <!-- 		<script src='js/jquery/dataTables.tableTools.min.js'></script> -->

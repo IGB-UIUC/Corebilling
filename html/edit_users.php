@@ -86,13 +86,15 @@ if ($access == AccessControl::PERM_ADMIN) {
 		<div class="form-group">
 			<label class="col-sm-2 control-label" for="editUser">User</label>
 			<div class="col-sm-7">
-				<select name="selected_user_id" class="form-control">
-					<option value="0">New User</option>
+				<select name="selected_user_id" class="form-control" id="user-select">
 					<?php
 					if ($access == AccessControl::PERM_ADMIN) {
+						echo '<option value="0">New User</option>';
 						$allUsers = $selectedUser->GetAllUsers();
-					} else {
+					} else if ($access == AccessControl::PERM_SUPERVISOR) {
 						$allUsers = $selectedUser->GetGroupUsers($authenticate->getAuthenticatedUser()->getGroupId());
+					} else {
+						$allUsers = array(array("id"=>$authenticate->getAuthenticatedUser()->GetUserId(),"user_name"=>$authenticate->getAuthenticatedUser()->GetUserName()));
 					}
 
 					foreach ($allUsers as $id => $userToSelect) {
@@ -138,7 +140,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 		<div class="form-group">
 			<label class="col-sm-2 control-label" for="editUser">Depart.</label>
 			<div class="col-sm-10">
-				<select name="department" class="form-control">
+				<select name="department" class="form-control" id="depart-select">
 					<?php
 					$departmentsList = $userDepartment->GetDepartmentList();
 					foreach ($departmentsList as $departmentInfo) {
@@ -185,7 +187,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 						<label class="col-sm-2 control-label" for="editUser">Rate</label>
 						<div class="col-sm-10">
-							<select name="rate" class="form-control">
+							<select name="rate" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
 								<?php
 		
 								$listRates = $rate->GetRates();
@@ -203,7 +205,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 						<label class="col-sm-2 control-label" for="editUser">Group</label>
 						<div class="col-sm-10">
-							<select name="group" class="form-control">
+							<select name="group" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
 								<?php
 								$listGroups = $group->GetGroupsList();
 								foreach ($listGroups as $id => $groupToSelect) {
@@ -220,7 +222,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 						<label class="col-sm-2 control-label" for="editUser">Role</label>
 						<div class="col-sm-10">
-							<select name="user_role_id" class="form-control">
+							<select name="user_role_id" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
 								<?php
 								$userRolesList = $selectedUser->GetUserRoles();
 								foreach ($userRolesList as $userRole) {
@@ -237,7 +239,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 						<label class="col-sm-2 control-label" for="editUser">Status</label>
 						<div class="col-sm-10">
-							<select name="status" class="form-control">
+							<select name="status" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
 								<?php
 								$userStatus = 2;
 								$queryUsersStatus = "SELECT statusname,id FROM status WHERE type=" . $userStatus;
@@ -287,5 +289,11 @@ if ($access == AccessControl::PERM_ADMIN) {
 	</div>
 <?php
 }
+?>
+<script type="text/javascript">
+	$('#user-select').select2();
+	$('#depart-select').select2();
+</script>
+<?php
 require_once 'includes/footer.inc.php';
 ?>
