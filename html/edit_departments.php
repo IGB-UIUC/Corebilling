@@ -45,9 +45,9 @@ if (isset($_POST['Select'])) {
 	$newDepartmentBtn = ' <input name="Reset" type="submit" class="btn btn-primary" id="reset" value="Reset" >';
 }
 ?>
-<div class="alert alert-info">
-	<h4>Edit Departments</h4>
-</div>
+
+<h3>Edit Departments</h3>
+
 <form action="edit_departments.php" method="POST">
 	<div class="form-group">
 		<?php

@@ -39,12 +39,15 @@ if (isset($_POST['selectedUser'])) {
 }
 
 ?>
-<div class="alert alert-info">
-	<h4>User Billing</h4>
 
-	<p>Your usage billing is reported bellow, billing is charged on a monthly cycle</p>
+<h3>User Billing</h3>
 
-	<p>Please report any inconsistencies you find.</p>
+<div class="panel panel-info">
+	<div class="panel-body">
+		<p>Your instrument usage billing is reported bellow, billing is charged on a monthly cycle</p>
+	
+		<p>Please contact us to report any inconsistencies you find.</p>
+	</div>
 </div>
 <form action="user_billing.php" method=POST class="form-inline well">
 	<div class="form-group">

@@ -65,21 +65,8 @@ if ($access == AccessControl::PERM_ADMIN) {
 }
 ?>
 
-<div class="alert alert-info">
-	<h4>Edit Users</h4>
-
-	<p>Add users</p>
-</div>
+<h3>Edit Users</h3>
 <form action="edit_users.php" method=POST>
-	<div class="form-group">
-		<?php
-		if ($selectedUser->GetUserId() > 0) {
-			echo '<input name="Modify" type="submit" class="btn btn-primary" id="Modify" value="Modify">';
-		} else {
-			echo '<input name="Create" type="submit" class="btn btn-primary" id="Submit" value="Create" >';
-		}
-		?>
-	</div>
 	<div class="row">
 		<div class="col-md-6">
 	<div class="well form-horizontal">
@@ -256,11 +243,22 @@ if ($access == AccessControl::PERM_ADMIN) {
 						</div>
 					</div>
 				<div class="form-group">
-						<label class="col-sm-2 control-label" for="editUser">Created</label>
-						<div class="col-sm-10">
-							<h5><?php echo $selectedUser->GetDateAdded();?></h5>
-						</div>
+					<label class="col-sm-2 control-label" for="editUser">Created</label>
+					<div class="col-sm-10">
+						<h5><?php echo $selectedUser->GetDateAdded();?></h5>
 					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-10 col-sm-offset-2">
+						<?php
+						if ($selectedUser->GetUserId() > 0) {
+							echo '<input name="Modify" type="submit" class="btn btn-primary" id="Modify" value="Modify">';
+						} else {
+							echo '<input name="Create" type="submit" class="btn btn-primary" id="Submit" value="Create" >';
+						}
+						?>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

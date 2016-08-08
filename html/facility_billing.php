@@ -105,10 +105,8 @@ if ($sessionIdSelected > 0) {
 }
 
 ?>
-<div class="alert alert-info">
-	<h4>Facility Billing</h4>
-	<p>Usage billing is reported bellow, billing is charged on a monthly cycle or per minute usage.</p>
-</div>
+<h4>Facility Billing</h4>
+
 <form name="verifyForm" method="post" action="facility_billing.php" class="form-inline">
 	<div class="well">
 		<div class="form-group">
@@ -149,6 +147,24 @@ if ($sessionIdSelected > 0) {
 		<div class="form-group">
 			<input class="btn btn-primary btn-sm" type="submit" name="selectMonth" value="Select Billing Period">
 		</div>
+		<br/><br/>
+		<strong>Filter: </strong>
+		<div class="form-group">
+			<label style="font-weight:normal">NetId:</label>
+			<input class="form-control input-sm" type="search" id="netidfilter" name="netidfilter" oninput="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,2,'netidfilter')">
+		</div>
+		<div class="form-group">
+			<label style="font-weight:normal">Name:</label>
+			<input class="form-control input-sm" type="search" id="namefilter" name="namefilter" oninput="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,3,'namefilter')">
+		</div>
+		<div class="form-group">
+			<label style="font-weight:normal">Device:</label>
+			<input class="form-control input-sm" type="search" id="devicefilter" name="devicefilter" oninput="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,7,'devicefilter')">
+		</div>
+		<div class="form-group">
+			<label style="font-weight:normal">Group:</label>
+			<input class="form-control input-sm" type="search" id="groupfilter" name="groupfilter" oninput="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,13,'groupfilter')">
+		</div>
 	</div>
 	<?php
 		$bills->setGroupBy(0);
@@ -161,7 +177,7 @@ if ($sessionIdSelected > 0) {
 		$monthlyUsage = $bills->GetMonthCharges($year, $month, $rateTypeSelected);
 	?>
 	<div class="panel panel-default">
-		<div class="panel-heading">
+		<div id="<?php echo "Rate".$rateTypeSelected."_heading"; ?>" class="panel-heading">
 			<h3>Billed <?php echo $rateTypesList[$rateTypeSelected];?>:</h3>
 		</div>
 		<div class="panel-body">				
@@ -263,7 +279,7 @@ if ($sessionIdSelected > 0) {
 				<?php
 				echo VisualizeData::ListSessionsTable($monthlyUsage,
 					array('id', 'NetId', 'Name', 'Start','end', 'CFOP', 'Inst.', 'Hrs', ' Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Opt.'),
-					array('id', 'user_name', 'full_name', 'start','stop', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'options'), "Rate".$rateTypeSelected, $rowSelected, true);
+					array('id', 'user_name', 'full_name', 'start','stop', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'options'), "Rate".$rateTypeSelected, $rowSelected, true, false);
 				?>
 			</div>
 

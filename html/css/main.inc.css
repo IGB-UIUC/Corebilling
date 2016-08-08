@@ -21,3 +21,19 @@
 .select2-container--default .select2-results > .select2-results__options {
 	max-height: 400px;
 }
+
+.legend-pip {
+    display: inline-block;
+    width: 12px;
+    vertical-align: middle;
+    height: 12px;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 3px;
+}
+.fc-content {
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+.fc-event {
+	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2)
+}

@@ -12,10 +12,13 @@
 		<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
 		<link href="css/fullcalendar.css" rel='stylesheet' />
 		<link href="css/fullcalendar.print.css" rel='stylesheet' media='print' />
-		<link href="css/jquery.dataTables.css" rel='stylesheet' />
+<!-- 		<link href="css/jquery.dataTables.css" rel='stylesheet' /> -->
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/b-1.2.1/b-colvis-1.2.1/b-html5-1.2.1/b-print-1.2.1/r-2.1.0/se-1.2.0/datatables.min.css"/>
+
 		<link rel="stylesheet" href="includes/select2/css/select2.css" type="text/css" />
 <!-- 		<link href="css/dataTables.tableTools.min.css" rel='stylesheet' /> -->
 		<link href="css/datepicker.css" rel='stylesheet' />
+		<link href="css/jquery.timepicker.css" rel="stylesheet" />
 <!-- 		<link href="css/jquery.dataTables.css"  rel="stylesheet" /> -->
 <!-- 		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/bs/jszip-2.5.0,pdfmake-0.1.18,dt-1.10.9,b-1.0.3,b-html5-1.0.3,b-print-1.0.3/datatables.css"/> -->
 <!-- 		<link href="css/dataTables.tableTools.min.css"  rel="stylesheet" /> -->
@@ -25,7 +28,9 @@
 		<script src='js/jquery/jquery-ui.js'></script>
 		<script type="text/javascript" src="includes/select2/js/select2.full.js"></script>
 <!-- 		<script src='js/jquery/jquery.dataTables.min.js'></script> -->
-		<script type="text/javascript" src="https://cdn.datatables.net/r/bs/jszip-2.5.0,pdfmake-0.1.18,dt-1.10.9,b-1.0.3,b-html5-1.0.3,b-print-1.0.3/datatables.js"></script>
+<!-- 		<script type="text/javascript" src="https://cdn.datatables.net/r/bs/jszip-2.5.0,pdfmake-0.1.18,dt-1.10.9,b-1.0.3,b-html5-1.0.3,b-print-1.0.3/datatables.js"></script> -->
+		<script type="text/javascript" src="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/b-1.2.1/b-colvis-1.2.1/b-html5-1.2.1/b-print-1.2.1/r-2.1.0/se-1.2.0/datatables.min.js"></script>
+		<script type="text/javascript" src="js/jquery.timepicker.js"></script>
 <!-- 		<script src='js/jquery/dataTables.tableTools.min.js'></script> -->
 		<script src='js/jquery/fnDisplayRow.js'></script>
 		<script src='js/full_calendar/moment.min.js'></script>
@@ -35,6 +40,7 @@
 		<script src='js/highcharts/highcharts.js'></script>
 		<script src='js/highcharts/exporting.js'></script>
 		<script src='js/excel/excellentexport.min.js'></script>
+		<script src='js/main.inc.js'></script>
 		
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		<title>IGB Instrument Usage Page</title>

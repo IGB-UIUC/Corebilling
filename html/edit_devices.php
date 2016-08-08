@@ -49,12 +49,8 @@ if (isset($_POST['CreateNewDevice'])) {
 }
 
 ?>
+<h3>Devices Configuration</h3>
 <form action="edit_devices.php" method=POST>
-	<div class="alert alert-info">
-		<h4>Devices Configuration</h4>
-		<p>Create devices profile</p>
-		<p>Device profile is used to keep track of device specific properties such as rates, permissions and descriptions.</p>
-	</div>
 	<div class="form-group">
 		<?php
 		if ($device->GetDeviceId() > 0) {

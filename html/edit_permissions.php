@@ -64,14 +64,18 @@ foreach($resourceTypeList as $resourceTypeId => $resourceTypeName) {
 	}
 }
 ?>
-
-<div class="alert alert-info">
-	<h4>Access Control</h4>
-	<p>Control user access to pages and devices based on an access control list</p>
-	<p>Access may be given based on the following permission layers in the following order, if permission does not exist for a certain layer then the next permissions layer is evaluated:</p>
-	<p><b>User:</b> Permissions may be given to a specific user</p>
-	<p><b>Group:</b> Permissions may be given to a specific group</p>
-	<p><b>Role:</b> permissions may be given based on a specific role</p>
+<h3>Edit Permissions</h3>
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h4>Access Control</h4>
+	</div>
+	<div class="panel-body">
+		<p>Control user access to pages and devices based on an access control list</p>
+		<p>Access may be given based on the following permission layers in the following order, if permission does not exist for a certain layer then the next permissions layer is evaluated:</p>
+		<p><b>User:</b> Permissions may be given to a specific user</p>
+		<p><b>Group:</b> Permissions may be given to a specific group</p>
+		<p><b>Role:</b> permissions may be given based on a specific role</p>
+	</div>
 </div>
 <form action="edit_permissions.php" method="POST">
 

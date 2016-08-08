@@ -2,7 +2,7 @@
 set_time_limit(20);
 
 include('includes/initializer.php');
-//error_log($_POST['action']." ".$_POST['user_id']." ".$_POST['key'],0);
+
 if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key'])) {
     //Load pages index
     $page = new Pages($sqlDataBase);
@@ -31,27 +31,25 @@ if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key']))
         {
             switch ($_POST['action']) {
                 case 'get_events':
-                    error_log("get events: " . $POST_ARRAY, 0);
                     echo $reservation->JsonEventsRange($_POST['start'], $_POST['end'], $_POST ['user_id'], $_POST ['device_id'],$_POST['training']==1);
                     break;
                 case 'add_event':
                     $training = (isset($_POST['training']))?1:0;
-                    error_log("add switch statement: " . $POST_ARRAY, 0);
-                    $reservation->CreateReservation($_POST['device_id'], $_POST ['user_id'], $_POST ['start'], $_POST ['end'], $_POST['description'], $training);
+                    $dateStart = new DateTime($_POST['start']);
+                    $dateEnd = new DateTime($_POST['end']);
+                    $reservation->CreateReservation($_POST['device_id'], $_POST ['user_id'], $dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'), $_POST['description'], $training);
+//                     TODO implement repeat
                     break;
                 case 'delete_event':
-                    error_log("delete events: " . $POST_ARRAY, 0);
                     $reservation->DeleteReservation();
                     break;
                 case 'update_event_time':
-                    error_log("update events time: " . $POST_ARRAY, 0);
                     $reservation->setDeviceId($_POST ['device_id']);
                     $reservation->setStart($_POST ['start']);
                     $reservation->setStop($_POST ['end']);
                     $reservation->UpdateReservation();
                     break;
                 case 'update_event_info':
-                    error_log("update and create events info: " . $POST_ARRAY, 0);
                     $training = (isset($_POST['training']))?$_POST['training']:0;
                     $repeat = (isset($_POST['repeat']))?(int)$_POST['repeat']:0;
                     $interval = (isset($_POST['interval']))?(int)$_POST['interval']:0;
@@ -66,21 +64,25 @@ if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key']))
                     }
 
                     else {
-                        error_log("Update event info",0);
-                        for($i=1; $i<=$repeat; $i++)
-                        {
+                        for($i=1; $i<=$repeat; $i++) {
                             $dateStart->add(new DateInterval("P".($interval)."D"));
                             $dateEnd->add(new DateInterval("P".($interval)."D"));
-                            error_log("Date created" . $dateStart->format('Y-m-d H:i:s')." ".$dateEnd->format('Y-m-d H:i:s')." interval: ".$interval." repeat: ".$i, 0);
                             $reservation->CreateReservation($_POST['device_id'], $_POST ['user_id'], $dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'), $_POST['description'], $training);
                         }
 
                         $reservation->setDescription($_POST['description']);
                         $reservation->setTraining($training);
+                        $reservation->setStart($dateStart->format('Y-m-d H:i:s'));
+                        $reservation->setStop($dateEnd->format('Y-m-d H:i:s'));
                         $reservation->UpdateReservation();
                     }
 
                     break;
+				case 'check_conflicts':
+					$dateStart = new DateTime($_POST['start']);
+                    $dateEnd = new DateTime($_POST['end']);
+					echo $reservation->CheckEventConflicts($_POST['device_id'],$_POST['res_user_id'],$dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'),isset($_POST['id'])?$_POST['id']:0);
+					break;
             }
         }
     }

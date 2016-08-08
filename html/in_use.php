@@ -7,10 +7,7 @@ if($access == AccessControl::PERM_DISALLOW){
 	exit;
 }
 ?>
-<div class="alert alert-info">
-	<h4>Devices In Use</h4>
-	The following table displays which devices are currently being used and which users are using them.
-</div>
+<h3>Devices In Use</h3>
 <table class="table table-striped table-bordered">
 	<tr class="title">
 		<th>Device Name</th>

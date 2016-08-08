@@ -9,20 +9,26 @@ if($access == AccessControl::PERM_DISALLOW){
 }
 
 if (isset ($_POST ['deviceSelected'])) {
-	if($_POST['deviceSelected']==-1){
-		$device->SetDeviceId(-1);
+	if($_POST['deviceSelected']<0){
+		$device->SetDeviceId($_POST['deviceSelected']);
 	} else {
 		$device->LoadDevice($_POST['deviceSelected']);
 	}
 }
 
 ?>
-<div class="alert alert-info">
-	<h4>Reservation Calendar</h4>
-	<p>Cancellations should be made at least 24 hours in advance.</p>
-	<p>Please select a device from the list to view its availability calendar.</p>
-	<p>To create a reservation date click on the day you would like to reserve the device for, use < > arrows to select the month.</p>
-	<p>To select the reservation time drag click along the hour scale to select a time box.</p>
+<h3>Reservation Calendar</h3>
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h4>To Make a Reservation</h4>
+	</div>
+	<div class="panel-body">
+		<ul>
+			<li>Select a device from the list to view its calendar.</li>
+			<li>Use < > arrows to select the month; Click on the day you would like to reserve the device for.</li>
+			<li>To select the reservation time, click and drag to select a time range.</li>
+		</ul>
+	</div>
 </div>
 <div class="well clearfix">
 	<div class="pull-right">
@@ -44,7 +50,8 @@ if (isset ($_POST ['deviceSelected'])) {
 		<div class="form-group">
 			<select name="deviceSelected" class="form-control" onChange='document.calform.submit();'>
 				<?php if($access==AccessControl::PERM_ADMIN){?>
-				<option value="-1">Missed Reservations</option>
+				<option value="-1" <?php if($device->GetDeviceId()==-1) echo 'selected';?>>Missed Reservations</option>
+				<option value="-2" <?php if($device->GetDeviceId()==-2) echo 'selected';?>>All Devices</option>
 				<?php } ?>
 				<option value=0 <?php if(!isset($_POST['deviceSelected']) || $_POST['deviceSelected']==0) echo 'selected';?>>My Reservations</option>
 				<?php
@@ -61,12 +68,20 @@ if (isset ($_POST ['deviceSelected'])) {
 				?>
 			</select>
 		</div>
+		<input type="hidden" name="day" id="filterday"/>
+		<input type="hidden" name="month" id="filtermonth"/>
+		<input type="hidden" name="year" id="filteryear"/>
+		<input type="hidden" name="view" id="filterview"/>
 		<?php if ($access == AccessControl::PERM_ADMIN) { ?>
 		<div class="checkbox">
-			<label><input type="checkbox" name="filterTraining" onChange='document.calform.submit();' <?php if(isset($_POST['filterTraining'])){echo 'checked';} ?>> Filter Training</label>
+			<label><input type="checkbox" name="filterTraining" onChange='document.calform.submit();' <?php if(isset($_POST['filterTraining'])){echo 'checked';} ?>> Only Show Training</label>
 		</div>
 		<?php } ?>
+		
+		&nbsp;<span class="legend-pip" style="background-color:<?php echo CAL_TRAINING_COLOR; ?>;border-color:<?php echo CAL_TRAINING_COLOR; ?>"></span> Training
+		&nbsp;<span class="legend-pip" style="background-color:<?php echo CAL_MISSED_COLOR; ?>;border-color:<?php echo CAL_MISSED_COLOR; ?>"></span> Missed Reservation
 	</form>
+	
 </div>
 <script>
 
@@ -93,10 +108,14 @@ $(document).ready(function () {
 		},
 		selectable: true,
 		selectHelper: true,
+		snapDuration: {minutes:15},
+		displayEventEnd: true,
 		eventRender: function (event, element) {
+/*
 			if(event.missed){
 				element.find('.fc-title').append(' <span class="glyphicon glyphicon-alert"></span>');
 			}
+*/
 		},
 		loading: function (isLoading,view){
 			// Display loading gif
@@ -109,28 +128,37 @@ $(document).ready(function () {
 		viewRender: function(view,element){
 			if(view.name=="month"){
 				// Update month, year inputs for excel button
-				$("#excelmonth").val( moment(view.start).add(7,'days').format('MM') );
-				$("#excelyear").val( moment(view.start).add(7,'days').format('YYYY') );
+				$("#excelmonth, #filtermonth").val( moment(view.start).add(7,'days').format('MM') );
+				$("#excelyear, #filteryear").val( moment(view.start).add(7,'days').format('YYYY') );
+				$("#filterday").val( moment(view.start).add(7,'days').format('DD'));
 			} else {
 				// Update month, year inputs for excel button
-				$("#excelmonth").val( view.start.format('MM') );
-				$("#excelyear").val( view.start.format('YYYY') );
+				$("#excelmonth, #filtermonth").val( view.start.format('MM') );
+				$("#excelyear, #filteryear").val( view.start.format('YYYY') );
+				$('#filterday').val( view.start.format('DD') );
 			}
+			$('#filterview').val( view.name );
 		},
 		select: function (start, end) {
-			console.log("create new",start,end);
 			if (start.hasTime() && end.hasTime()) {
-				if (<?php echo $device->GetDeviceId(); ?> > 0) {
+				if(end.format('X') < new Date().getTime()/1000){
+					alert('Cannot create a reservation in the past');
+				} else if (<?php echo $device->GetDeviceId(); ?> > 0) {
 					//alert('event clicked');
 					var rangeString = start.format('HH:mm:ss') + ' - ' + end.format('HH:mm:ss');
+					$('#modifyReservationModal #reservationWindowTitle').html('Create Reservation');
 					$('#modifyReservationModal #reservationId').val("0");
 					//$('#modifyReservationModal #reservationDescription').val(calEvent.description);
-					$('#modifyReservationModal #reservationStart').val(start.format("YYYY-MM-DD HH:mm:ss"));
-					$('#modifyReservationModal #reservationEnd').val(end.format("YYYY-MM-DD HH:mm:ss"));
+					$('#modifyReservationModal #reservationStartDate').val(start.format("YYYY-MM-DD"));
+					$('#modifyReservationModal #reservationStartTime').val(start.format("h:mma"));
+					$('#modifyReservationModal #reservationEndDate').val(end.format("YYYY-MM-DD"));
+					$('#modifyReservationModal #reservationEndTime').val(end.format('h:mma'));
 					$('#modifyReservationModal #reservationRange').text(rangeString);
 					$('#modifyReservationModal #reservationDevice').text("<?php echo $device->GetFullName(); ?>");
 					$('#modifyReservationModal #reservationUsername').text("<?php echo $authenticate->getAuthenticatedUser()->GetUserName(); ?>");
+					$('#modifyReservationModal #reservationUserId').val("<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>");
 					$('#modifyReservationModal #deleteReservation').hide();
+					$('#modifyReservationModal #updateReservation').show();
 					<?php
 					if($access == AccessControl::PERM_ADMIN)
 					{
@@ -154,14 +182,21 @@ $(document).ready(function () {
 		eventClick: function (calEvent, jsEvent, view) {
 
 			//alert('event clicked');
-			var rangeString = calEvent.start.format('HH:mm:ss') + ' - ' + calEvent.end.format('HH:mm:ss');
+			if(<?php echo $device->GetDeviceId(); ?>==-1 || calEvent.end.format('X') < new Date().getTime()/1000){
+				$('#modifyReservationModal #reservationWindowTitle').html('Reservation Info');				
+			} else {
+				$('#modifyReservationModal #reservationWindowTitle').html('Edit Reservation');
+			}
+
 			$('#modifyReservationModal #reservationId').val(calEvent.id);
 			$('#modifyReservationModal #reservationDescription').val(calEvent.description);
-			$('#modifyReservationModal #reservationStart').val(calEvent.start.format("YYYY-MM-DD HH:mm:ss"));
-			$('#modifyReservationModal #reservationEnd').val(calEvent.end.format("YYYY-MM-DD HH:mm:ss"));
-			$('#modifyReservationModal #reservationRange').text(rangeString);
+			$('#modifyReservationModal #reservationStartDate').val(calEvent.start.format("YYYY-MM-DD"));
+			$('#modifyReservationModal #reservationStartTime').val(calEvent.start.format("h:mma"));
+			$('#modifyReservationModal #reservationEndDate').val(calEvent.end.format("YYYY-MM-DD"));
+			$('#modifyReservationModal #reservationEndTime').val(calEvent.end.format('h:mma'));
 			$('#modifyReservationModal #reservationDevice').text(calEvent.device_name);
 			$('#modifyReservationModal #reservationUsername').text(calEvent.username);
+			$('#modifyReservationModal #reservationUserId').val(calEvent.userid);
 			<?php
 			if($access == AccessControl::PERM_ADMIN)
 			{
@@ -179,7 +214,22 @@ $(document).ready(function () {
 			}
 
 			?>
-			$('#modifyReservationModal #deleteReservation').show();
+			// Can't update or delete events in the past
+			if(calEvent.end.format('X') < new Date().getTime()/1000){
+				$('#modifyReservationModal #reservationDescription').prop("readonly",true);
+				$('#modifyReservationModal #reservationTraining').prop("disabled",true);
+				$('#modifyReservationModal #reservationStartTime').prop( "readonly", true );
+				$('#modifyReservationModal #reservationEndTime').prop( "readonly", true );
+				$('#modifyReservationModal #deleteReservation').hide();
+				$('#modifyReservationModal #updateReservation').hide();
+			} else {
+				$('#modifyReservationModal #reservationDescription').prop("readonly",false);
+				$('#modifyReservationModal #reservationTraining').prop("disabled",false);
+				$('#modifyReservationModal #reservationStartTime').prop( "readonly", false );
+				$('#modifyReservationModal #reservationEndTime').prop( "readonly", false );
+				$('#modifyReservationModal #deleteReservation').show();
+				$('#modifyReservationModal #updateReservation').show();
+			}
 			$('#modifyReservationModal').appendTo("body").modal('show');
 
 
@@ -252,6 +302,13 @@ $(document).ready(function () {
 			});
 		}
 	});
+	
+	var initialView = '<?php echo isset($_POST['view'])?$_POST['view']:'month'; ?>';
+	var initialDay = <?php echo (isset($_POST['day'])&&is_numeric($_POST['day']))?$_POST['day']:date('d'); ?>;
+	var initialMonth = <?php echo (isset($_POST['month'])&&is_numeric($_POST['month']))?$_POST['month']:date('m'); ?>;
+	var initialYear = <?php echo (isset($_POST['year'])&&is_numeric($_POST['year']))?$_POST['year']:date('Y'); ?>;
+	$('#calendar').fullCalendar('changeView',initialView);
+	$('#calendar').fullCalendar('gotoDate',$.fullCalendar.moment(initialYear+'-'+initialMonth+'-'+initialDay));
 
 	$('#deleteReservation').on('click', function (e) {
 		// We don't want this to act as a link so cancel the link action
@@ -285,8 +342,44 @@ $(document).ready(function () {
 	$('#updateReservation').on('click', function (e) {
 		// We don't want this to act as a link so cancel the link action
 		e.preventDefault();
-
-		doUpdateReservation();
+		
+		var reservationId = $('#reservationId').val();
+		var reservationStartDate = $('#reservationStartDate').val();
+		var reservationEndDate = $('#reservationEndDate').val();
+		var reservationStartTime = $('#reservationStartTime').val();
+		var reservationEndTime = $('#reservationEndTime').val();
+		var reservationUser = $('#reservationUserId').val();
+		var reservationUsername = $('#reservationUsername').html();
+		
+		var reservationStart = reservationStartDate+' '+reservationStartTime;
+		var reservationEnd = reservationEndDate+' '+reservationEndTime;
+		
+		$.ajax({
+			url: "calendar_api.php",
+			type: "POST",
+			async: false,
+			data: {
+				action: "check_conflicts",
+				start: reservationStart,
+				end: reservationEnd,
+				id: reservationId,
+				res_user_id: reservationUser,
+				device_id: '<?php echo $device->GetDeviceId(); ?>',
+				user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
+				key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>'
+			},
+			success: function(data){
+				console.log(data);
+				if(data=="0"){
+					alert('Conflict: The device is already reserved during that time.');
+				} else if(data=="-1"){
+					alert('Conflict: There is already a reservation for '+reservationUsername+' during that time.');
+				} else {
+					doUpdateReservation();
+				}
+			}
+		});
+		
 	});
 
 	function doUpdateReservation() {
@@ -294,11 +387,16 @@ $(document).ready(function () {
 
 		var reservationId = $('#reservationId').val();
 		var description = $('#reservationDescription').val();
-		var reservationStart = $('#reservationStart').val();
-		var reservationEnd = $('#reservationEnd').val();
+		var reservationStartDate = $('#reservationStartDate').val();
+		var reservationEndDate = $('#reservationEndDate').val();
+		var reservationStartTime = $('#reservationStartTime').val();
+		var reservationEndTime = $('#reservationEndTime').val();
 		var reservationTraining = $('#reservationTraining').is(":checked")?1:0;
 		var reservationRepeatInterval = $('#reservationRepeatInterval').val();
 		var reservationRepeat =  $('#reservationRepeat').val();
+		
+		var reservationStart = reservationStartDate+' '+reservationStartTime;
+		var reservationEnd = reservationEndDate+' '+reservationEndTime;
 
 		if (reservationId) {
 
@@ -320,6 +418,23 @@ $(document).ready(function () {
 				}
 			});
 			$('#calendar').fullCalendar('refetchEvents');
+		} else {
+			$.ajax({
+				url: "calendar_api.php",
+				type: "POST",
+				data: {
+					action: "add_event",
+					descriptions: description,
+					start: reservationStart,
+					end: reservationEnd,
+					training: reservationTraining,
+					device_id: '<?php echo $device->GetDeviceId(); ?>',
+					user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
+					key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>',
+					interval: reservationRepeatInterval,
+					repeat: reservationRepeat
+				}
+			})
 		}
 	}
 });
@@ -327,8 +442,7 @@ $(document).ready(function () {
 </script>
 <div id="calendar"></div>
 <!-- Modal -->
-<div class="modal fade" id="modifyReservationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-	 aria-hidden="true">
+<div class="modal fade" id="modifyReservationModal" tabindex="-1">
 
 	<div class="modal-dialog">
 
@@ -336,7 +450,7 @@ $(document).ready(function () {
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
 						class="sr-only">Close</span></button>
-				<h3 class="modal-title" id="myModalLabel"><?php if($device->GetDeviceId()==-1){echo 'Reservation Info';}else{echo 'Edit Reservation';} ?></h3>
+				<h3 class="modal-title" id="reservationWindowTitle"><?php if($device->GetDeviceId()==-1){echo 'Reservation Info';}else{echo 'Edit Reservation';} ?></h3>
 			</div>
 			<div class="modal-body">
 				<form id="editReservationForm" class="form-horizontal">
@@ -348,6 +462,7 @@ $(document).ready(function () {
 							<div class="controls controls-row" id="reservationUsername" style="margin-top:5px">
 
 							</div>
+							<input type="hidden" name="reservationUserId" id="reservationUserId">
 						</div>
 					</div>
 					
@@ -377,7 +492,11 @@ $(document).ready(function () {
 						<label class="col-sm-3 control-label" for="reservationTraining">Training</label>
 
 						<div class="col-sm-9">
-							<input type="checkbox" value="" name="reservationTraining" id="reservationTraining">
+							<div class="checkbox">
+								<label>
+									<input type="checkbox" value="" name="reservationTraining" id="reservationTraining">
+								</label>
+							</div>
 						</div>
 					</div>
 
@@ -405,12 +524,19 @@ $(document).ready(function () {
 					</div>
 
 					<div class="form-group">
-						<label class="col-sm-3 control-label">Range</label>
+						<label class="col-sm-3 control-label">Start</label>
 
 						<div class="col-sm-9">
-							<div class="controls controls-row" id="reservationRange" style="margin-top:5px">
-
-							</div>
+							<input type="hidden" name="reservationStartDate" id="reservationStartDate">
+							<input type="text" name="reservationStartTime" id="reservationStartTime" class="form-control">
+						</div>
+					</div>
+					
+					<div class="form-group">
+						<label class="col-sm-3 control-label">End</label>
+						<div class="col-sm-9">
+							<input type="hidden" name="reservationEndDate" id="reservationEndDate">
+							<input type="text" name="reservationEndTime" id="reservationEndTime" class="form-control">
 						</div>
 					</div>
 
@@ -433,6 +559,10 @@ $(document).ready(function () {
 	</div>
 
 </div>
+
+<script type="text/javascript">
+	$('#reservationStartTime, #reservationEndTime').timepicker({'step':15,'disableTextInput':true});
+</script>
 
 <?php
 require_once 'includes/footer.inc.php';

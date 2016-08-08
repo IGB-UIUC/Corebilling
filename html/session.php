@@ -1,7 +1,7 @@
 <?php
 
 //Check if the proper get inputs are set
-//error_log("session attempt",0);
+// error_log("session attempt",0);
 if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key'])) {
     include('includes/initializer.php');
     $deviceInfo = new Device($sqlDataBase);
@@ -20,6 +20,7 @@ if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key']))
         } else {
             //User was not found in website database so check for user exceptions
             if (!in_array(strtolower($_POST['username']), array_map('strtolower', $USER_EXCEPTIONS_ARRAY))) {
+
                 //Email admin that a new user was detected on instrument and that a new account was created on the website for them
                 //error_log('creating user from session', 0);
                 $mail = new Mailer();
@@ -40,6 +41,7 @@ if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key']))
                     DEFAULT_USER_RATE_ID,
                     DEFAULT_USER_STATUS_ID,
                     DEFAULT_USER_ROLE_ID);
+
             }
             $deviceInfo->UpdateLastTick();
         }

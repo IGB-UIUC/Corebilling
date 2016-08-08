@@ -44,10 +44,8 @@ if (isset($_POST['createNew']) && $access == AccessControl::PERM_ADMIN) {
 $articlesList = $article->GetArticles();
 ?>
 
-<div class="alert alert-info">
-	<h4>Latest News</h4>
-	<p>Please check the following articles for updates to our instruments and maintenance schedule.</p>
-</div>
+
+	<h3>Latest News</h3>
 
 <?php
 // Admin controls

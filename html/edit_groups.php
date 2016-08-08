@@ -45,26 +45,9 @@ if (isset($_POST['Select'])) {
 }
 ?>
 
-<div class="alert alert-info">
-	<h4>Edit Groups</h4>
+<h3>Edit Groups</h3>
 
-	<p>Create groups and add users to groups.</p>
-
-	<p>These groups allow supervisors to view their subordinate's billing</p>
-
-	<p>Also provide statistical information on a per group basis of instrument usage</p>
-</div>
 <form action="edit_groups.php" method="POST">
-	<div class="form-group">
-		<?php
-		echo "<input name=\"groupID\" type=\"hidden\" value=\"" . $group->getGroupId() . "\">";
-		if ($group->getGroupId() != 0) {
-			echo '<input name="Modify" type="submit" class="btn btn-primary" id="Modify" value="Modify">';
-		} else {
-			echo '<input name="Submit" type="submit" class="btn btn-primary" id="Submit" value="Create" >  <input name="Reset" type="submit" class="btn btn-primary" id="reset" value="Reset" >';
-		}
-		?>
-	</div>
 	<div class="row">
 		<div class="col-md-6">
 			<div class="well form-horizontal">
@@ -115,6 +98,18 @@ if (isset($_POST['Select'])) {
 					<label class="col-sm-3 control-label">Description</label>
 					<div class="col-sm-9">
 						<textarea name="description" class="form-control"><?php echo $group->getDescription(); ?></textarea>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-9 col-sm-offset-3">
+						<?php
+						echo "<input name=\"groupID\" type=\"hidden\" value=\"" . $group->getGroupId() . "\">";
+						if ($group->getGroupId() != 0) {
+							echo '<input name="Modify" type="submit" class="btn btn-primary" id="Modify" value="Modify">';
+						} else {
+							echo '<input name="Submit" type="submit" class="btn btn-primary" id="Submit" value="Create" >  <input name="Reset" type="submit" class="btn btn-primary" id="reset" value="Reset" >';
+						}
+						?>
 					</div>
 				</div>
 			</div>

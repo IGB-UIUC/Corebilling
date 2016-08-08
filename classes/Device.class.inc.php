@@ -45,9 +45,11 @@ class Device
 		$this->description = $description;
 		$this->status = $status;
 		$this->deviceToken = md5(uniqid(mt_rand(), true));
+		// TODO this sql query is not running
 		$queryAddDevice = "INSERT INTO device (device_name,location,description,full_device_name,status_id,device_token) VALUES(:device_name,:location,:description,:full_device_name,:status_id,:device_token)";
         $addDevicePrep = $this->sqlDataBase->prepare($queryAddDevice);
         $addDevicePrep->execute(array(":device_name"=>$dn,":location"=>$location,":description"=>$description,":full_device_name"=>$name,":status_id"=>$status,":device_token"=>$this->deviceToken));
+        
 		$this->deviceId = $this->sqlDataBase->lastInsertId();
 
         //Add device rates rows to device rates table with default value of 0 for all values

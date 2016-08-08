@@ -154,23 +154,28 @@ class VisualizeData
      * @param bool $checkBoxes
      * @return string
      */
-    public static function ListSessionsTable($tableData,$tableHeaders,$dataColumns,$tableNameId,$rowSelected,$checkBoxes=false)
+    public static function ListSessionsTable($tableData,$tableHeaders,$dataColumns,$tableNameId,$rowSelected,$checkBoxes=false,$filter=true)
     {
+	    $buttonLocation = ".prependTo($('#".$tableNameId."_heading'))";
+	    if($filter){$buttonLocation = ".appendTo($('#".$tableNameId."_filter'))";}
         $tableString =  " <script type=\"text/javascript\" class=\"init\">
+        var Rate1;
             $(document).ready( function () {\n
-            var ".$tableNameId." = $('#".$tableNameId."').DataTable({
-                \"dom\": 'fBrti',
+            ".$tableNameId." = $('#".$tableNameId."').DataTable({
+                \"dom\": '".($filter?'f':'')."Brti',
                 \"paging\": false,
-                \"buttons\": ['copy','csv','excel','pdf','print'],
-                
+                \"buttons\": {
+                	buttons: ['copy','csv','excel','pdf','print'],
+                	dom: {container:{className:'btn-group pull-right'}}
+                }
                     });\n
-			".$tableNameId.".buttons().container().appendTo($('#".$tableNameId."_filter'));
+			".$tableNameId.".buttons().container()$buttonLocation;
             $(\"#checkAll\").click(function(){
             $('input:checkbox').prop('checked', this.checked);
                 });
                 } );\n
             </script>";
-        $tableString .= "<table id=\"".$tableNameId."\" class=\"display compact\">";
+        $tableString .= "<table id=\"".$tableNameId."\" class=\"table table-condensed\">";
         $tableString .= "<thead><tr>";
 
         //If checkboxes are checked then add another column
