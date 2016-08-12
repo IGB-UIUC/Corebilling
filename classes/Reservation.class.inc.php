@@ -248,6 +248,7 @@ class Reservation {
 	     					and e.stop<NOW()
 	     					and u.id=e.user_id
 	     					and d.id=e.device_id".$trainingTest."
+	     					and d.status_id!=3
 	     					order by e.start";
 			} else if ($deviceId==-2) { // All devices
 				$queryEvents.=" WHERE
@@ -279,7 +280,7 @@ class Reservation {
 
 
 	public function getMissed($id) {
-		$sql = "select (case UNIX_TIMESTAMP(r.stop)<UNIX_TIMESTAMP(NOW()) when true then count(r.id) when false then 1 end) as count from reservation_info r inner join `session` s on s.start<=r.stop and s.stop>=r.start where r.device_id=s.device_id and r.user_id=s.user_id and r.id=:id";
+		$sql = "select (case UNIX_TIMESTAMP(r.stop)<UNIX_TIMESTAMP(NOW()) and d.status_id!=3 when true then count(r.id) when false then 1 end) as count from reservation_info r inner join `session` s on s.start<=r.stop and s.stop>=r.start inner join device d on d.id=r.device_id where r.device_id=s.device_id and r.user_id=s.user_id and r.id=:id";
 		$args = array(":id"=>$id);
 		$missed = $this->sqlDatabase->prepare($sql);
 		$missed->execute($args);

@@ -43,6 +43,11 @@ class Authenticate {
                 //If user is in the system then load this user
                 $this->authenticatedUser->LoadUser($userId);
             } else {
+	            // If user is not in the system, deny them.
+	            $this->verified=false;
+	            $this->logonError = "Unauthorized user.";
+	            return false;
+/*
                 //If user is not in system then create a default profile for them
                 $this->authenticatedUser->CreateUser($userName,'','',
                                                         $userName.'@'.DEFAULT_USER_EMAIL_DOMAIN,
@@ -63,6 +68,7 @@ class Authenticate {
                 {
                     echo $e->getMessage();
                 }
+*/
 
             }
 

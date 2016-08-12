@@ -57,7 +57,7 @@ if (isset ($_POST ['deviceSelected'])) {
 				<?php
 				$deviceList = $device->GetDevicesList();
 				foreach ($deviceList as $id => $availDevices) {
-					if ($accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_DEVICE, $availDevices['id'])) {
+					if ($accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_DEVICE, $availDevices['id']) && ($availDevices['status_id']==1 || $availDevices['status_id']==3)) {
 						echo "<option value=" . $availDevices ['id'];
 						if ($availDevices['id'] == $device->GetDeviceId()) {
 							echo " SELECTED";
@@ -86,6 +86,11 @@ if (isset ($_POST ['deviceSelected'])) {
 <script>
 
 $(document).ready(function () {
+	
+	var initialView = '<?php echo isset($_POST['view'])?$_POST['view']:'month'; ?>';
+	var initialDay = '<?php echo (isset($_POST['day'])&&is_numeric($_POST['day']))?$_POST['day']:date('d'); ?>';
+	var initialMonth = '<?php echo (isset($_POST['month'])&&is_numeric($_POST['month']))?$_POST['month']:date('m'); ?>';
+	var initialYear = '<?php echo (isset($_POST['year'])&&is_numeric($_POST['year']))?$_POST['year']:date('Y'); ?>';
 
 	$('#calendar').fullCalendar({
 		editable: true,
@@ -110,6 +115,9 @@ $(document).ready(function () {
 		selectHelper: true,
 		snapDuration: {minutes:15},
 		displayEventEnd: true,
+		timezone: "local",
+		defaultView: initialView,
+		defaultDate: $.fullCalendar.moment(initialYear+'-'+initialMonth+'-'+initialDay),
 		eventRender: function (event, element) {
 /*
 			if(event.missed){
@@ -141,8 +149,11 @@ $(document).ready(function () {
 		},
 		select: function (start, end) {
 			if (start.hasTime() && end.hasTime()) {
+				console.log(end.format('X z'));
 				if(end.format('X') < new Date().getTime()/1000){
 					alert('Cannot create a reservation in the past');
+					$('#calendar').fullCalendar('unselect');
+					$('#calendar').fullCalendar('refetchEvents');
 				} else if (<?php echo $device->GetDeviceId(); ?> > 0) {
 					//alert('event clicked');
 					var rangeString = start.format('HH:mm:ss') + ' - ' + end.format('HH:mm:ss');
@@ -303,12 +314,6 @@ $(document).ready(function () {
 		}
 	});
 	
-	var initialView = '<?php echo isset($_POST['view'])?$_POST['view']:'month'; ?>';
-	var initialDay = <?php echo (isset($_POST['day'])&&is_numeric($_POST['day']))?$_POST['day']:date('d'); ?>;
-	var initialMonth = <?php echo (isset($_POST['month'])&&is_numeric($_POST['month']))?$_POST['month']:date('m'); ?>;
-	var initialYear = <?php echo (isset($_POST['year'])&&is_numeric($_POST['year']))?$_POST['year']:date('Y'); ?>;
-	$('#calendar').fullCalendar('changeView',initialView);
-	$('#calendar').fullCalendar('gotoDate',$.fullCalendar.moment(initialYear+'-'+initialMonth+'-'+initialDay));
 
 	$('#deleteReservation').on('click', function (e) {
 		// We don't want this to act as a link so cancel the link action
@@ -398,8 +403,8 @@ $(document).ready(function () {
 		var reservationStart = reservationStartDate+' '+reservationStartTime;
 		var reservationEnd = reservationEndDate+' '+reservationEndTime;
 
+		console.log(reservationId);
 		if (reservationId) {
-
 			$.ajax({
 				url: "calendar_api.php",
 				type: "POST",
@@ -419,6 +424,7 @@ $(document).ready(function () {
 			});
 			$('#calendar').fullCalendar('refetchEvents');
 		} else {
+			// TODO this never gets called
 			$.ajax({
 				url: "calendar_api.php",
 				type: "POST",
@@ -433,10 +439,14 @@ $(document).ready(function () {
 					key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>',
 					interval: reservationRepeatInterval,
 					repeat: reservationRepeat
+				},
+				success: function(data){
+					console.log(data);
 				}
 			})
 		}
 	}
+	
 });
 
 </script>

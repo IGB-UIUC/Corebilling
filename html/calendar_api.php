@@ -1,8 +1,6 @@
 <?php
 set_time_limit(20);
-
 include('includes/initializer.php');
-
 if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key'])) {
     //Load pages index
     $page = new Pages($sqlDataBase);
@@ -24,10 +22,12 @@ if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key']))
         $POST_ARRAY = print_r($_POST, true);
         //Verify the user has permission to perform the operation
         $userAccessLevel = $accessControl->GetPermissionLevel($user->GetUserId(), AccessControl::RESOURCE_PAGE, $page->GetPageId("Calendar"));
+
         if ($userAccessLevel == AccessControl::PERM_ADMIN
             || $user->GetUserId() == $reservation->getUserId()
-            || ($_POST['action']='get_events'
-                && $userAccessLevel == AccessControl::PERM_ALLOW ))
+            || ($_POST['action'] == 'update_event_info' && $_POST['user_id']==$user->GetUserId() && $userAccessLevel == AccessControl::PERM_ALLOW)
+            || ($_POST['action'] == 'check_conflicts' && $_POST['res_user_id']==$user->GetUserId() && $userAccessLevel == AccessControl::PERM_ALLOW)
+            || ($_POST['action']=='get_events' && $userAccessLevel == AccessControl::PERM_ALLOW ))
         {
             switch ($_POST['action']) {
                 case 'get_events':

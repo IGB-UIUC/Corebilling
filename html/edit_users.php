@@ -164,7 +164,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
 			</div>
 			<div class="col-sm-2">
-				<input type="submit" name="add_cfop" value="Add" class="btn btn-primary">
+				<input type="submit" name="add_cfop" value="Add CFOP" class="btn btn-primary">
 			</div>
 		</div>
 	</div>
@@ -252,9 +252,9 @@ if ($access == AccessControl::PERM_ADMIN) {
 					<div class="col-sm-10 col-sm-offset-2">
 						<?php
 						if ($selectedUser->GetUserId() > 0) {
-							echo '<input name="Modify" type="submit" class="btn btn-primary" id="Modify" value="Modify">';
+							echo '<input name="Modify" type="submit" class="btn btn-primary" id="Modify" value="Modify User">';
 						} else {
-							echo '<input name="Create" type="submit" class="btn btn-primary" id="Submit" value="Create" >';
+							echo '<input name="Create" type="submit" class="btn btn-primary" id="Submit" value="Create User" >';
 						}
 						?>
 					</div>

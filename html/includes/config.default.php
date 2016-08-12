@@ -25,6 +25,10 @@
 @define ('DEFAULT_USER_DEPARTMENT_ID',0); //No department
 @define ('DEFAULT_USER_EMAIL_DOMAIN','');
 
+@define ('CAL_DEFAULT_COLOR','#3a87ad');
+@define ('CAL_TRAINING_COLOR','#6c3cae');
+@define ('CAL_MISSED_COLOR','#ae3c3c');
+
 //Admin Default
 @define ('ADMIN_EMAIL','');
 $ADMIN_EMAIL = array();

@@ -98,9 +98,14 @@ class Device
 
 	public function UpdateLastTick($username="")
 	{
-		$queryUpdateLastTick = "UPDATE device SET lasttick=NOW(), loggeduser=:loggeduser WHERE id=:id";
+		if($username==""){
+			$loggeduser = 0;
+		} else {
+			$loggeduser = -1;
+		}
+		$queryUpdateLastTick = "UPDATE device SET lasttick=NOW(), loggeduser=:loggeduser, unauthorized=:username WHERE id=:id";
 		$updateLastTick = $this->sqlDataBase->prepare($queryUpdateLastTick);
-        $updateLastTick->execute(array(':loggeduser'=>$username,':id'=>$this->deviceId));
+        $updateLastTick->execute(array(':username'=>$username,':id'=>$this->deviceId,':loggeduser'=>$loggeduser));
 	}
 
     /**Check if device with deviceName alrady exists
@@ -141,7 +146,7 @@ class Device
      */
     public function GetDevicesList()
     {
-        $queryAllDevices = "SELECT id, device_name, full_device_name FROM device ORDER BY full_device_name";
+        $queryAllDevices = "SELECT id, device_name, full_device_name, status_id FROM device ORDER BY full_device_name";
         $allDevices = $this->sqlDataBase->query($queryAllDevices);
         $allDevicesArr = $allDevices->fetchAll(PDO::FETCH_ASSOC);
 
@@ -150,7 +155,7 @@ class Device
 
     public function GetDevicesInUse()
     {
-        $queryDevicesUse = "SELECT d.full_device_name, d.location, u.user_name, d.loggeduser,u.first, u.last, TIMESTAMPDIFF(SECOND, lasttick, NOW()) AS lastseen , unauthorized FROM users u RIGHT JOIN device d ON u.id=d.loggeduser";
+        $queryDevicesUse = "SELECT d.full_device_name, d.location, u.user_name, d.loggeduser,u.first, u.last, TIMESTAMPDIFF(SECOND, lasttick, NOW()) AS lastseen , unauthorized FROM users u RIGHT JOIN device d ON u.id=d.loggeduser WHERE d.status_id=1 OR d.status_id=2 order by d.full_device_name";
         $devicesUse = $this->sqlDataBase->prepare($queryDevicesUse);
         $devicesUse->execute();
         $devicesUseArr = $devicesUse->fetchAll(PDO::FETCH_ASSOC);

@@ -60,14 +60,14 @@ class Session
 
 			if($openSessionArr)
 			{
-				error_log("Open session detected updating".$userId,0);
+// 				error_log("Open session detected updating".$userId,0);
 				$queryUpdateSession = "UPDATE session SET stop=NOW(), elapsed=TIMESTAMPDIFF(MINUTE,start,NOW()) WHERE id =:id";
                 $updateSession = $this->sqlDataBase->prepare($queryUpdateSession);
                 $updateSession->execute(array(':id'=>$openSessionArr['id']));
 			}
 			else
 			{
-				error_log("no open sessions detected opening session ".$userId,0);
+				error_log("Opening session for user ".$userId." on device ".$deviceId,0);
                 $userCfop = new UserCfop($this->sqlDataBase);
                 $defaultCfopId = $userCfop->LoadDefaultCfopl($userId);
 				$queryStartSession = "INSERT INTO session (user_id,device_id,start,stop,rate,rate_type_id,min_use_time,cfop_id)

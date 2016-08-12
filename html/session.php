@@ -19,6 +19,7 @@ if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key']))
             $sessionInfo->TrackSession($deviceInfo->GetDeviceId(), $userId);
         } else {
             //User was not found in website database so check for user exceptions
+/*
             if (!in_array(strtolower($_POST['username']), array_map('strtolower', $USER_EXCEPTIONS_ARRAY))) {
 
                 //Email admin that a new user was detected on instrument and that a new account was created on the website for them
@@ -43,7 +44,13 @@ if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key']))
                     DEFAULT_USER_ROLE_ID);
 
             }
-            $deviceInfo->UpdateLastTick();
+*/
+			if (in_array(strtolower($_POST['username']), array_map('strtolower', $USER_EXCEPTIONS_ARRAY))){
+	            $deviceInfo->UpdateLastTick();
+	        } else {
+   	            $deviceInfo->UpdateLastTick($_POST['username']);
+	        }
+	            
         }
 
     }

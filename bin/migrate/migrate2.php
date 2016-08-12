@@ -40,8 +40,8 @@ $mysqlcommand = "mysql -u".DB_USER." -p".DB_PASSWORD." -h ".DB_HOST." -D ".DB_NA
 $output = shell_exec($mysqlcommand);
 */
 
-// Rename all tables to old_<tablename>
 /*
+// Rename all tables to old_<tablename>
 $tables = "show tables";
 $tableArr = $sqlDataBase->query($tables)->fetchAll(PDO::FETCH_ASSOC);
 $tablecol = "Tables_in_".DB_NAME;
@@ -50,11 +50,9 @@ foreach($tableArr as $table){
 	$rename = "alter table ".$table[$tablecol]." rename old_".$table[$tablecol];
 	$sqlDataBase->query($rename);
 }
-*/
 
 // Create new tables
 //  Access_control needs role/page data, pages needs all data, rate_types needs all data, user_roles needs all data
-/*
 echo "Setting up v2 database structure\n";
 $mysqlcommand = "mysql -u".DB_USER." -p".DB_PASSWORD." -h ".DB_HOST." -D ".DB_NAME." < new_db.sql 2> /dev/null";
 $output = shell_exec($mysqlcommand);
@@ -62,6 +60,7 @@ $output = shell_exec($mysqlcommand);
 
 // Migrate info
 echo "Migrating data\n";
+/*
 $articles = "insert into articles select ID as id, time as created, text, title, userid as user_id from old_articles";
 $sqlDataBase->query($articles);
 $departments = "insert into departments select id, departmentname as department_name, description, department_code from old_departments";
@@ -72,31 +71,35 @@ $devicerate = "insert into device_rate select r.ID as id, r.rate as rate, r.devi
 $sqlDataBase->query($devicerate);
 $deviceperm = "insert into access_control (participant_id,resource_type_id,resource_id,permission,participant_type_id) select 3 as participant_id, 1 as resource_type_id, deviceid as resource_id, 1 as permission, 0 as participant_type_id from old_device_perm where permissionid=5 and permgroupid=4"; // Permissionid 5 means "allow"
 $sqlDataBase->query($deviceperm);
-/*
+*/
 $eventinfo = "insert into reservation_info select ID as id, deviceid as device_id, userid as user_id, start, stop, description, training, date_created from old_event_info";
 $sqlDataBase->query($eventinfo);
-*/
+/*
 $groups = "insert into `groups` select ID as id, groupname as group_name, description, departmentid as department_id from old_groups";
 $sqlDataBase->query($groups);
 $rates = "insert into rates select ID as id, ratename as rate_name from old_rates";
 $sqlDataBase->query($rates);
-/*
+*/
 $session = "insert into `session` select ID as id, userid as user_id, start, stop, status, deviceid as device_id, elapsed, rate, description, 0 as cfop_id, 0 as min_use_time, 1 as rate_type_id from old_session";
 $sqlDataBase->query($session);
-*/
+/*
 $status = "insert into status select ID as id, statusname, type from old_status";
 $sqlDataBase->query($status);
+*/
+/*
 $users = "insert into users select ID as id, username as user_name, email, first, last, groupid as group_id, grank, '' as rate, hidden, rateid as rate_id, departmentid as department_id, statusid as status_id, usertypeid as user_role_id, date_added, MD5(RAND()) as secure_key from old_users";
 $sqlDataBase->query($users);
+*/
 
 // Add a few permissions
 // admins need admin rights to all devices
+/*
 $adminRights = "replace into access_control (participant_id, resource_type_id, resource_id, permission, participant_type_id) select 1 as participant_id, 1 as resource_type_id, ID as resource_id, 2 as permission, 0 as participant_type_id from old_device";
 $sqlDataBase->query($adminRights);
+*/
 // TODO user perms not being pulled in correctly
 
 // CFOPs require a bit of massaging
-/*
 echo "Building cfop history\n";
 // First, add a couple indexes to old_session. Cuts the next query down by about 100x
 $index = "create index cfop on old_session (cfop)";
@@ -151,7 +154,6 @@ foreach($cfopArr as $cfop){
 		// Add dashes
 	}
 }
-*/
 
 // Delete old tables
 /*
