@@ -71,8 +71,11 @@ if (isset($_GET['session_id'])) {
 	$sessionIdSelected = $_GET['session_id'];
 }
 
-if (isset($_POST['monthSelected'])) {
-	list($month, $year) = explode(" ", $_POST['monthSelected']);
+if (isset($_POST['startMonthSelected'])) {
+	list($startmonth, $startyear) = explode(" ", $_POST['startMonthSelected']);
+}
+if (isset($_POST['endMonthSelected'])) {
+	list($endmonth, $endyear) = explode(" ", $_POST['endMonthSelected']);
 }
 
 
@@ -87,10 +90,14 @@ else
 
 if ($sessionIdSelected > 0) {
 	$session->LoadSession($sessionIdSelected);
-	$startDate = $session->GetStart();
-	$startDateArr = getdate(strtotime($startDate));
-	$month = $startDateArr['mon'];
-	$year = $startDateArr['year'];
+	if(!isset($startmonth)){
+		$startDate = $session->GetStart();
+		$startDateArr = getdate(strtotime($startDate));
+		$startmonth = $startDateArr['mon'];
+		$endmonth = $startmonth;
+		$startyear = $startDateArr['year'];
+		$endyear = $startyear;
+	}
 
 	echo "<script>
 	$(document).ready(function(){
@@ -110,17 +117,20 @@ if ($sessionIdSelected > 0) {
 <form name="verifyForm" method="post" action="facility_billing.php" class="form-inline">
 	<div class="well">
 		<div class="form-group">
-			<select name="monthSelected" class="form-control">
+			<label>Start: </label>
+			<select name="startMonthSelected" class="form-control">
 				<?php
 				$availableMonths = $bills->GetAvailableBillingMonths();
 
 				foreach ($availableMonths as $id => $availMonth) {
-					if(!isset($month)){
-						$month = $availMonth['month'];
-						$year = $availMonth['year'];
+					if(!isset($startmonth)){
+						$startmonth = $availMonth['month'];
+						$endmonth = $startmonth;
+						$startyear = $availMonth['year'];
+						$endyear = $startyear;
 					}
 					echo "<option value=\"" . $availMonth['month'] . " " . $availMonth['year'] . "\"";
-					if ($availMonth['month'] == $month && $availMonth['year'] == $year) {
+					if ($availMonth['month'] == $startmonth && $availMonth['year'] == $startyear) {
 						echo " SELECTED";
 					}
 					echo ">" . $availMonth['mon_yr'] . "</option>";
@@ -130,6 +140,24 @@ if ($sessionIdSelected > 0) {
 			</select>
 		</div>
 		<div class="form-group">
+			<label>End: </label>
+			<select name="endMonthSelected" class="form-control">
+				<?php
+				$availableMonths = $bills->GetAvailableBillingMonths();
+
+				foreach ($availableMonths as $id => $availMonth) {
+					echo "<option value=\"" . $availMonth['month'] . " " . $availMonth['year'] . "\"";
+					if ($availMonth['month'] == $endmonth && $availMonth['year'] == $endyear) {
+						echo " SELECTED";
+					}
+					echo ">" . $availMonth['mon_yr'] . "</option>";
+				}
+
+				?>
+			</select>
+		</div>
+		<div class="form-group">
+			<label>Rate type: </label>
 			<select name="rateTypeSelected" class="form-control">
 				<?php
 
@@ -145,7 +173,7 @@ if ($sessionIdSelected > 0) {
 			</select>
 		</div>
 		<div class="form-group">
-			<input class="btn btn-primary btn-sm" type="submit" name="selectMonth" value="Select Billing Period">
+			<input class="btn btn-primary btn-sm" type="submit" name="selectMonth" value="Load Billing Period">
 		</div>
 		<br/><br/>
 		<strong>Filter: </strong>
@@ -174,7 +202,7 @@ if ($sessionIdSelected > 0) {
 		}
 		
 		// TODO check supervisor perms here
-		$monthlyUsage = $bills->GetMonthCharges($year, $month, $rateTypeSelected);
+		$monthlyUsage = $bills->GetMonthsCharges($startyear, $startmonth, $endyear, $endmonth, $rateTypeSelected);
 	?>
 	<div class="panel panel-default">
 		<div id="<?php echo "Rate".$rateTypeSelected."_heading"; ?>" class="panel-heading">
@@ -287,7 +315,7 @@ if ($sessionIdSelected > 0) {
 			<input class="btn btn-primary btn-sm" type="submit" name="applyAction" value="Apply Action">
 			<select name="selectAction" class="form-control">
 				<option value="none">none</option>
-				<option value="defaultCfop">Set Default CFOP</option>
+				<option value="defaultCfop">Use Default CFOP</option>
 			</select> on checked items.
 		</div>
 	</div>

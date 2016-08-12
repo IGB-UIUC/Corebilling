@@ -87,6 +87,51 @@ class Bills
 
         return $monthUsage;
     }
+    
+    public function GetMonthsCharges($startyear, $startmonth, $endyear, $endmonth, $rateType){
+	    $pdoParameters = array();
+        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.last, ', ', u.first) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id ";
+        $queryTablesClauseMonthUsage = " FROM device_rate dr, device d, users u LEFT JOIN groups g ON (g.id=u.group_id), rates r, session s LEFT JOIN user_cfop uc ON (uc.id=s.cfop_id AND uc.default_cfop=1)";
+        $queryWhereClauseMonthUsage = " WHERE d.id = s.device_id AND dr.device_id = d.id AND dr.rate_id = u.rate_id AND u.id=s.user_id AND r.id=u.rate_id AND ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear) AND dr.rate_type_id=:rate_type_id";
+        $pdoParameters[':startyear'] = $startyear;
+        $pdoParameters[':startmonth'] = $startmonth;
+        $pdoParameters[':endyear'] = $endyear;
+        $pdoParameters[':endmonth'] = $endmonth;
+        $pdoParameters[':rate_type_id'] = $rateType;
+
+        if ($this->userId) {
+            $queryWhereClauseMonthUsage .= " AND s.user_id=:user_id";
+            $pdoParameters[':user_id'] = $this->userId;
+        }
+
+        if ($this->deviceId) {
+            $queryWhereClauseMonthUsage .= " AND s.device_id=:device_id";
+            $pdoParameters[':device_id'] = $this->deviceId;
+        }
+
+        switch ($this->groupBy) {
+            case self::GROUP_CFOP:
+                $queryWhereClauseMonthUsage .= " GROUP BY s.cfop";
+                $querySelectClauseMonthUsage .= ", s.elapsed";
+                break;
+            case self::GROUP_DEVICE:
+                $querySelectClauseMonthUsage .= ", SUM(s.elapsed) as elapsed";
+                $queryWhereClauseMonthUsage .= " GROUP BY s.device_id";
+                break;
+            case self::GROUP_USER:
+                $queryWhereClauseMonthUsage .= " GROUP BY s.user_id";
+                $querySelectClauseMonthUsage .= ", s.elapsed";
+                break;
+            default:
+                $querySelectClauseMonthUsage .= ", s.elapsed";
+        }
+
+        $queryMonthUsagePrepare = $this->sqlDataBase->prepare($querySelectClauseMonthUsage . $queryTablesClauseMonthUsage . $queryWhereClauseMonthUsage, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+        $queryMonthUsagePrepare->execute($pdoParameters);
+        $monthUsage = $queryMonthUsagePrepare->fetchAll(PDO::FETCH_ASSOC);
+
+        return $monthUsage;
+    }
 
 
     /**Return available months for billing
