@@ -38,6 +38,7 @@ if ($selectedUser->GetUserId() == $authenticate->getAuthenticatedUser()->GetUser
 			$selectedUser->SetStatusId($_POST['status']);
 			$selectedUser->SetUserRoleId($_POST['user_role_id']);
 			$selectedUser->SetGroupId($_POST['group']);
+			$selectedUser->SetCertified(isset($_POST['safetyquiz']));
 		}
 		if(isset($_POST['user_cfop_id']))
 		{
@@ -224,24 +225,32 @@ if ($access == AccessControl::PERM_ADMIN) {
 						</div>
 					</div>
 				<div class="form-group">
-						<label class="col-sm-2 control-label" for="editUser">Status</label>
-						<div class="col-sm-10">
-							<select name="status" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
-								<?php
-								$userStatus = 2;
-								$queryUsersStatus = "SELECT statusname,id FROM status WHERE type=" . $userStatus;
-		
-								foreach ($sqlDataBase->query($queryUsersStatus) as $usersStatus) {
-									echo "<option value=" . $usersStatus['id'];
-									if ($usersStatus['id'] == $selectedUser->GetStatusId()) {
-										echo " SELECTED";
-									}
-									echo ">" . $usersStatus['statusname'] . "</option>";
+					<label class="col-sm-2 control-label" for="editUser">Status</label>
+					<div class="col-sm-10">
+						<select name="status" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
+							<?php
+							$userStatus = 2;
+							$queryUsersStatus = "SELECT statusname,id FROM status WHERE type=" . $userStatus;
+	
+							foreach ($sqlDataBase->query($queryUsersStatus) as $usersStatus) {
+								echo "<option value=" . $usersStatus['id'];
+								if ($usersStatus['id'] == $selectedUser->GetStatusId()) {
+									echo " SELECTED";
 								}
-								?>
-							</select>
+								echo ">" . $usersStatus['statusname'] . "</option>";
+							}
+							?>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">Safety Quiz</label>
+					<div class="col-sm-10">
+						<div class="checkbox">
+							<label><input type="checkbox" name="safetyquiz"<?php if($selectedUser->GetCertified()){echo ' checked';} ?>></label>
 						</div>
 					</div>
+				</div>
 				<div class="form-group">
 					<label class="col-sm-2 control-label" for="editUser">Created</label>
 					<div class="col-sm-10">

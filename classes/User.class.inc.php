@@ -19,6 +19,7 @@ class User
 	private $dateAdded;
 	private $secureKey;
     private $userCfop;
+    private $certified;
 	
 	public function __construct(PDO $sqlDataBase)
 	{
@@ -35,6 +36,7 @@ class User
 		$this->dateAdded="";
 		$this->secureKey="";
         $this->userCfop = new UserCfop($this->sqlDataBase);
+        $this->certified = 0;
 	}
 	
 	public function __destruct()
@@ -53,7 +55,7 @@ class User
      * @param $statusId
      * @param $userRoleId
      */
-    public function CreateUser($username, $first, $last, $email,$departmentId,$groupId,$rateId,$statusId,$userRoleId)
+    public function CreateUser($username, $first, $last, $email,$departmentId,$groupId,$rateId,$statusId,$userRoleId,$certified)
 	{
 		$this->username = $username;
 		$this->first = $first;
@@ -65,6 +67,7 @@ class User
 		$this->statusid = $statusId;
 		$this->userRoleId = $userRoleId;
 		$this->dateAdded = date('Y-m-d H:i:s');
+		$this->certified = $certified;
 		if($this->Exists($this->username)==0)
 		{
 			$queryAddUser = "INSERT INTO users (user_name, first,last,email,department_id,group_id,rate_id,status_id,date_added,secure_key,user_role_id)
@@ -127,6 +130,7 @@ class User
 		$this->userRoleId= $userInfoArr["user_role_id"];
 		$this->dateAdded = $userInfoArr["date_added"];
 		$this->secureKey = $userInfoArr['secure_key'];
+		$this->certified = $userInfoArr['certified'];
 	}
 
     /**
@@ -143,10 +147,11 @@ class User
 		                    group_id=:group_id,
 		                    rate_id=:rate_id,
 		                    status_id=:status_id,
-		                    user_role_id=:user_role_id
+		                    user_role_id=:user_role_id,
+		                    certified=:certified
 		                    WHERE id=:user_id";
         $updateUserPrep = $this->sqlDataBase->prepare($queryUpdateUser);
-		$updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':user_id'=>$this->userId));
+		$updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified,':user_id'=>$this->userId));
 	}
 
     /**Check if a user exists by netid
@@ -401,6 +406,15 @@ class User
 	public function GetSecureKey()
 	{
 		return $this->secureKey;
+	}
+	
+	public function GetCertified()
+	{
+		return $this->certified;
+	}
+	public function SetCertified($certified)
+	{
+		$this->certified = $certified;
 	}
 }
 	
