@@ -261,12 +261,14 @@ if ($access == AccessControl::PERM_ADMIN) {
 						</div>
 					</div>
 				</div>
+				<?php if ($selectedUser->GetUserId() > 0) { ?>
 				<div class="form-group">
 					<label class="col-sm-2 control-label" for="editUser">Created</label>
 					<div class="col-sm-10">
 						<h5><?php echo $selectedUser->GetDateAdded();?></h5>
 					</div>
 				</div>
+				<?php } ?>
 				<div class="form-group">
 					<div class="col-sm-10 col-sm-offset-2">
 						<?php
