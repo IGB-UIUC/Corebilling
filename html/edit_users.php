@@ -58,6 +58,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 	// Submited New User
 	if (isset($_POST['Create'])) {
 		$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], $_POST['group']);
+		$selectedUser->AddCfop($_POST['cfop_to_add']);
 	}
 
 	if (isset($_POST['select_user'])) {
@@ -142,9 +143,10 @@ if ($access == AccessControl::PERM_ADMIN) {
 				</select>
 			</div>
 		</div>
+		<?php if($selectedUser->GetUserId() > 0){ ?>
 		<div class="form-group">
 			<label class="col-sm-2 control-label" for="editUser">CFOP</label>
-			<div class="col-sm-8">
+			<div class="col-sm-10">
 				<select name="user_cfop_id" class="form-control">
 					<?php
 					$userCfopList = $selectedUser->ListCfops($selectedUser->GetUserId());
@@ -161,13 +163,21 @@ if ($access == AccessControl::PERM_ADMIN) {
 		</div>
 		<div class="form-group">
 			<div class="col-sm-2"></div>
-			<div class="col-sm-7">
+			<div class="col-sm-8">
 				<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
 			</div>
 			<div class="col-sm-2">
 				<input type="submit" name="add_cfop" value="Add CFOP" class="btn btn-primary">
 			</div>
 		</div>
+		<?php } else { ?>
+		<div class="form-group">
+			<label class="col-sm-2 control-label">CFOP</label>
+			<div class="col-sm-10">
+				<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
+			</div>
+		</div>
+		<?php } ?>
 	</div>
 </div>
 		<div class="col-md-6">
