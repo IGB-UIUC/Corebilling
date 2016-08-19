@@ -206,11 +206,12 @@ class User
 
     public function GetAllUsersFullInfo()
     {
-        $queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, CONCAT(u.last, ', ', u.first) as full_name
+        $queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status
 								FROM users u
 									LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1)
 									LEFT JOIN groups g ON (g.id=u.group_id)
-									LEFT JOIN departments d ON (d.id=u.department_id)";
+									LEFT JOIN departments d ON (d.id=u.department_id)
+									LEFT JOIN status s ON s.id=u.status_id";
         $allUserInfo = $this->sqlDataBase->prepare($queryAllUserInfo);
         $allUserInfo->execute();
         $allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);

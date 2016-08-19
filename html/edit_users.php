@@ -299,8 +299,8 @@ if ($access == AccessControl::PERM_ADMIN) {
 					<?php
 					$usersFullInfoList = $selectedUser->GetAllUsersFullInfo();
 					echo VisualizeData::ListSessionsTable($usersFullInfoList,
-						array('Name', 'E-Mail', 'CFOP', 'Group', 'Department'),
-						array('full_name', 'email', 'cfop', 'group_name', 'department_name'), 'usersTable',0);
+						array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Status'),
+						array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'status'), 'usersTable',0);
 					?>
 				</div>
 			</div>
