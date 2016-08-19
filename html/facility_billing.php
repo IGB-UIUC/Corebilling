@@ -12,6 +12,8 @@ $device = new Device($sqlDataBase);
 $devicesList = $device->GetDevicesList();
 $user = new User($sqlDataBase);
 $userList = $user->GetAllUsers();
+$group = new Group($sqlDataBase);
+$groupList = $group->GetGroupsList();
 $bills = new Bills($sqlDataBase);
 $session = new Session($sqlDataBase);
 $userCfop = new UserCfop($sqlDataBase);
@@ -187,11 +189,27 @@ if ($sessionIdSelected > 0) {
 		</div>
 		<div class="form-group">
 			<label style="font-weight:normal">Device:</label>
-			<input class="form-control input-sm" type="search" id="devicefilter" name="devicefilter" oninput="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,7,'devicefilter')">
+			<select id="devicefilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,7,'devicefilter')">
+				<option value="">All</option>
+				<?php
+					foreach($devicesList as $device){
+						if($device['status_id']==1 || $device['status_id']==2 || $device['status_id']==4){
+							echo "<option>".$device['full_device_name']."</option>";
+						}
+					}
+				?>
+			</select>
 		</div>
 		<div class="form-group">
 			<label style="font-weight:normal">Group:</label>
-			<input class="form-control input-sm" type="search" id="groupfilter" name="groupfilter" oninput="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,13,'groupfilter')">
+			<select id="groupfilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,13,'groupfilter')">
+				<option value="">All</option>
+				<?php
+					foreach($groupList as $group){
+						echo "<option>".$group['group_name']."</option>";
+					}
+				?>
+			</select>
 		</div>
 	</div>
 	<?php
@@ -320,5 +338,9 @@ if ($sessionIdSelected > 0) {
 		</div>
 	</div>
 </form>
+<script type="text/javascript">
+	$('#groupfilter').select2();
+	$('#devicefilter').select2();
+</script>
 <?php
 require_once 'includes/footer.inc.php';
