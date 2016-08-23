@@ -20,14 +20,12 @@ if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key']))
 
         //For debugging purposes
         $POST_ARRAY = print_r($_POST, true);
-        //Verify the user has permission to perform the operation
-        $userAccessLevel = $accessControl->GetPermissionLevel($user->GetUserId(), AccessControl::RESOURCE_PAGE, $page->GetPageId("Calendar"));
-
-        if ($userAccessLevel == AccessControl::PERM_ADMIN
+        
+        if ($user->isAdmin()
             || $user->GetUserId() == $reservation->getUserId()
-            || ($_POST['action'] == 'update_event_info' && $_POST['user_id']==$user->GetUserId() && $userAccessLevel == AccessControl::PERM_ALLOW)
-            || ($_POST['action'] == 'check_conflicts' && $_POST['res_user_id']==$user->GetUserId() && $userAccessLevel == AccessControl::PERM_ALLOW)
-            || ($_POST['action']=='get_events' && $userAccessLevel == AccessControl::PERM_ALLOW ))
+            || ($_POST['action'] == 'update_event_info' && $_POST['user_id']==$user->GetUserId())
+            || ($_POST['action'] == 'check_conflicts' && $_POST['res_user_id']==$user->GetUserId())
+            || ($_POST['action']=='get_events' ))
         {
             switch ($_POST['action']) {
                 case 'get_events':
