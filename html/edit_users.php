@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Edit Users'));
-if($access == AccessControl::PERM_DISALLOW){
+if(!$login_user->isAdmin()){
 	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
 	require_once 'includes/footer.inc.php';
 	exit;
@@ -15,55 +14,46 @@ $rate = new Rate($sqlDataBase);
 $group = new Group($sqlDataBase);
 
 
-if ($access == AccessControl::PERM_ALLOW) {
-	$selectedUser->LoadUser($authenticate->getAuthenticatedUser()->GetUserId());
-} elseif ($access == AccessControl::PERM_ADMIN) {
-	if (isset($_POST['selected_user_id'])) {
-		$selectedUser->LoadUser($_POST['selected_user_id']);
-	}
+if (isset($_POST['selected_user_id'])) {
+	$selectedUser->LoadUser($_POST['selected_user_id']);
 }
 
-//Only allow Users to change their own user profile or an admin
-if ($selectedUser->GetUserId() == $authenticate->getAuthenticatedUser()->GetUserId() || $access == AccessControl::PERM_ADMIN) {
-	//If Modified user form
-	if (isset($_POST['Modify'])) {
-		//Update user info
-		$selectedUser->SetFirst($_POST['first']);
-		$selectedUser->SetLast($_POST['last']);
-		$selectedUser->SetEmail($_POST['email']);
-		$selectedUser->SetDepartmentId($_POST['department']);
-		if ($access == AccessControl::PERM_ADMIN) {
-			$selectedUser->SetUserName($_POST['user_name']);
-			$selectedUser->SetRateId($_POST['rate']);
-			$selectedUser->SetStatusId($_POST['status']);
-			$selectedUser->SetUserRoleId($_POST['user_role_id']);
-			$selectedUser->SetGroupId($_POST['group']);
-			$selectedUser->SetCertified(isset($_POST['safetyquiz']));
-		}
-		if(isset($_POST['user_cfop_id']))
-		{
-			$selectedUser->SetDefaultCfop($_POST['user_cfop_id']);
-		}
-		$selectedUser->UpdateUser();
-
+//If Modified user form
+if (isset($_POST['Modify'])) {
+	//Update user info
+	$selectedUser->SetFirst($_POST['first']);
+	$selectedUser->SetLast($_POST['last']);
+	$selectedUser->SetEmail($_POST['email']);
+	$selectedUser->SetDepartmentId($_POST['department']);
+	if ($login_user->isAdmin()) {
+		$selectedUser->SetUserName($_POST['user_name']);
+		$selectedUser->SetRateId($_POST['rate']);
+		$selectedUser->SetStatusId($_POST['status']);
+		$selectedUser->SetUserRoleId($_POST['user_role_id']);
+		$selectedUser->SetGroupId($_POST['group']);
+		$selectedUser->SetCertified(isset($_POST['safetyquiz']));
 	}
-
-	if (isset($_POST['add_cfop'])) {
-		$selectedUser->AddCfop($_POST['cfop_to_add']);
+	if(isset($_POST['user_cfop_id']))
+	{
+		$selectedUser->SetDefaultCfop($_POST['user_cfop_id']);
 	}
+	$selectedUser->UpdateUser();
+
 }
 
-//Block all other option to only allow Admins access
-if ($access == AccessControl::PERM_ADMIN) {
-	// Submited New User
-	if (isset($_POST['Create'])) {
-		$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], $_POST['group']);
-		$selectedUser->AddCfop($_POST['cfop_to_add']);
-	}
+// Submitted new cfop
+if (isset($_POST['add_cfop'])) {
+	$selectedUser->AddCfop($_POST['cfop_to_add']);
+}
 
-	if (isset($_POST['select_user'])) {
-		$selectedUser->LoadUser($_POST['selected_user_id']);
-	}
+// Submitted New User
+if (isset($_POST['Create'])) {
+	$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], $_POST['group']);
+	$selectedUser->AddCfop($_POST['cfop_to_add']);
+}
+
+if (isset($_POST['selected_user_id'])) {
+	$selectedUser->LoadUser($_POST['selected_user_id']);
 }
 ?>
 
@@ -77,14 +67,8 @@ if ($access == AccessControl::PERM_ADMIN) {
 			<div class="col-sm-7">
 				<select name="selected_user_id" class="form-control" id="user-select">
 					<?php
-					if ($access == AccessControl::PERM_ADMIN) {
-						echo '<option value="0">New User</option>';
-						$allUsers = $selectedUser->GetAllUsers();
-					} else if ($access == AccessControl::PERM_SUPERVISOR) {
-						$allUsers = $selectedUser->GetGroupUsers($authenticate->getAuthenticatedUser()->getGroupId());
-					} else {
-						$allUsers = array(array("id"=>$authenticate->getAuthenticatedUser()->GetUserId(),"user_name"=>$authenticate->getAuthenticatedUser()->GetUserName()));
-					}
+					echo '<option value="0">New User</option>';
+					$allUsers = $selectedUser->GetAllUsers();
 
 					foreach ($allUsers as $id => $userToSelect) {
 						echo "<option value=" . $userToSelect["id"];
@@ -185,7 +169,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 						<label class="col-sm-2 control-label" for="editUser">Rate</label>
 						<div class="col-sm-10">
-							<select name="rate" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
+							<select name="rate" class="form-control">
 								<?php
 		
 								$listRates = $rate->GetRates();
@@ -203,7 +187,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 						<label class="col-sm-2 control-label" for="editUser">Group</label>
 						<div class="col-sm-10">
-							<select name="group" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
+							<select name="group" class="form-control">
 								<?php
 								$listGroups = $group->GetGroupsList();
 								foreach ($listGroups as $id => $groupToSelect) {
@@ -220,7 +204,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 						<label class="col-sm-2 control-label" for="editUser">Role</label>
 						<div class="col-sm-10">
-							<select name="user_role_id" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
+							<select name="user_role_id" class="form-control">
 								<?php
 								$userRolesList = $selectedUser->GetUserRoles();
 								foreach ($userRolesList as $userRole) {
@@ -237,7 +221,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 				<div class="form-group">
 					<label class="col-sm-2 control-label" for="editUser">Status</label>
 					<div class="col-sm-10">
-						<select name="status" class="form-control" <?php if($access != AccessControl::PERM_ADMIN){ echo "disabled"; } ?>>
+						<select name="status" class="form-control">
 							<?php
 							$userStatus = 2;
 							$queryUsersStatus = "SELECT statusname,id FROM status WHERE type=" . $userStatus;
@@ -257,7 +241,7 @@ if ($access == AccessControl::PERM_ADMIN) {
 					<label class="col-sm-2 control-label">Safety Quiz</label>
 					<div class="col-sm-10">
 						<div class="checkbox">
-							<label><input type="checkbox" name="safetyquiz"<?php if($selectedUser->GetCertified()){echo ' checked';} ?>></label>
+							<label><input type="checkbox" name="safetyquiz"></label>
 						</div>
 					</div>
 				</div>
@@ -284,31 +268,25 @@ if ($access == AccessControl::PERM_ADMIN) {
 		</div>
 	</div>
 </form>
-<?php
 
-//Only show the user table to administrators
-if ($access == AccessControl::PERM_ADMIN) {
-	?>
-	<div class="row">
-		<div class="col-md-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h4>User Directory</h4>
-				</div>
-				<div class="body">
-					<?php
-					$usersFullInfoList = $selectedUser->GetAllUsersFullInfo();
-					echo VisualizeData::ListSessionsTable($usersFullInfoList,
-						array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Status'),
-						array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'status'), 'usersTable',0);
-					?>
-				</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4>User Directory</h4>
+			</div>
+			<div class="body">
+				<?php
+				$usersFullInfoList = $selectedUser->GetAllUsersFullInfo();
+				echo VisualizeData::ListSessionsTable($usersFullInfoList,
+					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Status'),
+					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'status'), 'usersTable',0);
+				?>
 			</div>
 		</div>
 	</div>
-<?php
-}
-?>
+</div>
+
 <script type="text/javascript">
 	$('#user-select').select2();
 	$('#depart-select').select2();

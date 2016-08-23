@@ -43,7 +43,7 @@
 		<script src='js/main.inc.js'></script>
 		
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-		<title>IGB Instrument Usage Page</title>
+		<title>IGB Core Facilities Billing</title>
 	</head>
 	<body>
 	

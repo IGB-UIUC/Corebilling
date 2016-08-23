@@ -15,7 +15,4 @@ $authenticate = new Authenticate($sqlDataBase, $authen);
 //Loads access control for website which controls device and web page access
 $accessControl = new AccessControl($sqlDataBase);
 
-$pages = new Pages($sqlDataBase);
-$pages->SetDefaultPage(DEFAULT_PAGE);
-
 ?>

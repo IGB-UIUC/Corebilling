@@ -1,12 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
 $device = new Device($sqlDataBase);
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Calendar'));
-if($access == AccessControl::PERM_DISALLOW){
-	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
-	require_once 'includes/footer.inc.php';
-	exit;
-}
 
 if (isset ($_POST ['deviceSelected'])) {
 	if($_POST['deviceSelected']<0){
@@ -49,7 +43,7 @@ if (isset ($_POST ['deviceSelected'])) {
 	<form action="calendar_fullcalendar.php" method="POST" class="form-inline" name="calform">
 		<div class="form-group">
 			<select name="deviceSelected" class="form-control" onChange='document.calform.submit();'>
-				<?php if($access==AccessControl::PERM_ADMIN){?>
+				<?php if($login_user->isAdmin()){?>
 				<option value="-1" <?php if($device->GetDeviceId()==-1) echo 'selected';?>>Missed Reservations</option>
 				<option value="-2" <?php if($device->GetDeviceId()==-2) echo 'selected';?>>All Devices</option>
 				<?php } ?>
@@ -72,7 +66,7 @@ if (isset ($_POST ['deviceSelected'])) {
 		<input type="hidden" name="month" id="filtermonth"/>
 		<input type="hidden" name="year" id="filteryear"/>
 		<input type="hidden" name="view" id="filterview"/>
-		<?php if ($access == AccessControl::PERM_ADMIN) { ?>
+		<?php if ($login_user->isAdmin()) { ?>
 		<div class="checkbox">
 			<label><input type="checkbox" name="filterTraining" onChange='document.calform.submit();' <?php if(isset($_POST['filterTraining'])){echo 'checked';} ?>> Only Show Training</label>
 		</div>
@@ -171,7 +165,7 @@ $(document).ready(function () {
 					$('#modifyReservationModal #deleteReservation').hide();
 					$('#modifyReservationModal #updateReservation').show();
 					<?php
-					if($access == AccessControl::PERM_ADMIN)
+					if($login_user->isAdmin())
 					{
 					?>
 					$('#modifyReservationModal #trainingFormGroup').show();
@@ -209,7 +203,7 @@ $(document).ready(function () {
 			$('#modifyReservationModal #reservationUsername').text(calEvent.username);
 			$('#modifyReservationModal #reservationUserId').val(calEvent.userid);
 			<?php
-			if($access == AccessControl::PERM_ADMIN)
+			if($login_user->isAdmin())
 			{
 			?>
 				$('#modifyReservationModal #trainingFormGroup').show();

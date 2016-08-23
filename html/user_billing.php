@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('User Billing'));
-if($access == AccessControl::PERM_DISALLOW){
+if(!$login_user->isAdmin()){
 	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
 	require_once 'includes/footer.inc.php';
 	exit;
@@ -13,16 +12,12 @@ $userToBill = new User($sqlDataBase);
 $bills = new Bills($sqlDataBase);
 $userCfop = new UserCfop($sqlDataBase);
 
-switch ($access) {
-	case AccessControl::PERM_ADMIN:
-		$selectableUsersList = $userToBill->GetAllUsers();
-		break;
-	case AccessControl::PERM_SUPERVISOR:
-		$selectableUsersList = $userToBill->GetGroupUsers($authenticate->getAuthenticatedUser()->GetGroupId());
-		break;
-	case AccessControl::PERM_ALLOW:
-		$selectableUsersList = array();
-		break;
+if($login_user->isAdmin()){
+	$selectableUsersList = $userToBill->GetAllUsers();
+} elseif($login_user->isSupervisor()){
+	$selectableUsersList = $userToBill->GetGroupUsers($authenticate->getAuthenticatedUser()->GetGroupId());
+} else {
+	$selectableUsersList = array();
 }
 
 if (isset($_POST['monthSelected'])) {

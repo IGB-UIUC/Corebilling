@@ -1,29 +1,26 @@
 </div> <!-- col-10 -->
-<?php			if ($authenticate->isVerified()) { ?>
+<?php if ($authenticate->isVerified()) { ?>
 			<div class="col-md-2 col-md-pull-10">
-	            <ul class="nav nav-pills nav-stacked">
-	                <?php
-	                if (isset($_GET['view'])) {
-	                    $view = $_GET['view'];
-	                } else {
-	                    $view = DEFAULT_PAGE;
-	                }
-	
-	                foreach ($pages->GetPagesList() as $pageName => $page){
-	                    //If user is allowed to view the page then add it to the navigation options
-	                    if ($accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $page['id']) != AccessControl::PERM_DISALLOW) {
-	                        $cssClass = "";
-	                        //Mark page as active on navigation if it is the selected page
-	                        if ($view == $page['id']) {
-	                            $cssClass = "class=active";
-	                        }
-	                        echo "<li " . $cssClass . "><a href=\"".$page['file']."\">" . $pageName . " </a></li>";
-	                    }
-	                }
-	                ?>
-	            </ul>
-		    </div>
-		    <?php } ?>
+				<ul class="nav nav-pills nav-stacked">
+					<li><a href="news.php">News</a></li>
+					<li><a href="user_billing.php">User Bill</a></li>
+					<li><a href="calendar_fullcalendar.php">Reservations</a>
+					<?php if ($login_user->isAdmin()){ ?>
+						  
+					<hr>
+					<li><a href="edit_users.php">Users</a></li>
+					<li><a href="edit_groups.php">Groups</a></li>
+					<li><a href="edit_departments.php">Departments</a></li>
+					<li><a href="edit_devices.php">Devices</a></li>
+					<hr>
+					<li><a href="facility_billing.php">Facility Billing</a></li>
+					<li><a href="in_use.php">Device Status</a></li>
+					<li><a href="dev_statistics.php">Statistics</a></li>
+						  
+					<?php } ?>
+				 </ul>
+			</div>
+			<?php } ?>
 		</div> <!-- row -->
 		<div class="row">
 			<div class='col-sm-12' style='text-align: center; padding: 15px 0'>

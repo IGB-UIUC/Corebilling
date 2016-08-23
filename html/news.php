@@ -1,11 +1,5 @@
 <?php
 require_once 'includes/header.inc.php';
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Latest News'));
-if($access == AccessControl::PERM_DISALLOW){
-	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
-	require_once 'includes/footer.inc.php';
-	exit;
-}
 
 $adminType = 1;
 $selectedArticle = 0;
@@ -18,12 +12,12 @@ if (isset($_GET['edit'])) {
 	$article->LoadArticle($selectedArticle);
 }
 
-if (isset($_GET['delete']) && $access == AccessControl::PERM_ADMIN) {
+if (isset($_GET['delete']) && $login_user->isAdmin()) {
 	$article->RemoveArticle($_GET['delete']);
 }
 
 
-if (isset($_POST['applyEdit']) && $access == AccessControl::PERM_ADMIN) {
+if (isset($_POST['applyEdit']) && $login_user->isAdmin()) {
 	$title = $_POST['title'];
 	$bodyText = $_POST['text'];
 	$articleId = $_POST['editArticleId'];
@@ -35,7 +29,7 @@ if (isset($_POST['applyEdit']) && $access == AccessControl::PERM_ADMIN) {
 	$article = new Articles($sqlDataBase);
 }
 
-if (isset($_POST['createNew']) && $access == AccessControl::PERM_ADMIN) {
+if (isset($_POST['createNew']) && $login_user->isAdmin()) {
 
 	$title = $_POST['title'];
 	$bodyText = $_POST['text'];
@@ -49,7 +43,7 @@ $articlesList = $article->GetArticles();
 
 <?php
 // Admin controls
-if ($access == AccessControl::PERM_ADMIN) {
+if ($login_user->isAdmin()) {
 ?>
 <form name="articlesForms" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 	<div class="well">
@@ -84,7 +78,7 @@ foreach ($articlesList as $id => $articleInfo) {
 	</div>
 	<div class="panel-footer">
 		<?php
-		if ($access == AccessControl::PERM_ADMIN) {
+		if ($login_user->isAdmin()) {
 			echo "<a href=\"news.php?edit=" . $articleInfo['id'] . "\">Edit</a> | <a href=\"news.php?delete=" . $articleInfo['id'] . "\">Delete</a> | ";
 		}
 		$user->LoadUser($articleInfo['user_id']);
