@@ -150,26 +150,7 @@ class Reservation {
 		$conflictsArr = $deviceconflicts->fetch(PDO::FETCH_ASSOC);
 
 		if ($conflictsArr["num_conflicts"] == 0 && $startTimeUnix < $stopTimeUnix && $deviceId >0) {
-			$queryConflicts = "SELECT COUNT(*) AS num_conflicts FROM reservation_info
-				WHERE user_id=:user_id
-			    AND (
-						(UNIX_TIMESTAMP(start) < UNIX_TIMESTAMP(:start_time_unix) AND UNIX_TIMESTAMP(stop) > UNIX_TIMESTAMP(:start_time_unix))
-			     	OR
-						(UNIX_TIMESTAMP(stop) > UNIX_TIMESTAMP(:stop_time_unix) AND UNIX_TIMESTAMP(start) < UNIX_TIMESTAMP(:stop_time_unix ))
-					OR
-						(UNIX_TIMESTAMP(start) >= UNIX_TIMESTAMP(:start_time_unix) AND UNIX_TIMESTAMP(stop) <= UNIX_TIMESTAMP(:stop_time_unix ))
-					) AND ID!=:reservation_id";
-			$userconflicts = $this->sqlDatabase->prepare($queryConflicts);
-			$userconflicts->execute(array(':user_id'=>$userId, ':start_time_unix'=>$startTimeUnix, ':stop_time_unix'=>$stopTimeUnix, ':reservation_id'=>$reservationId));
-			$conflictsArr = $userconflicts->fetch(PDO::FETCH_ASSOC);
-
-			if ($conflictsArr["num_conflicts"] == 0 && $startTimeUnix < $stopTimeUnix && $deviceId >0) {
-				// No conflicts
-				return 1;
-			} else {
-				// User conflict
-				return -1;
-			}
+			return 1;
 		} else {
 			// Device conflict
 			return 0;
