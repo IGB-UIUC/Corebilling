@@ -37,7 +37,7 @@ class Authenticate {
         //Check if user has access by checking LDAP
         if ($this->ldapAuth->Authenticate ( $userName, $password) )
         {
-            $userId = $this->authenticatedUser->Exists($_POST['user_name']);
+            $userId = $this->authenticatedUser->Exists($userName);
             if ($userId)
             {
                 //If user is in the system then load this user
