@@ -2,8 +2,8 @@
 class User
 {
 
-    const ACTIVE = 5, HIDDEN = 6, DISABLED = 7;
-    const STATUS_TYPE_USER=2;
+	const ACTIVE = 5, HIDDEN = 6, DISABLED = 7;
+	const STATUS_TYPE_USER=2;
 
 	private $userId;
 	private $username;
@@ -12,14 +12,14 @@ class User
 	private $email;
 	private $departmentId;
 	private $groupId;
-	private $rateId;
+	private $rateid;
 	private $statusid;
 	private $userRoleId;
 	private $sqlDataBase;
 	private $dateAdded;
 	private $secureKey;
-    private $userCfop;
-    private $certified;
+	private $userCfop;
+	private $certified;
 	
 	public function __construct(PDO $sqlDataBase)
 	{
@@ -35,8 +35,8 @@ class User
 		$this->statusid=0;
 		$this->dateAdded="";
 		$this->secureKey="";
-        $this->userCfop = new UserCfop($this->sqlDataBase);
-        $this->certified = 0;
+		$this->userCfop = new UserCfop($this->sqlDataBase);
+		$this->certified = 0;
 	}
 	
 	public function __destruct()
@@ -44,18 +44,18 @@ class User
 		
 	}
 
-    /**Create User
-     * @param $username
-     * @param $first
-     * @param $last
-     * @param $email
-     * @param $departmentId
-     * @param $groupId
-     * @param $rateId
-     * @param $statusId
-     * @param $userRoleId
-     */
-    public function CreateUser($username, $first, $last, $email,$departmentId,$groupId,$rateId,$statusId,$userRoleId,$certified)
+	/**Create User
+	 * @param $username
+	 * @param $first
+	 * @param $last
+	 * @param $email
+	 * @param $departmentId
+	 * @param $groupId
+	 * @param $rateId
+	 * @param $statusId
+	 * @param $userRoleId
+	 */
+	public function CreateUser($username, $first, $last, $email,$departmentId,$groupId,$rateId,$statusId,$userRoleId,$certified)
 	{
 		$this->username = $username;
 		$this->first = $first;
@@ -71,18 +71,18 @@ class User
 		if($this->Exists($this->username)==0)
 		{
 			$queryAddUser = "INSERT INTO users (user_name, first,last,email,department_id,group_id,rate_id,status_id,date_added,secure_key,user_role_id)
-			                    VALUES(:user_name,:first,:last,:email,:department_id,:group_id,:rate_id,:status_id,NOW(), MD5(RAND()),:user_role_id)";
+								   VALUES(:user_name,:first,:last,:email,:department_id,:group_id,:rate_id,:status_id,NOW(), MD5(RAND()),:user_role_id)";
 			$addUserPrepare = $this->sqlDataBase->prepare($queryAddUser);
-            $addUserPrepare->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$rateId,':status_id'=>$statusId,':user_role_id'=>$this->userRoleId));
-            $this->userId=$this->sqlDataBase->lastInsertId();
+			$addUserPrepare->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$rateId,':status_id'=>$statusId,':user_role_id'=>$this->userRoleId));
+			$this->userId=$this->sqlDataBase->lastInsertId();
 		}
 	}
 
-    /**Load user info from ldap by netid
-     * @param $netid
-     * @return array
-     */
-    public function LoadLdapUser($netid)
+	/**Load user info from ldap by netid
+	 * @param $netid
+	 * @return array
+	 */
+	public function LoadLdapUser($netid)
 	{
 		$info = LdapHelper::LoadIGBUser($netid);
 		if($info['count']!=0)
@@ -98,7 +98,7 @@ class User
 			}
 			else
 			{
-				$info =  array();
+				$info =	 array();
 				return $info;
 			}
 		}
@@ -109,15 +109,15 @@ class User
 		}
 	}
 
-    /**Load user into this object
-     * @param $id
-     */
-    public function LoadUser($id)
+	/**Load user into this object
+	 * @param $id
+	 */
+	public function LoadUser($id)
 	{
 		$queryUserInfo = "SELECT * FROM users WHERE id=:user_id";
 		$userInfo=$this->sqlDataBase->prepare($queryUserInfo);
-        $userInfo->execute(array(":user_id"=>$id));
-        $userInfoArr = $userInfo->fetch(PDO::FETCH_ASSOC);
+		$userInfo->execute(array(":user_id"=>$id));
+		$userInfoArr = $userInfo->fetch(PDO::FETCH_ASSOC);
 		$this->userId = $userInfoArr["id"];
 		$this->username=$userInfoArr["user_name"];
 		$this->first=$userInfoArr["first"];
@@ -133,41 +133,41 @@ class User
 		$this->certified = $userInfoArr['certified'];
 	}
 
-    /**
-     * Update user into database based on changes made to this object
-     */
-    public function UpdateUser()
+	/**
+	 * Update user into database based on changes made to this object
+	 */
+	public function UpdateUser()
 	{
 		$queryUpdateUser = "UPDATE users SET
-		                    user_name=:user_name,
-		                    first=:first,
-		                    last=:last,
-		                    email=:email,
-		                    department_id=:department_id,
-		                    group_id=:group_id,
-		                    rate_id=:rate_id,
-		                    status_id=:status_id,
-		                    user_role_id=:user_role_id,
-		                    certified=:certified
-		                    WHERE id=:user_id";
-        $updateUserPrep = $this->sqlDataBase->prepare($queryUpdateUser);
-		$updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified,':user_id'=>$this->userId));
+							user_name=:user_name,
+							first=:first,
+							last=:last,
+							email=:email,
+							department_id=:department_id,
+							group_id=:group_id,
+							rate_id=:rate_id,
+							status_id=:status_id,
+							user_role_id=:user_role_id,
+							certified=:certified
+							WHERE id=:user_id";
+		$updateUserPrep = $this->sqlDataBase->prepare($queryUpdateUser);
+		$updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0,':user_id'=>$this->userId));
 	}
 
-    /**Check if a user exists by netid
-     * @param $username
-     * @return int
-     */
-    public function Exists($username)
+	/**Check if a user exists by netid
+	 * @param $username
+	 * @return int
+	 */
+	public function Exists($username)
 	{
 		$queryUserName = "SELECT id FROM users WHERE user_name = :user_name";
 		$userName = $this->sqlDataBase->prepare($queryUserName);
-        $userName->execute(array(":user_name"=>$username));
-        $userNameArr = $userName->fetch(PDO::FETCH_ASSOC);
+		$userName->execute(array(":user_name"=>$username));
+		$userNameArr = $userName->fetch(PDO::FETCH_ASSOC);
 
 		if($userName->rowCount() > 0)
 		{
-            return $userNameArr["id"];
+			return $userNameArr["id"];
 		}
 		else
 		{
@@ -176,135 +176,135 @@ class User
 		
 	}
 
-    /**
-     * Update security key for user
-     */
-    public function UpdateSecureKey()
+	/**
+	 * Update security key for user
+	 */
+	public function UpdateSecureKey()
 	{
 		$queryUpdateSecureKey = "UPDATE users SET secure_key=MD5(RAND()) WHERE id = :user_id";
 		$updateSecureKey = $this->sqlDataBase->prepare($queryUpdateSecureKey);
-        $updateSecureKey->execute(array(":user_id"=>$this->userId));
+		$updateSecureKey->execute(array(":user_id"=>$this->userId));
 
-        $queryGetSecureKey = "SELECT secure_key FROM users WHERE id = :user_id";
-        $secureKey = $this->sqlDataBase->prepare($queryGetSecureKey);
-        $secureKey->execute(array(":user_id"=>$this->userId));
-        $secureKeyArr = $secureKey->fetch(PDO::FETCH_ASSOC);
-        $this->secureKey = $secureKeyArr['secure_key'];
+		$queryGetSecureKey = "SELECT secure_key FROM users WHERE id = :user_id";
+		$secureKey = $this->sqlDataBase->prepare($queryGetSecureKey);
+		$secureKey->execute(array(":user_id"=>$this->userId));
+		$secureKeyArr = $secureKey->fetch(PDO::FETCH_ASSOC);
+		$this->secureKey = $secureKeyArr['secure_key'];
 	}
 
-    /**List all users by id and username on the application
-     * @return array
-     */
-    public function GetAllUsers()
-    {
-       $queryAllUsers = "SELECT id, user_name FROM users ORDER BY user_name";
-       $allUsers = $this->sqlDataBase->prepare($queryAllUsers);
-       $allUsers->execute();
-       $allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
-       return $allUsersArr;
-    }
+	/**List all users by id and username on the application
+	 * @return array
+	 */
+	public function GetAllUsers()
+	{
+	   $queryAllUsers = "SELECT id, user_name FROM users ORDER BY user_name";
+	   $allUsers = $this->sqlDataBase->prepare($queryAllUsers);
+	   $allUsers->execute();
+	   $allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
+	   return $allUsersArr;
+	}
 
-    public function GetAllUsersFullInfo()
-    {
-        $queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status
+	public function GetAllUsersFullInfo()
+	{
+		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status
 								FROM users u
 									LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1)
 									LEFT JOIN groups g ON (g.id=u.group_id)
 									LEFT JOIN departments d ON (d.id=u.department_id)
 									LEFT JOIN status s ON s.id=u.status_id";
-        $allUserInfo = $this->sqlDataBase->prepare($queryAllUserInfo);
-        $allUserInfo->execute();
-        $allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
+		$allUserInfo = $this->sqlDataBase->prepare($queryAllUserInfo);
+		$allUserInfo->execute();
+		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
 
 		for($i=0; $i<count($allUserInfoArr); $i++){
 			$allUserInfoArr[$i]['cfop'] = UserCfop::formatCfop($allUserInfoArr[$i]['cfop']);
 		}
 
-        return $allUserInfoArr;
-    }
-    /**Get all users with a certain status
-     * @param $statusId
-     * @return array
-     */
-    public function GetUsers($statusId)
-    {
-        $queryAllUsers = "SELECT id, user_name FROM users WHERE status_id=:status_id ORDER BY user_name";
-        $allUsers = $this->sqlDataBase->prepare($queryAllUsers);
-        $allUsers->execute(array(":status_id"=>$statusId));
-        $allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
+		return $allUserInfoArr;
+	}
+	/**Get all users with a certain status
+	 * @param $statusId
+	 * @return array
+	 */
+	public function GetUsers($statusId)
+	{
+		$queryAllUsers = "SELECT id, user_name FROM users WHERE status_id=:status_id ORDER BY user_name";
+		$allUsers = $this->sqlDataBase->prepare($queryAllUsers);
+		$allUsers->execute(array(":status_id"=>$statusId));
+		$allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
 
-        return $allUsersArr;
-    }
+		return $allUsersArr;
+	}
 
-    /**Get all users which are in a given group
-     * @param $groupId
-     * @return array
-     */
-    public function GetGroupUsers($groupId)
-    {
-        $queryGroupUsers = "SELECT * FROM users WHERE group_id=:group_id";
-        $groupUsers = $this->sqlDataBase->prepare($queryGroupUsers);
-        $groupUsers->execute(array(":group_id"=>$groupId));
-        $groupUsersArr = $groupUsers->fetchAll(PDO::FETCH_ASSOC);
+	/**Get all users which are in a given group
+	 * @param $groupId
+	 * @return array
+	 */
+	public function GetGroupUsers($groupId)
+	{
+		$queryGroupUsers = "SELECT * FROM users WHERE group_id=:group_id";
+		$groupUsers = $this->sqlDataBase->prepare($queryGroupUsers);
+		$groupUsers->execute(array(":group_id"=>$groupId));
+		$groupUsersArr = $groupUsers->fetchAll(PDO::FETCH_ASSOC);
 
-        return $groupUsersArr;
-    }
+		return $groupUsersArr;
+	}
 
-    /**Get all users which are in a department
-     * @param $departmentId
-     * @return array
-     */
-    public function GetDepartmentUsers($departmentId)
-    {
-        $queryDepartmentUsers = "SELECT * FROM users WHERE department_id=:department_id";
-        $departmentUsers = $this->sqlDataBase->prepare($queryDepartmentUsers);
-        $departmentUsers->execute(array(":department_id"=>$departmentId));
-        $departmentUsersArr = $departmentUsers->fetchAll(PDO::FETCH_ASSOC);
+	/**Get all users which are in a department
+	 * @param $departmentId
+	 * @return array
+	 */
+	public function GetDepartmentUsers($departmentId)
+	{
+		$queryDepartmentUsers = "SELECT * FROM users WHERE department_id=:department_id";
+		$departmentUsers = $this->sqlDataBase->prepare($queryDepartmentUsers);
+		$departmentUsers->execute(array(":department_id"=>$departmentId));
+		$departmentUsersArr = $departmentUsers->fetchAll(PDO::FETCH_ASSOC);
 
-        return $departmentUsersArr;
-    }
+		return $departmentUsersArr;
+	}
 
-    /**Get all user roles
-     * @return mixed
-     */
-    public function GetUserRoles()
-    {
-        $queryUserRoles = "SELECT * FROM user_roles";
-        $userRoles = $this->sqlDataBase->prepare($queryUserRoles);
-        $userRoles->execute();
-        return $userRoles->fetchAll(PDO::FETCH_ASSOC);
-    }
+	/**Get all user roles
+	 * @return mixed
+	 */
+	public function GetUserRoles()
+	{
+		$queryUserRoles = "SELECT * FROM user_roles";
+		$userRoles = $this->sqlDataBase->prepare($queryUserRoles);
+		$userRoles->execute();
+		return $userRoles->fetchAll(PDO::FETCH_ASSOC);
+	}
 
-    public function GetUserStatusList()
-    {
-        $queryUserStatusList = "SELECT * FROM status WHERE type=:type";
-        $userStatusList = $this->sqlDataBase->prepare($queryUserStatusList);
-        $userStatusList->execute(array(':type'=>User::STATUS_TYPE_USER));
-        $userStatusListArr = $userStatusList->fetchAll(PDO::FETCH_ASSOC);
+	public function GetUserStatusList()
+	{
+		$queryUserStatusList = "SELECT * FROM status WHERE type=:type";
+		$userStatusList = $this->sqlDataBase->prepare($queryUserStatusList);
+		$userStatusList->execute(array(':type'=>User::STATUS_TYPE_USER));
+		$userStatusListArr = $userStatusList->fetchAll(PDO::FETCH_ASSOC);
 
-        return $userStatusListArr;
+		return $userStatusListArr;
 
-    }
+	}
 
-    public function AddCfop($cfop)
-    {
+	public function AddCfop($cfop)
+	{
 
-        $this->userCfop->CreateUserCfop($this->userId, $cfop, "");
-    }
+		$this->userCfop->CreateUserCfop($this->userId, $cfop, "");
+	}
 
-    public function ListCfops()
-    {
+	public function ListCfops()
+	{
 
-        return $this->userCfop->ListCfops($this->userId);
-    }
+		return $this->userCfop->ListCfops($this->userId);
+	}
 
-    public function SetDefaultCfop($defaultCfopId)
-    {
-        $this->userCfop->LoadUserCfop($defaultCfopId);
-        $this->userCfop->SetDefaultCfop();
-    }
-    //Getters and setters
-    public function GetUserId()
+	public function SetDefaultCfop($defaultCfopId)
+	{
+		$this->userCfop->LoadUserCfop($defaultCfopId);
+		$this->userCfop->SetDefaultCfop();
+	}
+	//Getters and setters
+	public function GetUserId()
 	{
 		return $this->userId;
 	}
