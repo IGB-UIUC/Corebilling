@@ -55,16 +55,18 @@ if (isset ($_POST ['deviceSelected'])) {
 				<?php } ?>
 				<option value=0 <?php if(!isset($_POST['deviceSelected']) || $_POST['deviceSelected']==0) echo 'selected';?>>My Reservations</option>
 				<?php
-				$deviceList = $device->GetDevicesList();
-				foreach ($deviceList as $id => $availDevices) {
-					if ($accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_DEVICE, $availDevices['id']) && ($availDevices['status_id']==1 || $availDevices['status_id']==3)) {
-						echo "<option value=" . $availDevices ['id'];
-						if ($availDevices['id'] == $device->GetDeviceId()) {
-							echo " SELECTED";
+					if($authenticate->getAuthenticatedUser()->GetStatusId() != 7){
+						$deviceList = $device->GetDevicesList();
+						foreach ($deviceList as $id => $availDevices) {
+							if ($accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_DEVICE, $availDevices['id']) && ($availDevices['status_id']==1 || $availDevices['status_id']==3)) {
+								echo "<option value=" . $availDevices ['id'];
+								if ($availDevices['id'] == $device->GetDeviceId()) {
+									echo " SELECTED";
+								}
+								echo ">" . $availDevices ['full_device_name'] . "</option>";
+							}
 						}
-						echo ">" . $availDevices ['full_device_name'] . "</option>";
 					}
-				}
 				?>
 			</select>
 		</div>
