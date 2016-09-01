@@ -170,6 +170,11 @@ $(document).ready(function () {
 					$('#modifyReservationModal #reservationDevice').text("<?php echo $device->GetFullName(); ?>");
 					$('#modifyReservationModal #reservationUsername').text("<?php echo $authenticate->getAuthenticatedUser()->GetUserName(); ?>");
 					$('#modifyReservationModal #reservationUserId').val("<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>");
+					// Enable all fields
+					$('#modifyReservationModal #reservationDescription').prop("readonly",false);
+					$('#modifyReservationModal #reservationTraining').prop("disabled",false);
+					$('#modifyReservationModal #reservationStartTime').prop( "readonly", false );
+					$('#modifyReservationModal #reservationEndTime').prop( "readonly", false );
 					$('#modifyReservationModal #deleteReservation').hide();
 					$('#modifyReservationModal #updateReservation').show();
 					<?php
@@ -227,8 +232,8 @@ $(document).ready(function () {
 			}
 
 			?>
-			// Can't update or delete events in the past
-			if(calEvent.end.format('X') < new Date().getTime()/1000){
+			// Can't update or delete events in the past, or that don't belong to us
+			if(calEvent.end.format('X') < new Date().getTime()/1000<?php if($access == AccessControl::PERM_ALLOW){ echo ' || calEvent.userid!='.$authenticate->getAuthenticatedUser()->GetUserId(); } ?>){
 				$('#modifyReservationModal #reservationDescription').prop("readonly",true);
 				$('#modifyReservationModal #reservationTraining').prop("disabled",true);
 				$('#modifyReservationModal #reservationStartTime').prop( "readonly", true );
