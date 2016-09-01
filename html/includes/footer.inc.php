@@ -8,7 +8,7 @@
 					<?php if ($login_user->isAdmin()){ ?>
 						  
 					<hr>
-					<li><a href="edit_users.php">Users</a></li>
+					<li><a href="list_users.php">Users</a></li>
 					<li><a href="edit_groups.php">Groups</a></li>
 					<li><a href="edit_departments.php">Departments</a></li>
 					<li><a href="edit_devices.php">Devices</a></li>

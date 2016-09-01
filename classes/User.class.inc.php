@@ -206,7 +206,7 @@ class User
 
 	public function GetAllUsersFullInfo()
 	{
-		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status
+		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status, u.id
 								FROM users u
 									LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1)
 									LEFT JOIN groups g ON (g.id=u.group_id)
@@ -218,6 +218,7 @@ class User
 
 		for($i=0; $i<count($allUserInfoArr); $i++){
 			$allUserInfoArr[$i]['cfop'] = UserCfop::formatCfop($allUserInfoArr[$i]['cfop']);
+			$allUserInfoArr[$i]['edit'] = '<a href="edit_users.php?user_id='.$allUserInfoArr[$i]['id'].'">Edit</a>';
 		}
 
 		return $allUserInfoArr;

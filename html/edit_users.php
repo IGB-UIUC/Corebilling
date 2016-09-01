@@ -14,8 +14,8 @@ $rate = new Rate($sqlDataBase);
 $group = new Group($sqlDataBase);
 
 
-if (isset($_POST['selected_user_id'])) {
-	$selectedUser->LoadUser($_POST['selected_user_id']);
+if (isset($_REQUEST['user_id'])) {
+	$selectedUser->LoadUser($_REQUEST['user_id']);
 }
 
 //If Modified user form
@@ -52,172 +52,172 @@ if (isset($_POST['Create'])) {
 	$selectedUser->AddCfop($_POST['cfop_to_add']);
 }
 
-if (isset($_POST['selected_user_id'])) {
-	$selectedUser->LoadUser($_POST['selected_user_id']);
+if (isset($_REQUEST['user_id'])) {
+	$selectedUser->LoadUser($_REQUEST['user_id']);
 }
 ?>
 
-<h3>Edit Users</h3>
+<h3>Edit User</h3>
 <form action="edit_users.php" method=POST>
 	<div class="row">
 		<div class="col-md-6">
-	<div class="well form-horizontal">
-		<div class="form-group">
-			<label class="col-sm-2 control-label" for="editUser">User</label>
-			<div class="col-sm-7">
-				<select name="selected_user_id" class="form-control" id="user-select">
-					<?php
-					echo '<option value="0">New User</option>';
-					$allUsers = $selectedUser->GetAllUsers();
-
-					foreach ($allUsers as $id => $userToSelect) {
-						echo "<option value=" . $userToSelect["id"];
-						if ($userToSelect["id"] == $selectedUser->GetUserId()) {
-							echo " SELECTED";
-						}
-						echo ">" . $userToSelect["user_name"] . "</option>";
-					}
-					?>
-				</select>
+			<div class="well form-horizontal">
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="editUser">User</label>
+					<div class="col-sm-7">
+						<select name="user_id" class="form-control" id="user-select">
+							<?php
+							echo '<option value="0">New User</option>';
+							$allUsers = $selectedUser->GetAllUsers();
+		
+							foreach ($allUsers as $id => $userToSelect) {
+								echo "<option value=" . $userToSelect["id"];
+								if ($userToSelect["id"] == $selectedUser->GetUserId()) {
+									echo " SELECTED";
+								}
+								echo ">" . $userToSelect["user_name"] . "</option>";
+							}
+							?>
+						</select>
+					</div>
+					<div class="col-sm-2">
+						<input name="select_user" type="submit" class="btn btn-primary" id="search" value="Select"/>
+					</div>
+				</div>
 			</div>
-			<div class="col-sm-2">
-				<input name="select_user" type="submit" class="btn btn-primary" id="search" value="Select"/>
+			<div class="well form-horizontal">
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="editUser">Netid</label>
+					<div class="col-sm-10">
+						<input name="user_name" type="text" class="form-control" value='<?php echo $selectedUser->GetUserName(); ?>'>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="editUser">First</label>
+					<div class="col-sm-10">
+						<input name="first" type="text" class="form-control" value='<?php echo $selectedUser->GetFirst(); ?>'>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="editUser">Last</label>
+					<div class="col-sm-10">
+						<input name="last" type="text" class="form-control" value='<?php echo $selectedUser->GetLast(); ?>'>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="editUser">Mail</label>
+					<div class="col-sm-10">
+						<input name="email" type="email" class="form-control" value='<?php echo $selectedUser->GetEmail(); ?>'>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="editUser">Depart.</label>
+					<div class="col-sm-10">
+						<select name="department" class="form-control" id="depart-select">
+							<?php
+							$departmentsList = $userDepartment->GetDepartmentList();
+							foreach ($departmentsList as $departmentInfo) {
+								echo "<option value=" . $departmentInfo['id'];
+								if ($departmentInfo['id'] == $selectedUser->GetDepartmentId()) {
+									echo " SELECTED";
+								}
+								echo " >" . $departmentInfo['department_name'] . "</option>";
+							}
+							?>
+						</select>
+					</div>
+				</div>
+				<?php if($selectedUser->GetUserId() > 0){ ?>
+				<div class="form-group">
+					<label class="col-sm-2 control-label" for="editUser">CFOP</label>
+					<div class="col-sm-10">
+						<select name="user_cfop_id" class="form-control">
+							<?php
+							$userCfopList = $selectedUser->ListCfops($selectedUser->GetUserId());
+							foreach ($userCfopList as $id => $cfopCodeInfo) {
+								echo "<option value=" . $cfopCodeInfo['id'];
+								if ($cfopCodeInfo['default_cfop']) {
+									echo " SELECTED";
+								}
+								echo ">" . UserCfop::formatCfop($cfopCodeInfo['cfop']) . "</option>";
+							}
+							?>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-2"></div>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
+					</div>
+					<div class="col-sm-2">
+						<input type="submit" name="add_cfop" value="Add CFOP" class="btn btn-primary">
+					</div>
+				</div>
+				<?php } else { ?>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">CFOP</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
+					</div>
+				</div>
+				<?php } ?>
 			</div>
 		</div>
-	</div>
-	<div class="well form-horizontal">
-		<div class="form-group">
-			<label class="col-sm-2 control-label" for="editUser">Netid</label>
-			<div class="col-sm-10">
-				<input name="user_name" type="text" class="form-control" value='<?php echo $selectedUser->GetUserName(); ?>'>
-			</div>
-		</div>
-		<div class="form-group">
-			<label class="col-sm-2 control-label" for="editUser">First</label>
-			<div class="col-sm-10">
-				<input name="first" type="text" class="form-control" value='<?php echo $selectedUser->GetFirst(); ?>'>
-			</div>
-		</div>
-		<div class="form-group">
-			<label class="col-sm-2 control-label" for="editUser">Last</label>
-			<div class="col-sm-10">
-				<input name="last" type="text" class="form-control" value='<?php echo $selectedUser->GetLast(); ?>'>
-			</div>
-		</div>
-		<div class="form-group">
-			<label class="col-sm-2 control-label" for="editUser">Mail</label>
-			<div class="col-sm-10">
-				<input name="email" type="email" class="form-control" value='<?php echo $selectedUser->GetEmail(); ?>'>
-			</div>
-		</div>
-		<div class="form-group">
-			<label class="col-sm-2 control-label" for="editUser">Depart.</label>
-			<div class="col-sm-10">
-				<select name="department" class="form-control" id="depart-select">
-					<?php
-					$departmentsList = $userDepartment->GetDepartmentList();
-					foreach ($departmentsList as $departmentInfo) {
-						echo "<option value=" . $departmentInfo['id'];
-						if ($departmentInfo['id'] == $selectedUser->GetDepartmentId()) {
-							echo " SELECTED";
-						}
-						echo " >" . $departmentInfo['department_name'] . "</option>";
-					}
-					?>
-				</select>
-			</div>
-		</div>
-		<?php if($selectedUser->GetUserId() > 0){ ?>
-		<div class="form-group">
-			<label class="col-sm-2 control-label" for="editUser">CFOP</label>
-			<div class="col-sm-10">
-				<select name="user_cfop_id" class="form-control">
-					<?php
-					$userCfopList = $selectedUser->ListCfops($selectedUser->GetUserId());
-					foreach ($userCfopList as $id => $cfopCodeInfo) {
-						echo "<option value=" . $cfopCodeInfo['id'];
-						if ($cfopCodeInfo['default_cfop']) {
-							echo " SELECTED";
-						}
-						echo ">" . UserCfop::formatCfop($cfopCodeInfo['cfop']) . "</option>";
-					}
-					?>
-				</select>
-			</div>
-		</div>
-		<div class="form-group">
-			<div class="col-sm-2"></div>
-			<div class="col-sm-8">
-				<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
-			</div>
-			<div class="col-sm-2">
-				<input type="submit" name="add_cfop" value="Add CFOP" class="btn btn-primary">
-			</div>
-		</div>
-		<?php } else { ?>
-		<div class="form-group">
-			<label class="col-sm-2 control-label">CFOP</label>
-			<div class="col-sm-10">
-				<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
-			</div>
-		</div>
-		<?php } ?>
-	</div>
-</div>
 		<div class="col-md-6">
 			<div class="well form-horizontal">
 				<div class="form-group">
-						<label class="col-sm-2 control-label" for="editUser">Rate</label>
-						<div class="col-sm-10">
-							<select name="rate" class="form-control">
-								<?php
-		
-								$listRates = $rate->GetRates();
-								foreach ($listRates as $id => $rate) {
-									echo "<option value=" . $rate['id'];
-									if ($rate['id'] == $selectedUser->GetRateId()) {
-										echo " SELECTED";
-									}
-									echo ">" . $rate['rate_name'] . "</option>";
+					<label class="col-sm-2 control-label" for="editUser">Rate</label>
+					<div class="col-sm-10">
+						<select name="rate" class="form-control">
+							<?php
+	
+							$listRates = $rate->GetRates();
+							foreach ($listRates as $id => $rate) {
+								echo "<option value=" . $rate['id'];
+								if ($rate['id'] == $selectedUser->GetRateId()) {
+									echo " SELECTED";
 								}
-								?>
-							</select>
-						</div>
+								echo ">" . $rate['rate_name'] . "</option>";
+							}
+							?>
+						</select>
 					</div>
+				</div>
 				<div class="form-group">
-						<label class="col-sm-2 control-label" for="editUser">Group</label>
-						<div class="col-sm-10">
-							<select name="group" class="form-control">
-								<?php
-								$listGroups = $group->GetGroupsList();
-								foreach ($listGroups as $id => $groupToSelect) {
-									echo "<option value=" . $groupToSelect['id'];
-									if ($selectedUser->GetGroupId() == $groupToSelect['id']) {
-										echo " SELECTED";
-									}
-									echo ">" . $groupToSelect['group_name'] . "</option>";
+					<label class="col-sm-2 control-label" for="editUser">Group</label>
+					<div class="col-sm-10">
+						<select name="group" class="form-control">
+							<?php
+							$listGroups = $group->GetGroupsList();
+							foreach ($listGroups as $id => $groupToSelect) {
+								echo "<option value=" . $groupToSelect['id'];
+								if ($selectedUser->GetGroupId() == $groupToSelect['id']) {
+									echo " SELECTED";
 								}
-								?>
-							</select>
-						</div>
+								echo ">" . $groupToSelect['group_name'] . "</option>";
+							}
+							?>
+						</select>
 					</div>
+				</div>
 				<div class="form-group">
-						<label class="col-sm-2 control-label" for="editUser">Role</label>
-						<div class="col-sm-10">
-							<select name="user_role_id" class="form-control">
-								<?php
-								$userRolesList = $selectedUser->GetUserRoles();
-								foreach ($userRolesList as $userRole) {
-									echo "<option value=" . $userRole['id'];
-									if ($selectedUser->GetUserRoleId() == $userRole['id']) {
-										echo " SELECTED";
-									}
-									echo ">" . $userRole['role_name'] . "</option>";
+					<label class="col-sm-2 control-label" for="editUser">Role</label>
+					<div class="col-sm-10">
+						<select name="user_role_id" class="form-control">
+							<?php
+							$userRolesList = $selectedUser->GetUserRoles();
+							foreach ($userRolesList as $userRole) {
+								echo "<option value=" . $userRole['id'];
+								if ($selectedUser->GetUserRoleId() == $userRole['id']) {
+									echo " SELECTED";
 								}
-								?>
-							</select>
-						</div>
+								echo ">" . $userRole['role_name'] . "</option>";
+							}
+							?>
+						</select>
 					</div>
+				</div>
 				<div class="form-group">
 					<label class="col-sm-2 control-label" for="editUser">Status</label>
 					<div class="col-sm-10">
@@ -268,24 +268,6 @@ if (isset($_POST['selected_user_id'])) {
 		</div>
 	</div>
 </form>
-
-<div class="row">
-	<div class="col-md-12">
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				<h4>User Directory</h4>
-			</div>
-			<div class="body">
-				<?php
-				$usersFullInfoList = $selectedUser->GetAllUsersFullInfo();
-				echo VisualizeData::ListSessionsTable($usersFullInfoList,
-					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Status'),
-					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'status'), 'usersTable',0);
-				?>
-			</div>
-		</div>
-	</div>
-</div>
 
 <script type="text/javascript">
 	$('#user-select').select2();
