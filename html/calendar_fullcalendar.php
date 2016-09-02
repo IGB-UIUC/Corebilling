@@ -162,6 +162,11 @@ $(document).ready(function () {
 					$('#modifyReservationModal #reservationDevice').text("<?php echo $device->GetFullName(); ?>");
 					$('#modifyReservationModal #reservationUsername').text("<?php echo $authenticate->getAuthenticatedUser()->GetUserName(); ?>");
 					$('#modifyReservationModal #reservationUserId').val("<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>");
+					// Enable all fields
+					$('#modifyReservationModal #reservationDescription').prop("readonly",false);
+					$('#modifyReservationModal #reservationTraining').prop("disabled",false);
+					$('#modifyReservationModal #reservationStartTime').prop( "readonly", false );
+					$('#modifyReservationModal #reservationEndTime').prop( "readonly", false );
 					$('#modifyReservationModal #deleteReservation').hide();
 					$('#modifyReservationModal #updateReservation').show();
 					<?php

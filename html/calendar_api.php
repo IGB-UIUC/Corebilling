@@ -2,9 +2,6 @@
 set_time_limit(20);
 include('includes/initializer.php');
 if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key'])) {
-    //Load pages index
-    $page = new Pages($sqlDataBase);
-
     //Load User information for user_id
     $user = new User ($sqlDataBase);
     $user->LoadUser($_POST['user_id']);
@@ -21,11 +18,11 @@ if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key']))
         //For debugging purposes
         $POST_ARRAY = print_r($_POST, true);
         
-        if ($user->isAdmin()
-            || $user->GetUserId() == $reservation->getUserId()
-            || ($_POST['action'] == 'update_event_info' && $_POST['user_id']==$user->GetUserId())
-            || ($_POST['action'] == 'check_conflicts' && $_POST['res_user_id']==$user->GetUserId())
-            || ($_POST['action']=='get_events' ))
+        if ($user->isAdmin() // Admins can do anything
+            || $user->GetUserId() == $reservation->getUserId() // Users can edit their own res
+            || ($_POST['action'] == 'update_event_info' && $_POST['user_id']==$user->GetUserId() && $reservation->getReservationId()==0) // Users can create their own res
+            || ($_POST['action'] == 'check_conflicts' && $_POST['res_user_id']==$user->GetUserId()) // Users can check conflicts
+            || ($_POST['action']=='get_events' )) // Users can display events
         {
             switch ($_POST['action']) {
                 case 'get_events':
