@@ -131,6 +131,9 @@ if ($access == AccessControl::PERM_ADMIN) {
 			<div class="col-sm-10">
 				<select name="department" class="form-control" id="depart-select">
 					<?php
+					if($selectedUser->GetDepartmentId()==0){
+						echo '<option value="0"> </option>';
+					}
 					$departmentsList = $userDepartment->GetDepartmentList();
 					foreach ($departmentsList as $departmentInfo) {
 						echo "<option value=" . $departmentInfo['id'];
