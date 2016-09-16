@@ -42,8 +42,9 @@ if (isset($_POST['update_session'])) {
 	$session->SetUserID($_POST['user_id']);
 	$session->SetDeviceID($_POST['device_id']);
 	$session->SetRate($_POST['rate'] / 60);
-	$session->SetElapsed($_POST['elapsed'] * 60);
-	$session->SetStart(date('Y-m-d H:i:s', strtotime($_POST['datetime'])));
+	$session->SetElapsed( (strtotime($_POST['endtime'])-strtotime($_POST['starttime']))/60 );
+	$session->SetStart(date('Y-m-d H:i:s', strtotime($_POST['starttime'])));
+	$session->SetStop(date('Y-m-d H:i:s', strtotime($_POST['endtime'])));
 	$session->UpdateSession();
 	$sessionIdSelected = $_POST['edit_session_id'];
 }
@@ -267,8 +268,12 @@ if ($sessionIdSelected > 0) {
 				$monthlyUsage[$rowId]['user_name'] = $userNameString;
 
 				//Start Time Edit String
-				$startTimeString = "<input type=\"datetime-local\" name=\"datetime\" value=\"" . date('Y-m-d\TH:i:s', strtotime($monthSession['start'])) . "\" class=\"form-control input-xs\">";
+				$startTimeString = "<input type=\"datetime-local\" name=\"starttime\" value=\"" . date('Y-m-d\TH:i:s', strtotime($monthSession['start'])) . "\" class=\"form-control input-xs\">";
 				$monthlyUsage[$rowId]['start'] = $startTimeString;
+				
+				//End Time Edit String
+				$endTimeString = "<input type=\"datetime-local\" name=\"endtime\" value=\"" . date('Y-m-d\TH:i:s', strtotime($monthSession['stop'])) . "\" class=\"form-control input-xs\">";
+				$monthlyUsage[$rowId]['stop'] = $endTimeString;
 
 				//CFOP options for edit session
 				$userCfopList = $userCfop->ListCfops($monthSession['user_id']);
@@ -296,12 +301,16 @@ if ($sessionIdSelected > 0) {
 				$monthlyUsage[$rowId]['full_device_name'] = $deviceString;
 
 				//Elapsed time edit string
+/*
 				$elapsedTimeString = "<input type=\"text\" name=\"elapsed\" value=\"" . round(($monthSession['elapsed'] / 60), 2) . "\" class=\"form-control input-xs\">";
 				$monthlyUsage[$rowId]['elapsed'] = $elapsedTimeString;
+*/
 
 				//Min use time edit string
+/*
 				$minUseTimeString = "<input type=\"text\" name=\"min_use_time\" value=\"" . round(($monthSession['min_use_time'] / 60), 2) . "\" class=\"form-control input-xs\">";
 				$monthlyUsage[$rowId]['min_use_time'] = $minUseTimeString;
+*/
 
 				//Rate String
 				$rateString = "<input type=\"text\" name=\"rate\" value=\"" . round(($rate * 60), 2) . "\" class=\"form-control input-xs\">";
@@ -324,7 +333,7 @@ if ($sessionIdSelected > 0) {
 			<div class="row">
 				<?php
 				echo VisualizeData::ListSessionsTable($monthlyUsage,
-					array('id', 'NetId', 'Name', 'Start','end', 'CFOP', 'Inst.', 'Hrs', ' Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Opt.'),
+					array('id', 'NetId', 'Name', 'Start','End', 'CFOP', 'Inst.', 'Hrs', ' Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Opt.'),
 					array('id', 'user_name', 'full_name', 'start','stop', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'options'), "Rate".$rateTypeSelected, $rowSelected, true, false);
 				?>
 			</div>

@@ -47,7 +47,7 @@ class Bills
     public function GetMonthCharges($year, $month, $rateType)
     {
         $pdoParameters = array();
-        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.last, ', ', u.first) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id ";
+        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.first,' ',u.last) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id ";
         $queryTablesClauseMonthUsage = " FROM device_rate dr, device d, users u LEFT JOIN groups g ON (g.id=u.group_id), rates r, session s LEFT JOIN user_cfop uc ON (uc.id=s.cfop_id AND uc.default_cfop=1)";
         $queryWhereClauseMonthUsage = " WHERE d.id = s.device_id AND dr.device_id = d.id AND dr.rate_id = u.rate_id AND u.id=s.user_id AND r.id=u.rate_id AND MONTH(start)=:month AND YEAR(start)=:year AND dr.rate_type_id=:rate_type_id";
         $pdoParameters[':year'] = $year;
@@ -90,7 +90,7 @@ class Bills
     
     public function GetMonthsCharges($startyear, $startmonth, $endyear, $endmonth, $rateType){
 	    $pdoParameters = array();
-        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.last, ', ', u.first) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id ";
+        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.first,' ',u.last) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id ";
         $queryTablesClauseMonthUsage = " FROM device_rate dr, device d, users u LEFT JOIN groups g ON (g.id=u.group_id), rates r, session s LEFT JOIN user_cfop uc ON (uc.id=s.cfop_id AND uc.default_cfop=1)";
         $queryWhereClauseMonthUsage = " WHERE d.id = s.device_id AND dr.device_id = d.id AND dr.rate_id = u.rate_id AND u.id=s.user_id AND r.id=u.rate_id AND ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear) AND dr.rate_type_id=:rate_type_id";
         $pdoParameters[':startyear'] = $startyear;

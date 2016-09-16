@@ -57,7 +57,7 @@ if ($selectedUser->GetUserId() == $authenticate->getAuthenticatedUser()->GetUser
 if ($access == AccessControl::PERM_ADMIN) {
 	// Submited New User
 	if (isset($_POST['Create'])) {
-		$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], $_POST['group']);
+		$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'],isset($_POST['safetyquiz']));
 		$selectedUser->AddCfop($_POST['cfop_to_add']);
 	}
 
