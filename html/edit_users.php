@@ -149,8 +149,8 @@ if ($access == AccessControl::PERM_ADMIN) {
 		<?php if($selectedUser->GetUserId() > 0){ ?>
 		<div class="form-group">
 			<label class="col-sm-2 control-label" for="editUser">CFOP</label>
-			<div class="col-sm-10">
-				<select name="user_cfop_id" class="form-control">
+			<div class="col-sm-7">
+				<select name="user_cfop_id" id="user-cfop" class="form-control">
 					<?php
 					$userCfopList = $selectedUser->ListCfops($selectedUser->GetUserId());
 					foreach ($userCfopList as $id => $cfopCodeInfo) {
@@ -162,15 +162,19 @@ if ($access == AccessControl::PERM_ADMIN) {
 					}
 					?>
 				</select>
+				<textarea id="cfop-copy-area" class="hidden form-control"></textarea>
+			</div>
+			<div class="col-sm-3">
+				<button class="btn btn-default btn-block" id="copy-button"><span class="glyphicon glyphicon-copy"> </span> Copy CFOP</button>
 			</div>
 		</div>
 		<div class="form-group">
 			<div class="col-sm-2"></div>
-			<div class="col-sm-8">
+			<div class="col-sm-7">
 				<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
 			</div>
-			<div class="col-sm-2">
-				<input type="submit" name="add_cfop" value="Add CFOP" class="btn btn-primary">
+			<div class="col-sm-3">
+				<input type="submit" name="add_cfop" value="Add CFOP" class="btn btn-primary btn-block">
 			</div>
 		</div>
 		<?php } else { ?>
@@ -315,6 +319,30 @@ if ($access == AccessControl::PERM_ADMIN) {
 <script type="text/javascript">
 	$('#user-select').select2();
 	$('#depart-select').select2();
+	$('#copy-button').click(function(e){
+		var cfop = $('#user-cfop option:selected').text();
+		var $textarea = $('#cfop-copy-area');
+		$textarea.val(cfop);
+		var showTextArea = true;
+		if(document.queryCommandSupported('copy')){
+			showTextArea = false;
+			$textarea.removeClass('hidden');
+			$textarea[0].select();
+			
+			try {
+				var success = document.execCommand('copy');
+			} catch(err) {
+				showTextArea = true;
+			}
+			
+ 			$textarea.addClass('hidden');
+			window.getSelection().removeAllRanges();
+		}
+		if(showTextArea){
+			$textarea.removeClass('hidden');
+		}
+		e.preventDefault();
+	});
 </script>
 <?php
 require_once 'includes/footer.inc.php';
