@@ -16,6 +16,8 @@
 @define ('PAGE_TITLE', 'Instrument Tracking');
 @define ('DEFAULT_PAGE',"Latest News");
 
+// Authentication timeout
+@define ('LOGIN_TIMEOUT', 8*60*60);
 
 //User Defaults
 @define ('DEFAULT_USER_ROLE_ID',3); //No Role

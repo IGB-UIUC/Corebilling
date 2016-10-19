@@ -105,7 +105,7 @@ class Authenticate {
     {
         if(isset($_SESSION['coreapp_user_id']))
         {
-            if(time() - $_SESSION['coreapp_created'] < 7200)
+            if(time() - $_SESSION['coreapp_created'] < LOGIN_TIMEOUT)
             {
                 $this->authenticatedUser = new User ( $this->sqlDataBase );
                 $this->authenticatedUser->LoadUser($_SESSION['coreapp_user_id']);
