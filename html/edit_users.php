@@ -111,13 +111,13 @@ if ($access == AccessControl::PERM_ADMIN) {
 		<div class="form-group">
 			<label class="col-sm-2 control-label" for="editUser">First</label>
 			<div class="col-sm-10">
-				<input name="first" type="text" class="form-control" value='<?php echo $selectedUser->GetFirst(); ?>'>
+				<input name="first" type="text" class="form-control" value="<?php echo $selectedUser->GetFirst(); ?>">
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="col-sm-2 control-label" for="editUser">Last</label>
 			<div class="col-sm-10">
-				<input name="last" type="text" class="form-control" value='<?php echo $selectedUser->GetLast(); ?>'>
+				<input name="last" type="text" class="form-control" value="<?php echo $selectedUser->GetLast(); ?>">
 			</div>
 		</div>
 		<div class="form-group">
