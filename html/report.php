@@ -11,7 +11,7 @@ if(isset($_POST['create_cal_report'])){
 	$end_date = date('Ymd',strtotime('-1 second',strtotime('+1 month',strtotime($start_date))));
 	
 	$res = new Reservation($sqlDataBase);
-	$events = $res->EventsRange($start_date,$end_date,$_POST['user_id'],$_POST['device_id'],$_POST['training']);
+	$events = $res->EventsRangeForSpreadsheet($start_date,$end_date,$_POST['user_id'],$_POST['device_id'],$_POST['training']);
 	$filename = "calendar-".$month."-".$year.".".$type;
 }
 else {

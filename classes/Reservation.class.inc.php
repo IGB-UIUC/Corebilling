@@ -206,7 +206,7 @@ class Reservation {
 	 */
 	public function EventsRange($start, $end, $userId, $deviceId, $training) {
 		$queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training
-                            FROM reservation_info e, device d, users u";
+                            FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id";
 		if ($training) {
 			$trainingTest = " and e.training=1";
 		} else {
@@ -216,9 +216,7 @@ class Reservation {
 			$queryEvents.=" WHERE
                             UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
                             AND UNIX_TIMESTAMP(e.stop)<= UNIX_TIMESTAMP(:stop)
-                            AND u.id=e.user_id
-                            AND u.id=:user_id
-                            AND d.id=e.device_id".$trainingTest."
+                            AND u.id=:user_id".$trainingTest."
                             ORDER BY e.device_id, e.start";
 			$queryParameters[':user_id'] =$userId;
 		} else if ($deviceId==-1) { // Missed Reservations
@@ -226,24 +224,18 @@ class Reservation {
 	     					e.id not in (select r.id from reservation_info r inner join `session` s on s.start <= r.stop and s.stop >= r.start where UNIX_TIMESTAMP(r.start)>=UNIX_TIMESTAMP(:start) and UNIX_TIMESTAMP(r.start)<=UNIX_TIMESTAMP(:stop) and r.device_id=s.device_id and r.user_id=s.user_id)
 	     					and UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
 	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)
-	     					and e.stop<NOW()
-	     					and u.id=e.user_id
-	     					and d.id=e.device_id".$trainingTest."
+	     					and e.stop<NOW()".$trainingTest."
 	     					and d.status_id!=3
 	     					order by e.start";
 			} else if ($deviceId==-2) { // All devices
 				$queryEvents.=" WHERE
 	     					UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
-	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)
-	     					and u.id=e.user_id
-	     					and d.id=e.device_id".$trainingTest."
+	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
 	     					order by e.start";
 			} else {
 			$queryEvents.=" WHERE
                             UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
                             AND UNIX_TIMESTAMP(e.start)<= UNIX_TIMESTAMP(:stop)
-                            AND u.id=e.user_id
-                            AND d.id=e.device_id
                             AND e.device_id=:device_id".$trainingTest."
                             ORDER BY e.start";
 			$queryParameters[':device_id']=$deviceId;
@@ -255,6 +247,57 @@ class Reservation {
 		$events = $this->sqlDatabase->prepare($queryEvents);
 		$events->execute($queryParameters);
 		$eventsArr = $events->fetchAll(PDO::FETCH_ASSOC);
+
+		return $eventsArr;
+	}
+	
+	public function EventsRangeForSpreadsheet($start,$end,$userId,$deviceId,$training){
+		$queryEvents = "SELECT d.full_device_name as Device, u.user_name as Username, concat(u.first,concat(' ',u.last)) as Name, u.email as Email, e.description as Description, e.start as 'Start Time', e.stop as 'Stop Time', e.training as Training, c.cfop as CFOP FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id LEFT JOIN `session` s on s.start <= e.stop and s.stop >= e.start and e.user_id=s.user_id LEFT JOIN user_cfop c ON c.id=s.cfop_id";
+		
+		if ($training) {
+			$trainingTest = " and e.training=1";
+		} else {
+			$trainingTest = "";
+		}
+		if ($deviceId==0) { // My reservations
+			$queryEvents.=" WHERE
+                            UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
+                            AND UNIX_TIMESTAMP(e.stop)<= UNIX_TIMESTAMP(:stop)
+                            AND u.id=:user_id".$trainingTest."
+                            ORDER BY e.device_id, e.start";
+			$queryParameters[':user_id'] =$userId;
+		} else if ($deviceId==-1) { // Missed Reservations
+				$queryEvents.=" WHERE
+	     					e.id not in (select r.id from reservation_info r inner join `session` s on s.start <= r.stop and s.stop >= r.start where UNIX_TIMESTAMP(r.start)>=UNIX_TIMESTAMP(:start) and UNIX_TIMESTAMP(r.start)<=UNIX_TIMESTAMP(:stop) and r.device_id=s.device_id and r.user_id=s.user_id)
+	     					and UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
+	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)
+	     					and e.stop<NOW()".$trainingTest."
+	     					and d.status_id!=3
+	     					order by e.start";
+			} else if ($deviceId==-2) { // All devices
+				$queryEvents.=" WHERE
+	     					UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
+	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
+	     					order by e.start";
+			} else {
+			$queryEvents.=" WHERE
+                            UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
+                            AND UNIX_TIMESTAMP(e.start)<= UNIX_TIMESTAMP(:stop)
+                            AND e.device_id=:device_id".$trainingTest."
+                            ORDER BY e.start";
+			$queryParameters[':device_id']=$deviceId;
+		}
+
+		$queryParameters[':start']=$start;
+		$queryParameters[':stop']=$end;
+
+		$events = $this->sqlDatabase->prepare($queryEvents);
+		$events->execute($queryParameters);
+		$eventsArr = $events->fetchAll(PDO::FETCH_ASSOC);
+
+		for($i=0; $i<count($eventsArr); $i++){
+			$eventsArr[$i]['CFOP'] = UserCfop::formatCfop($eventsArr[$i]['CFOP']);
+		}
 
 		return $eventsArr;
 	}
