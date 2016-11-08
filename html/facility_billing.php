@@ -232,6 +232,9 @@ if ($sessionIdSelected > 0) {
 		//Go through each month session
 		foreach ($monthlyUsage as $rowId => $monthSession) {
 			$rate = $monthSession['rate'];
+			
+			//date string
+			$monthlyUsage[$rowId]['Date'] = date('m/d/y', strtotime($monthlyUsage[$rowId]['start']));
 
 			//change rate to hours
 			$monthlyUsage[$rowId]['rate'] = round($monthSession['rate'] * 60, 2);
@@ -332,9 +335,11 @@ if ($sessionIdSelected > 0) {
 		?>
 			<div class="row">
 				<?php
-				echo VisualizeData::ListSessionsTable($monthlyUsage,
-					array('id', 'NetId', 'Name', 'Start','End', 'CFOP', 'Inst.', 'Hrs', ' Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Opt.'),
-					array('id', 'user_name', 'full_name', 'start','stop', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'options'), "Rate".$rateTypeSelected, $rowSelected, true, false);
+				echo VisualizeData::ListSessionsTableHiddenCols($monthlyUsage,
+					array('id', 'NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Opt.'),
+					array('id', 'user_name', 'full_name', 'start','stop', 'Date', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'options'),
+					array('Date'),
+					array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group'), "Rate".$rateTypeSelected, $rowSelected, true, false);
 				?>
 			</div>
 
