@@ -120,12 +120,11 @@ $(document).ready(function () {
 		timezone: "local",
 		defaultView: initialView,
 		defaultDate: $.fullCalendar.moment(initialYear+'-'+initialMonth+'-'+initialDay),
-		eventRender: function (event, element) {
-/*
-			if(event.missed){
-				element.find('.fc-title').append(' <span class="glyphicon glyphicon-alert"></span>');
+		eventRender: function (event, element, view) {
+			if(view.name == 'agendaWeek' || view.name == 'agendaDay'){
+				console.log(event.description);
+				element.find('.fc-content').append('<div class="fc-description">'+event.description+'</div>');
 			}
-*/
 		},
 		loading: function (isLoading,view){
 			// Display loading gif

@@ -252,7 +252,7 @@ class Reservation {
 	}
 	
 	public function EventsRangeForSpreadsheet($start,$end,$userId,$deviceId,$training){
-		$queryEvents = "SELECT d.full_device_name as Device, u.user_name as Username, concat(u.first,concat(' ',u.last)) as Name, u.email as Email, e.description as Description, e.start as 'Start Time', e.stop as 'Stop Time', e.training as Training, c.cfop as CFOP FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id LEFT JOIN `session` s on s.start <= e.stop and s.stop >= e.start and e.user_id=s.user_id LEFT JOIN user_cfop c ON c.id=s.cfop_id";
+		$queryEvents = "SELECT d.full_device_name as Device, u.user_name as Username, concat(u.first,concat(' ',u.last)) as Name, u.email as Email, e.description as Description, e.start as 'Start Time', e.stop as 'Stop Time', e.description as 'Description', e.training as Training, c.cfop as CFOP FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id LEFT JOIN `session` s on s.start <= e.stop and s.stop >= e.start and e.user_id=s.user_id LEFT JOIN user_cfop c ON c.id=s.cfop_id";
 		
 		if ($training) {
 			$trainingTest = " and e.training=1";
