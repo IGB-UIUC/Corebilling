@@ -5,3 +5,6 @@ function searchCol(table,column,field){
 	table.column(column).search($filter.val());
 	table.draw();
 }
+
+$.fn.select2.defaults.set( "theme", "bootstrap" );
+$.fn.select2.defaults.set( "width", null );

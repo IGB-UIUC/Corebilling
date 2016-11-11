@@ -14,6 +14,7 @@ class Device
 	private $deviceToken;
 	private $unauthorizedUser;
     private $loggedUser;
+    private $ldap_group;
 
 	public function __construct(PDO $sqlDataBase)
 	{
@@ -82,6 +83,7 @@ class Device
             $this->loggedUser = $deviceInfoArr["loggeduser"];
             $this->unauthorizedUser = $deviceInfoArr["unauthorized"];
             $this->deviceId = $deviceInfoArr['id'];
+            $this->ldap_group = $deviceInfoArr['ldap_group'];
         }
 	}
 
@@ -91,9 +93,9 @@ class Device
      */
     public function UpdateDevice()
 	{
-		$queryUpdateDevice = "UPDATE device SET device_name=:device_name, location=:location,description=:description,full_device_name=:full_device_name, status_id=:status_id WHERE id=:id";
+		$queryUpdateDevice = "UPDATE device SET device_name=:device_name, location=:location,description=:description,full_device_name=:full_device_name, status_id=:status_id, ldap_group=:ldap_group WHERE id=:id";
         $updateDevicePrep = $this->sqlDataBase->prepare($queryUpdateDevice);
-        $updateDevicePrep->execute(array(":device_name"=>$this->shortName,":location"=>$this->location,":description"=>$this->description,":full_device_name"=>$this->full_name,":status_id"=>$this->status,":id"=>$this->deviceId));
+        $updateDevicePrep->execute(array(":device_name"=>$this->shortName,":location"=>$this->location,":description"=>$this->description,":full_device_name"=>$this->full_name,":status_id"=>$this->status,":id"=>$this->deviceId,":ldap_group"=>$this->ldap_group));
 	}
 
 	public function UpdateLastTick($username="")
@@ -228,6 +230,13 @@ class Device
 	public function getShortName()
 	{
 		return $this->shortName;
+	}
+
+	public function GetLDAPGroup(){
+		return $this->ldap_group;
+	}
+	public function SetLDAPGroup($ldap_group){
+		$this->ldap_group = $ldap_group;
 	}
 
 	public function SetFullName($name)

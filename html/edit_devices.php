@@ -133,6 +133,12 @@ if (isset($_POST['CreateNewDevice'])) {
 					</div>
 				</div>
 				<div class="form-group">
+					<label class="col-sm-3 control-label" for="ldap_group">LDAP Group:</label>
+					<div class="col-sm-9">
+						<input type="text" name="ldap_group" id="ldap_group" class="form-control" value="<?php echo $device->GetLDAPGroup(); ?>">
+					</div>
+				</div>
+				<div class="form-group">
 					<label class="col-sm-3 control-label" for="editDevice">Notes</label>
 					<div class="col-sm-9">
 						<textarea name="description" class="form-control"><?php echo $device->GetDescription();?></textarea>

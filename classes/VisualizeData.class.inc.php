@@ -162,8 +162,10 @@ class VisualizeData
         var Rate1;
             $(document).ready( function () {\n
             ".$tableNameId." = $('#".$tableNameId."').DataTable({
-                \"dom\": '".($filter?'f':'')."Brti',
+                \"dom\": '".($filter?'f':'')."Brtip',
                 \"paging\": false,
+                \"pageLength\": 50,
+                \"pagingType\": \"full_numbers\",
                 \"buttons\": {
                 	buttons: ['copy','csv','excel','pdf','print'],
                 	dom: {container:{className:'btn-group pull-right'}}
