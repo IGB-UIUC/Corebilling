@@ -43,8 +43,14 @@ if (isset($_POST['update_user'])) {
 		foreach($deviceList as $deviceInfo){
 			if(array_key_exists($deviceInfo['id'],$_POST['access'])){
 				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_ALLOW);
+				if(LDAPMAN_API_ENABLED){
+					$ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+				}
 			} else {
 				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_DISALLOW);
+				if(LDAPMAN_API_ENABLED){
+					$ldapman->removeGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+				}
 			}
 		}
 	}
