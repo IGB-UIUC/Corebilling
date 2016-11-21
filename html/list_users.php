@@ -33,6 +33,21 @@ $group = new Group($sqlDataBase);
 					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Status', ''),
 					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'status', 'edit'), 'usersTable',0);
 				?>
+				<script type="text/javascript">
+					// Sort by status, then name to show active users first
+					$(document).ready(function(){
+						usersTable.column(5).search('Active').draw();
+						$('<label>Show disabled users <input type="checkbox" id="filteractive" /> &nbsp;</label>').prependTo('#usersTable_filter');
+						$('#filteractive').on('change',function(e){
+							if(this.checked){
+								usersTable.column(5).search('').draw();
+							} else {
+								usersTable.column(5).search('Active').draw();
+							}
+						});
+						});
+					
+				</script>
 			</div>
 		</div>
 	</div>
