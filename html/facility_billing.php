@@ -190,7 +190,7 @@ if ($sessionIdSelected > 0) {
 		</div>
 		<div class="form-group">
 			<label style="font-weight:normal">Device:</label>
-			<select id="devicefilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,7,'devicefilter')">
+			<select id="devicefilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,8,'devicefilter')">
 				<option value="">All</option>
 				<?php
 					foreach($devicesList as $device){
@@ -203,7 +203,7 @@ if ($sessionIdSelected > 0) {
 		</div>
 		<div class="form-group">
 			<label style="font-weight:normal">Group:</label>
-			<select id="groupfilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,13,'groupfilter')">
+			<select id="groupfilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,14,'groupfilter')">
 				<option value="">All</option>
 				<?php
 					foreach($groupList as $group){
@@ -336,10 +336,10 @@ if ($sessionIdSelected > 0) {
 			<div class="row">
 				<?php
 				echo VisualizeData::ListSessionsTableHiddenCols($monthlyUsage,
-					array('id', 'NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Opt.'),
-					array('id', 'user_name', 'full_name', 'start','stop', 'Date', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'options'),
+					array('id', 'NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department', 'Opt.'),
+					array('id', 'user_name', 'full_name', 'start','stop', 'Date', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'department_name', 'options'),
 					array('Date'),
-					array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group'), "Rate".$rateTypeSelected, $rowSelected, true, false);
+					array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department'), "Rate".$rateTypeSelected, $rowSelected, true, false);
 				?>
 			</div>
 
