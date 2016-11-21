@@ -222,6 +222,20 @@ class User
 
 		return $allUserInfoArr;
 	}
+	
+	public function GetActiveUsers($startyear,$startmonth,$endyear,$endmonth)
+	{
+		$queryAllUserInfo = "SELECT u.first, u.last, u.id, u.user_name, u.email, u.department_id, u.group_id, g.group_name, d.department_name, CONCAT(u.last, ', ', u.first) as full_name
+								from users u left join groups g on g.id=u.group_id left join departments d on d.id=u.department_id left join `session` s on s.user_id=u.id
+								where u.`status_id`=5 and ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear) 
+								group by u.user_name";
+		$allUserInfo = $this->sqlDataBase->prepare($queryAllUserInfo);
+		$allUserInfo->execute(array(':startyear'=>$startyear, ':startmonth'=>$startmonth, ':endyear'=>$endyear, ':endmonth'=>$endmonth));
+		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
+
+		return $allUserInfoArr;
+	}
+	
 	/**Get all users with a certain status
 	 * @param $statusId
 	 * @return array
