@@ -9,6 +9,7 @@ if(!$login_user->isAdmin()){
 $ldapSearchResults = array();
 
 $selectedUser = new User($sqlDataBase);
+$userCfop = new UserCfop($sqlDataBase);
 $userDepartment = new Department($sqlDataBase);
 $rate = new Rate($sqlDataBase);
 $group = new Group($sqlDataBase);
@@ -16,6 +17,11 @@ $device = new Device($sqlDataBase);
 
 if (isset($_REQUEST['user_id'])) {
 	$selectedUser->LoadUser($_REQUEST['user_id']);
+}
+
+if(isset($_POST['cancel_user'])){
+	header('location:list_users.php');
+	exit();
 }
 
 //If Modified user form
@@ -33,9 +39,24 @@ if (isset($_POST['update_user'])) {
 		$selectedUser->SetGroupId($_POST['group']);
 		$selectedUser->SetCertified(isset($_POST['safetyquiz']));
 	}
-	if(isset($_POST['user_cfop_id']))
+	
+	$_POST['cfop_to_add']=UserCfop::formatCfop($_POST['cfop_to_add']);
+	if( $_POST['cfop_to_add']!="---" && $_POST['cfop_to_add']!=$userCfop->LoadDefaultCfopl($selectedUser->getUserId()) )
 	{
-		$selectedUser->SetDefaultCfop($_POST['user_cfop_id']);
+		// Look in old cfops to see if we're reusing an old one
+		$cfopList = $selectedUser->ListCfops();
+		$foundcfop = false;
+		for($i=0;$i<count($cfopList);$i++){
+			if(UserCfop::formatCfop($cfopList[$i]['cfop']) == $_POST['cfop_to_add']){
+				$foundcfop = true;
+				$selectedUser->SetDefaultCfop($cfopList[$i]['id']);
+				break;
+			}
+		}
+		// Otherwise, add new cfop
+		if(!$foundcfop){
+			$selectedUser->AddCfop($_POST['cfop_to_add']);
+		}
 	}
 
 	if(isset($_POST['access'])){
@@ -141,41 +162,12 @@ if (isset($_REQUEST['user_id'])) {
 										</select>
 									</div>
 								</div>
-								<?php if($selectedUser->GetUserId() > 0){ ?>
-								<div class="form-group">
-									<label class="col-sm-2 control-label" for="editUser">CFOP</label>
-									<div class="col-sm-10">
-										<select name="user_cfop_id" class="form-control">
-											<?php
-											$userCfopList = $selectedUser->ListCfops($selectedUser->GetUserId());
-											foreach ($userCfopList as $id => $cfopCodeInfo) {
-												echo "<option value=" . $cfopCodeInfo['id'];
-												if ($cfopCodeInfo['default_cfop']) {
-													echo " SELECTED";
-												}
-												echo ">" . UserCfop::formatCfop($cfopCodeInfo['cfop']) . "</option>";
-											}
-											?>
-										</select>
-									</div>
-								</div>
-								<div class="form-group">
-									<div class="col-sm-2"></div>
-									<div class="col-sm-8">
-										<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
-									</div>
-									<div class="col-sm-2">
-										<input type="submit" name="add_cfop" value="Add CFOP" class="btn btn-primary btn-block">
-									</div>
-								</div>
-								<?php } else { ?>
 								<div class="form-group">
 									<label class="col-sm-2 control-label">CFOP</label>
 									<div class="col-sm-10">
-										<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx">
+										<input type="text" class="form-control" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx" value="<?php if($selectedUser->GetUserId()>0){echo $selectedUser->GetDefaultCfop();}?>">
 									</div>
 								</div>
-								<?php } ?>
 							</div>
 						</div>
 						<div class="col-md-6">

@@ -289,7 +289,6 @@ class User
 
 	public function AddCfop($cfop)
 	{
-
 		$this->userCfop->CreateUserCfop($this->userId, $cfop, "");
 	}
 
@@ -297,6 +296,10 @@ class User
 	{
 
 		return $this->userCfop->ListCfops($this->userId);
+	}
+	public function GetDefaultCfop(){
+		$this->userCfop->LoadDefaultCfopl($this->userId);
+		return $this->userCfop->getCfop();
 	}
 
 	public function SetDefaultCfop($defaultCfopId)
