@@ -108,7 +108,7 @@ if (isset($_REQUEST['user_id'])) {
 }
 ?>
 
-<h3>Edit User</h3>
+<h3><?php echo $selectedUser->GetUserId()>0 ? 'Edit':'Add';?> User</h3>
 <form action="edit_users.php" method=POST>
 	<div class="row">
 		<div class="col-sm-12">
