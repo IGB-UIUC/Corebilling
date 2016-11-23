@@ -123,26 +123,26 @@ if (isset($_REQUEST['user_id'])) {
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Netid</label>
 									<div class="col-sm-10">
-										<input name="user_name" type="text" class="form-control" value='<?php echo $selectedUser->GetUserName(); ?>'>
+										<input name="user_name" id="user_name" type="text" class="form-control" value='<?php echo $selectedUser->GetUserName(); ?>'>
 										<input type="hidden" name="user_id" value="<?php echo $_REQUEST['user_id'];?>"/>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">First</label>
 									<div class="col-sm-10">
-										<input name="first" type="text" class="form-control" value='<?php echo $selectedUser->GetFirst(); ?>'>
+										<input name="first" id="first" type="text" class="form-control" value='<?php echo $selectedUser->GetFirst(); ?>'>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Last</label>
 									<div class="col-sm-10">
-										<input name="last" type="text" class="form-control" value='<?php echo $selectedUser->GetLast(); ?>'>
+										<input name="last" id="last" type="text" class="form-control" value='<?php echo $selectedUser->GetLast(); ?>'>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Mail</label>
 									<div class="col-sm-10">
-										<input name="email" type="email" class="form-control" value='<?php echo $selectedUser->GetEmail(); ?>'>
+										<input name="email" id="email" type="email" class="form-control" value='<?php echo $selectedUser->GetEmail(); ?>'>
 									</div>
 								</div>
 								<div class="form-group">
@@ -310,6 +310,26 @@ if (isset($_REQUEST['user_id'])) {
 <script type="text/javascript">
 	$('#user-select').select2();
 	$('#depart-select').select2();
+	
+	$('#user_name').on('input',function(){
+		var $this = $(this);
+		$.ajax('ldap_user_info.php',{
+			data: {'uid':$this.val()},
+			method: 'post',
+			success: function(data){
+				if(data!=null){
+					$('#first').val(data.givenName);
+					$('#last').val(data.sn);
+					$('#email').val(data.email);
+				} else {
+					$('#first').val("");
+					$('#last').val("");
+					$('#email').val("");
+				}
+			}
+		});
+	});
+	
 </script>
 <?php
 require_once 'includes/footer.inc.php';

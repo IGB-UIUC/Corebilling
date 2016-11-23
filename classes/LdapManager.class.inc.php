@@ -35,10 +35,23 @@
 			}
 		}
 		
+		function getUser($uid){
+			$data = array(
+				'task'=>'user',
+				'uid'=>$uid
+			);
+			$result = self::queryPOST($data);
+			if($result->code == 200){
+				return $result->user;
+			} else {
+				return null;
+			}
+		}
+		
 		function getGroupMembers($gid){
 			$data = array(
 				'task'=>'group_members',
-				'gid'=>'cnrgwiki'	
+				'gid'=>$gid	
 			);
 			$result = self::queryPOST($data);
 			if($result->code == 200){
