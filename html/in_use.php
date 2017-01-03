@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Devices In Use'));
-if($access == AccessControl::PERM_DISALLOW){
+if(!$login_user->isAdmin()){
 	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
 	require_once 'includes/footer.inc.php';
 	exit;

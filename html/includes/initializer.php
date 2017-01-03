@@ -8,14 +8,14 @@ include('includes/mysql_connect.php');
 
 //Sets up ldap connection
 $authen = new LdapAuth ( LDAP_HOST, LDAP_PEOPLE_DN, LDAP_GROUP_DN,LDAP_PORT);
+if(LDAPMAN_API_ENABLED){
+	$ldapman = new LdapManager(LDAPMAN_API_URL, LDAPMAN_API_USERNAME, LDAPMAN_API_PASSWORD);
+}
 
 //Authenticates to website database
 $authenticate = new Authenticate($sqlDataBase, $authen);
 
 //Loads access control for website which controls device and web page access
 $accessControl = new AccessControl($sqlDataBase);
-
-$pages = new Pages($sqlDataBase);
-$pages->SetDefaultPage(DEFAULT_PAGE);
 
 ?>

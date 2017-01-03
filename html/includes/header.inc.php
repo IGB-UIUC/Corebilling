@@ -16,6 +16,7 @@
 		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/b-1.2.1/b-colvis-1.2.1/b-html5-1.2.1/b-print-1.2.1/r-2.1.0/se-1.2.0/datatables.min.css"/>
 
 		<link rel="stylesheet" href="includes/select2/css/select2.css" type="text/css" />
+		<link rel="stylesheet" href="includes/select2/css/select2-bootstrap.css" type="text/css" />
 <!-- 		<link href="css/dataTables.tableTools.min.css" rel='stylesheet' /> -->
 		<link href="css/datepicker.css" rel='stylesheet' />
 		<link href="css/jquery.timepicker.css" rel="stylesheet" />
@@ -43,7 +44,7 @@
 		<script src='js/main.inc.js'></script>
 		
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-		<title>IGB Instrument Usage Page</title>
+		<title>IGB Core Facilities Billing</title>
 	</head>
 	<body>
 	
@@ -69,4 +70,4 @@
 		
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-10 col-md-push-2">
+				<div class="col-sm-10 col-sm-push-2">

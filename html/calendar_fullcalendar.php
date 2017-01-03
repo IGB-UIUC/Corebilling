@@ -1,12 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
 $device = new Device($sqlDataBase);
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Calendar'));
-if($access == AccessControl::PERM_DISALLOW){
-	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
-	require_once 'includes/footer.inc.php';
-	exit;
-}
 
 if (isset ($_POST ['deviceSelected'])) {
 	if($_POST['deviceSelected']<0){
@@ -49,24 +43,24 @@ if (isset ($_POST ['deviceSelected'])) {
 	<form action="calendar_fullcalendar.php" method="POST" class="form-inline" name="calform">
 		<div class="form-group">
 			<select name="deviceSelected" class="form-control" onChange='document.calform.submit();'>
-				<?php if($access==AccessControl::PERM_ADMIN){?>
-				<option value="-1" <?php if($device->GetDeviceId()==-1) echo 'selected';?>>Missed Reservations</option>
-				<option value="-2" <?php if($device->GetDeviceId()==-2) echo 'selected';?>>All Devices</option>
+				<?php if($login_user->isAdmin()){ ?>
+				<option value="-1" <?php if($device->GetDeviceId()==-1) echo 'selected'; ?>>Missed Reservations</option>
+				<option value="-2" <?php if($device->GetDeviceId()==-2) echo 'selected'; ?>>All Devices</option>
 				<?php } ?>
-				<option value=0 <?php if(!isset($_POST['deviceSelected']) || $_POST['deviceSelected']==0) echo 'selected';?>>My Reservations</option>
+				<option value=0 <?php if(!isset($_POST['deviceSelected']) || $_POST['deviceSelected']==0) echo 'selected'; ?>>My Reservations</option>
 				<?php
-					if($authenticate->getAuthenticatedUser()->GetStatusId() != 7){
-						$deviceList = $device->GetDevicesList();
-						foreach ($deviceList as $id => $availDevices) {
-							if ($accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_DEVICE, $availDevices['id']) && ($availDevices['status_id']==1 || $availDevices['status_id']==3)) {
-								echo "<option value=" . $availDevices ['id'];
-								if ($availDevices['id'] == $device->GetDeviceId()) {
-									echo " SELECTED";
-								}
-								echo ">" . $availDevices ['full_device_name'] . "</option>";
-							}
+				$deviceList = $device->GetDevicesList();
+				foreach ($deviceList as $id => $availDevices) {
+					
+					// For now, let anyone schedule any device
+					if (/*$accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_DEVICE, $availDevices['id']) && */($availDevices['status_id']==1 || $availDevices['status_id']==3)) {
+						echo "<option value=" . $availDevices ['id'];
+						if ($availDevices['id'] == $device->GetDeviceId()) {
+							echo " SELECTED";
 						}
+						echo ">" . $availDevices ['full_device_name'] . "</option>";
 					}
+				}
 				?>
 			</select>
 		</div>
@@ -74,7 +68,7 @@ if (isset ($_POST ['deviceSelected'])) {
 		<input type="hidden" name="month" id="filtermonth"/>
 		<input type="hidden" name="year" id="filteryear"/>
 		<input type="hidden" name="view" id="filterview"/>
-		<?php if ($access == AccessControl::PERM_ADMIN) { ?>
+		<?php if ($login_user->isAdmin()) { ?>
 		<div class="checkbox">
 			<label><input type="checkbox" name="filterTraining" onChange='document.calform.submit();' <?php if(isset($_POST['filterTraining'])){echo 'checked';} ?>> Only Show Training</label>
 		</div>
@@ -177,7 +171,7 @@ $(document).ready(function () {
 					$('#modifyReservationModal #deleteReservation').hide();
 					$('#modifyReservationModal #updateReservation').show();
 					<?php
-					if($access == AccessControl::PERM_ADMIN)
+					if($login_user->isAdmin())
 					{
 					?>
 					$('#modifyReservationModal #trainingFormGroup').show();
@@ -215,7 +209,7 @@ $(document).ready(function () {
 			$('#modifyReservationModal #reservationUsername').text(calEvent.username);
 			$('#modifyReservationModal #reservationUserId').val(calEvent.userid);
 			<?php
-			if($access == AccessControl::PERM_ADMIN)
+			if($login_user->isAdmin())
 			{
 			?>
 				$('#modifyReservationModal #trainingFormGroup').show();
@@ -232,7 +226,7 @@ $(document).ready(function () {
 
 			?>
 			// Can't update or delete events in the past, or that don't belong to us
-			if(calEvent.end.format('X') < new Date().getTime()/1000<?php if($access == AccessControl::PERM_ALLOW){ echo ' || calEvent.userid!='.$authenticate->getAuthenticatedUser()->GetUserId(); } ?>){
+			if(calEvent.end.format('X') < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>){
 				$('#modifyReservationModal #reservationDescription').prop("readonly",true);
 				$('#modifyReservationModal #reservationTraining').prop("disabled",true);
 				$('#modifyReservationModal #reservationStartTime').prop( "readonly", true );
@@ -579,6 +573,5 @@ $(document).ready(function () {
 <script type="text/javascript">
 	$('#reservationStartTime, #reservationEndTime').timepicker({'step':15,'disableTextInput':true});
 </script>
-
 <?php
-require_once 'includes/footer.inc.php';
+	require_once 'includes/footer.inc.php';

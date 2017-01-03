@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('Edit Devices'));
-if($access != AccessControl::PERM_ADMIN){
+if(!$login_user->isAdmin()){
 	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
 	require_once 'includes/footer.inc.php';
 	exit;
@@ -131,6 +130,12 @@ if (isset($_POST['CreateNewDevice'])) {
 					<label class="col-sm-3 control-label" for="editDevice">Location:</label>
 					<div class="col-sm-9">
 						<input type="text" name="location" class="form-control" value="<?php echo $device->GetLocation(); ?>">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="ldap_group">LDAP Group:</label>
+					<div class="col-sm-9">
+						<input type="text" name="ldap_group" id="ldap_group" class="form-control" value="<?php echo $device->GetLDAPGroup(); ?>">
 					</div>
 				</div>
 				<div class="form-group">

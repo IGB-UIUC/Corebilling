@@ -45,9 +45,9 @@ class UserCfop{
         $insertUserCfopl = "INSERT INTO user_cfop (user_id,cfop,description,active,default_cfop,created)VALUES(:user_id,:cfop,:description,:active,:default_cfop,NOW())";
         $userCfoplInfo = $this->sqlDataBase->prepare($insertUserCfopl);
         $userCfoplInfo->execute(array(':user_id'=>$this->userId,':cfop'=>$this->cfop,':description'=>$this->description,':active'=>$this->active,':default_cfop'=>UserCfop::DEFAULT_CFOP));
-        $errorArr = $userCfoplInfo->errorInfo();
-        echo $errorArr[2];
         $this->userCfopId =$this->sqlDataBase->lastInsertId();
+        $this->LoadUserCfop($this->userCfopId);
+        $this->SetDefaultCfop();
     }
 
     /**Load User CFOP from cfop id
@@ -96,6 +96,7 @@ class UserCfop{
         if($defaultCfop->rowCount() > 0)
         {
             $userCfopId = $defaultCfopArr['id'];
+            $this->LoadUserCfop($userCfopId);
             return $userCfopId;
         }
         else{

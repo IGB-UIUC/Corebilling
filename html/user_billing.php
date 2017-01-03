@@ -1,7 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
-$access = $accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_PAGE, $pages->GetPageId('User Billing'));
-if($access == AccessControl::PERM_DISALLOW){
+if(!$login_user->isAdmin()){
 	echo html::error_message("You do not have permission to view this page.","403 Forbidden");
 	require_once 'includes/footer.inc.php';
 	exit;
@@ -13,16 +12,12 @@ $userToBill = new User($sqlDataBase);
 $bills = new Bills($sqlDataBase);
 $userCfop = new UserCfop($sqlDataBase);
 
-switch ($access) {
-	case AccessControl::PERM_ADMIN:
-		$selectableUsersList = $userToBill->GetAllUsers();
-		break;
-	case AccessControl::PERM_SUPERVISOR:
-		$selectableUsersList = $userToBill->GetGroupUsers($authenticate->getAuthenticatedUser()->GetGroupId());
-		break;
-	case AccessControl::PERM_ALLOW:
-		$selectableUsersList = array();
-		break;
+if($login_user->isAdmin()){
+	$selectableUsersList = $userToBill->GetAllUsers();
+} elseif($login_user->isSupervisor()){
+	$selectableUsersList = $userToBill->GetGroupUsers($authenticate->getAuthenticatedUser()->GetGroupId());
+} else {
+	$selectableUsersList = array();
 }
 
 if (isset($_POST['monthSelected'])) {
@@ -44,14 +39,14 @@ if (isset($_POST['selectedUser'])) {
 
 <div class="panel panel-info">
 	<div class="panel-body">
-		<p>Your instrument usage billing is reported bellow, billing is charged on a monthly cycle</p>
+		<p>Your instrument usage bill is reported below. Billing is charged on a monthly cycle</p>
 	
 		<p>Please contact us to report any inconsistencies you find.</p>
 	</div>
 </div>
-<form action="user_billing.php" method=POST class="form-inline well">
+<form action="user_billing.php" method="POST" class="form-inline well">
 	<div class="form-group">
-		<select name="selectedUser" class="form-control">
+		<select name="selectedUser" class="form-control" id="selectUser">
 			<?php
 			if (empty($selectableUsersList)) {
 				echo "<option value=" . $userToBill->GetUserId() . ">" . $userToBill->GetUserName() . "</option>";
@@ -68,7 +63,7 @@ if (isset($_POST['selectedUser'])) {
 		</select>
 	</div>
 	<div class="form-group">
-		<select name="monthSelected" class="form-control">
+		<select name="monthSelected" class="form-control" id="selectMonth">
 			<?php
 			$availableBillingMonths = $bills->GetAvailableBillingMonths();
 			foreach ($availableBillingMonths as $id => $charge) {
@@ -150,6 +145,10 @@ foreach ($rateTypesList as $rateTypeId => $rateTypeName) { ?>
 		</table>
 	</div>
 </div>
+<script type="text/javascript">
+	$('#selectUser').select2();
+	$('#selectMonth').select2();
+</script>
 <?php
 }
 require_once 'includes/footer.inc.php';
