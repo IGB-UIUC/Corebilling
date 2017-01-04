@@ -151,7 +151,7 @@ class User
 							certified=:certified
 							WHERE id=:user_id";
 		$updateUserPrep = $this->sqlDataBase->prepare($queryUpdateUser);
-		$updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0,':user_id'=>$this->userId));
+		return $updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0,':user_id'=>$this->userId));
 	}
 
 	/**Check if a user exists by netid

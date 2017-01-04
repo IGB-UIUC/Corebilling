@@ -9,4 +9,12 @@ class html {
 		$alert .= $msg.'</div>';
 		return $alert;
 	}
+	public static function success_message($msg, $title=""){
+		$alert = '<div class="alert alert-success">';
+		if($title != ""){
+			$alert .= '<h3>'.$title.'</h3>';
+		}
+		$alert .= $msg.'</div>';
+		return $alert;
+	}
 }

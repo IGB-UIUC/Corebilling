@@ -24,6 +24,8 @@ if(isset($_POST['cancel_user'])){
 	exit();
 }
 
+$message = "";
+
 //If Modified user form
 if (isset($_POST['update_user'])) {
 	//Update user info
@@ -76,7 +78,12 @@ if (isset($_POST['update_user'])) {
 		}
 	}
 
-	$selectedUser->UpdateUser();
+	if($selectedUser->UpdateUser()){
+		$message .= html::success_message("User updated successfully");
+	} else {
+		$error = $sqlDataBase->errorInfo();
+		$message .= html::error_message("User update failed: ".$error[2]);
+	}
 
 }
 
@@ -291,6 +298,8 @@ if (isset($_REQUEST['user_id'])) {
 			</div>
 		</div>
 	</div>
+	
+	<?php echo $message; ?>
 	
 	<div class="form-group">
 		<div class="col-sm-12">
