@@ -11,6 +11,11 @@ class Authenticate {
     private $authenticatedUser;
     private $logonError;
     private $verified;
+    
+    private $user_id = null;
+    private $key = null;
+    public $lastActivity = null;
+    public $sessMethod = null;
 
     public function __construct(PDO $sqlDataBase, LdapAuth $ldapAuth)
     {
@@ -103,14 +108,13 @@ class Authenticate {
      */
     public function VerifySession()
     {
-        if(isset($_SESSION['coreapp_user_id']))
-        {
-            if(time() - $_SESSION['coreapp_created'] < LOGIN_TIMEOUT)
-            {
+	    $this->LoadSession();
+        if($this->user_id != null) {
+            if(time() - $this->lastActivity < LOGIN_TIMEOUT) {
                 $this->authenticatedUser = new User ( $this->sqlDataBase );
-                $this->authenticatedUser->LoadUser($_SESSION['coreapp_user_id']);
+                $this->authenticatedUser->LoadUser($this->user_id);
 
-                if($this->authenticatedUser->GetSecureKey() == $_SESSION['coreapp_key'])
+                if($this->authenticatedUser->GetSecureKey() == $this->key)
                 {
                     $this->authenticatedUser->UpdateSecureKey();
                     $this->SetSession($this->authenticatedUser->GetSecureKey(), $this->authenticatedUser->GetUserId());
@@ -133,6 +137,26 @@ class Authenticate {
         $_SESSION ['coreapp_user_id'] = $userId;
         $_SESSION ['coreapp_key'] = $secureKey;
         $_SESSION ['coreapp_created'] = time();
+        
+		setcookie('coreapp_user_id', $userId, time()+LOGIN_TIMEOUT);
+		setcookie('coreapp_key', $secureKey, time()+LOGIN_TIMEOUT);
+		setcookie('coreapp_created', time(), time()+LOGIN_TIMEOUT);
+    }
+    
+    public function LoadSession(){
+	    if(isset($_SESSION['coreapp_user_id'])){
+		    $this->user_id = $_SESSION['coreapp_user_id'];
+		    $this->key = $_SESSION['coreapp_key'];
+		    $this->lastActivity = $_SESSION['coreapp_created'];
+		    
+		    $this->sessMethod = 'session';
+	    } else if(isset($_COOKIE['coreapp_user_id'])) {
+		    $this->user_id = $_COOKIE['coreapp_user_id'];
+		    $this->key = $_COOKIE['coreapp_key'];
+		    $this->lastActivity = $_COOKIE['coreapp_created'];
+		    
+		    $this->sessMethod = 'cookie';
+	    }
     }
 
     /**
@@ -143,6 +167,10 @@ class Authenticate {
         unset ( $_SESSION ['coreapp_user_id'] );
         unset ( $_SESSION ['coreapp_key'] );
         unset ( $_SESSION ['coreapp_created'] );
+        
+        setcookie('coreapp_user_id', "", time()-3600);
+        setcookie('coreapp_key', "", time()-3600);
+        setcookie('coreapp_created', "", time()-3600);
     }
 
     /**

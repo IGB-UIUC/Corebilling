@@ -60,6 +60,11 @@
 					<div class="navbar-brand">
 						<?php echo PAGE_TITLE; ?>
 					</div>
+					<?php if ($login_user->isAdmin()) { ?>
+					<p class="navbar-text">
+						Last activity: <?php echo strftime("%m/%d/%Y %H:%M:%S",$authenticate->lastActivity); ?>, session method: <?php echo $authenticate->sessMethod; ?>
+					</p>
+					<?php } ?>
 				</div>
 				<div class="collapse navbar-collapse" id="archive-accounting-nav-collapse">
 					<a type="button" class="btn btn-danger btn-sm navbar-btn navbar-right hidden-xs" style="margin-right:0" href="logout.php">Logout</a>
