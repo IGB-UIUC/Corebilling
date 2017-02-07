@@ -172,7 +172,7 @@ if (isset($_REQUEST['user_id'])) {
 								<div class="form-group">
 									<label class="col-sm-2 control-label">CFOP</label>
 									<div class="col-sm-10">
-										<input type="text" class="form-control" id="cfop" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx" value="<?php if($selectedUser->GetUserId()>0){echo $selectedUser->GetDefaultCfop();}?>">
+										<input type="text" class="form-control" id="cfop" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx" value="<?php if($selectedUser->GetUserId()>0){echo UserCfop::formatCfop($selectedUser->GetDefaultCfop());}?>">
 									</div>
 								</div>
 							</div>
@@ -282,14 +282,18 @@ if (isset($_REQUEST['user_id'])) {
 				<div class="panel-body">
 					<div class="row">
 						<?php
-							$deviceList = $device->GetDevicesList();
-							foreach($deviceList as $deviceInfo){
-								if($deviceInfo['status_id']==1 || $deviceInfo['status_id']==3){
-									$checked="";
-									if($accessControl->GetPermissionLevel($selectedUser->GetUserId(), AccessControl::RESOURCE_DEVICE, $deviceInfo['id'])){
-										$checked=" checked='checked'";
+							if($selectedUser->isAdmin()){
+								echo "<div class='col-sm-12'>Admins have access to all devices.</div>";
+							} else {
+								$deviceList = $device->GetDevicesList();
+								foreach($deviceList as $deviceInfo){
+									if($deviceInfo['status_id']==1 || $deviceInfo['status_id']==3){
+										$checked="";
+										if($accessControl->GetPermissionLevel($selectedUser->GetUserId(), AccessControl::RESOURCE_DEVICE, $deviceInfo['id'])){
+											$checked=" checked='checked'";
+										}
+										echo "<div class='col-sm-2'><label><input type='checkbox'".$checked." name='access[".$deviceInfo['id']."]'/> ".$deviceInfo['full_device_name']."</label></div>";
 									}
-									echo "<div class='col-sm-2'><label><input type='checkbox'".$checked." name='access[".$deviceInfo['id']."]'/> ".$deviceInfo['full_device_name']."</label></div>";
 								}
 							}
 						?>
