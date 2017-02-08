@@ -10,6 +10,8 @@ include('includes/mysql_connect.php');
 $authen = new LdapAuth ( LDAP_HOST, LDAP_PEOPLE_DN, LDAP_GROUP_DN,LDAP_PORT);
 if(LDAPMAN_API_ENABLED){
 	$ldapman = new LdapManager(LDAPMAN_API_URL, LDAPMAN_API_USERNAME, LDAPMAN_API_PASSWORD);
+} else {
+	$ldapman = new LdapManager(LDAPMAN_API_URL);
 }
 
 //Authenticates to website database
