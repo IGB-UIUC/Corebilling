@@ -94,20 +94,25 @@ if (isset($_POST['add_cfop'])) {
 
 // Submitted New User
 if (isset($_POST['create_user'])) {
-	$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], $_POST['group']);
-	$selectedUser->AddCfop($_POST['cfop_to_add']);
-	if(isset($_POST['access'])){
-		$deviceList = $device->GetDevicesList();
-		foreach($deviceList as $deviceInfo){
-			if(array_key_exists($deviceInfo['id'],$_POST['access'])){
-				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_ALLOW);
-			} else {
-				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_DISALLOW);
+	if($selectedUser->Exists($_POST['user_name'])){
+		$message .= html::error_message("User ".$_POST['user_name']." already exists in database.");
+	} else {
+		$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], isset($_POST['safetyquiz']));
+		$selectedUser->AddCfop($_POST['cfop_to_add']);
+		if(isset($_POST['access'])){
+			$deviceList = $device->GetDevicesList();
+			foreach($deviceList as $deviceInfo){
+				if(array_key_exists($deviceInfo['id'],$_POST['access'])){
+					$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_ALLOW);
+				} else {
+					$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_DISALLOW);
+				}
 			}
 		}
+		$selectedUser->UpdateUser();
+		$_REQUEST['user_id'] = $selectedUser->GetUserId();
+		$message .= html::success_message("User ".$_POST['user_name']." added to database.");
 	}
-	$selectedUser->UpdateUser();
-	$_REQUEST['user_id'] = $selectedUser->GetUserId();
 }
 
 if (isset($_REQUEST['user_id'])) {
@@ -131,7 +136,7 @@ if (isset($_REQUEST['user_id'])) {
 									<label class="col-sm-2 control-label" for="editUser">Netid</label>
 									<div class="col-sm-10">
 										<input name="user_name" id="user_name" type="text" class="form-control" value='<?php echo $selectedUser->GetUserName(); ?>'>
-										<input type="hidden" name="user_id" value="<?php echo $_REQUEST['user_id'];?>"/>
+										<input type="hidden" name="user_id" value="<?php if(isset($_REQUEST['user_id'])){ echo $_REQUEST['user_id'];} ?>"/>
 									</div>
 								</div>
 								<div class="form-group">
@@ -254,7 +259,7 @@ if (isset($_REQUEST['user_id'])) {
 									<label class="col-sm-2 control-label">Safety Quiz</label>
 									<div class="col-sm-10">
 										<div class="checkbox">
-											<label><input type="checkbox" name="safetyquiz"></label>
+											<label><input type="checkbox" name="safetyquiz" <?php if($selectedUser->GetCertified()){ echo " checked";} ?>></label>
 										</div>
 									</div>
 								</div>
