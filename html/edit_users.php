@@ -353,20 +353,25 @@ if (isset($_REQUEST['user_id'])) {
 		e.preventDefault();
 	});
 	
+	var seqnum = 0;
 	$('#user_name').on('input',function(){
 		var $this = $(this);
+		seqnum++;
+		var currentseqnum = seqnum;
 		$.ajax('ldap_user_info.php',{
 			data: {'uid':$this.val()},
 			method: 'post',
 			success: function(data){
-				if(data!=null){
-					$('#first').val(data.givenName);
-					$('#last').val(data.sn);
-					$('#email').val(data.email);
-				} else {
-					$('#first').val("");
-					$('#last').val("");
-					$('#email').val("");
+				if(seqnum==currentseqnum){
+					if(data!=null){
+						$('#first').val(data.givenName);
+						$('#last').val(data.sn);
+						$('#email').val(data.email);
+					} else {
+						$('#first').val("");
+						$('#last').val("");
+						$('#email').val("");
+					}
 				}
 			}
 		});
