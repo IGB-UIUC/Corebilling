@@ -352,8 +352,10 @@ if ($sessionIdSelected > 0) {
 	</div>
 </form>
 <script type="text/javascript">
-	$('#groupfilter').select2();
-	$('#devicefilter').select2();
+
+ 	$('#groupfilter').select2({'width':'element'});
+	$('#devicefilter').select2({'width':'element'});
+
 </script>
 <?php
 require_once 'includes/footer.inc.php';

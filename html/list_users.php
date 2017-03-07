@@ -53,10 +53,6 @@ $group = new Group($sqlDataBase);
 	</div>
 </div>
 
-<script type="text/javascript">
-	$('#user-select').select2();
-	$('#depart-select').select2();
-</script>
 <?php
 require_once 'includes/footer.inc.php';
 ?>

@@ -326,7 +326,6 @@ if (isset($_REQUEST['user_id'])) {
 </form>
 
 <script type="text/javascript">
-	$('#user-select').select2();
 	$('#depart-select').select2();
 	$('#copy-button').click(function(e){
 		var cfop = $('#cfop').text();

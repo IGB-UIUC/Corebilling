@@ -141,8 +141,8 @@ foreach ($rateTypesList as $rateTypeId => $rateTypeName) { ?>
 	</div>
 </div>
 <script type="text/javascript">
-	$('#selectUser').select2();
-	$('#selectMonth').select2();
+	$('#selectUser').select2({'width':'element'});
+	$('#selectMonth').select2({'width':'element'});
 </script>
 <?php
 }
