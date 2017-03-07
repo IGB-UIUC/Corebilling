@@ -120,7 +120,7 @@ if ($sessionIdSelected > 0) {
 	<div class="well">
 		<div class="form-group">
 			<label>Start: </label>
-			<select name="startMonthSelected" class="form-control">
+			<select id="startSelect" name="startMonthSelected" class="form-control">
 				<?php
 				$availableMonths = $bills->GetAvailableBillingMonths();
 
@@ -143,7 +143,7 @@ if ($sessionIdSelected > 0) {
 		</div>
 		<div class="form-group">
 			<label>End: </label>
-			<select name="endMonthSelected" class="form-control">
+			<select id="endSelect" name="endMonthSelected" class="form-control">
 				<?php
 				$availableMonths = $bills->GetAvailableBillingMonths();
 
@@ -355,6 +355,8 @@ if ($sessionIdSelected > 0) {
 
  	$('#groupfilter').select2({'width':'element'});
 	$('#devicefilter').select2({'width':'element'});
+	$('#startSelect').select2({'width':'element'});
+	$('#endSelect').select2({'width':'element'});
 
 </script>
 <?php
