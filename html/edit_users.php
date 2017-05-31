@@ -61,22 +61,23 @@ if (isset($_POST['update_user'])) {
 		}
 	}
 
-	if(isset($_POST['access'])){
+// 	if(isset($_POST['access'])){
 		$deviceList = $device->GetDevicesList();
 		foreach($deviceList as $deviceInfo){
-			if(array_key_exists($deviceInfo['id'],$_POST['access'])){
-				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_ALLOW);
-				if(LDAPMAN_API_ENABLED){
+			$accessToDevice = $accessControl->AccessExists(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId());
+			if(isset($_POST['access']) && array_key_exists($deviceInfo['id'],$_POST['access'])){
+				if(LDAPMAN_API_ENABLED && ($accessToDevice===0 || !$accessToDevice['permission'])){
 					$ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
 				}
+				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_ALLOW);
 			} else {
-				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_DISALLOW);
-				if(LDAPMAN_API_ENABLED){
+				if(LDAPMAN_API_ENABLED && $accessToDevice!==0 && $accessToDevice['permission']){
 					$ldapman->removeGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
 				}
+				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_DISALLOW);
 			}
 		}
-	}
+// 	}
 
 	if($selectedUser->UpdateUser()){
 		$message .= html::success_message("User updated successfully");
@@ -161,6 +162,7 @@ if (isset($_REQUEST['user_id'])) {
 									<label class="col-sm-2 control-label" for="editUser">Depart.</label>
 									<div class="col-sm-10">
 										<select name="department" class="form-control" id="depart-select">
+											<option value=""></option>
 											<?php
 											$departmentsList = $userDepartment->GetDepartmentList();
 											foreach ($departmentsList as $departmentInfo) {
@@ -326,7 +328,9 @@ if (isset($_REQUEST['user_id'])) {
 </form>
 
 <script type="text/javascript">
-	$('#depart-select').select2();
+	$('#depart-select').select2({
+		placeholder: "Select a Department"
+	});
 	$('#copy-button').click(function(e){
 		var cfop = $('#cfop').text();
 		var $textarea = $('#cfop-copy-area');

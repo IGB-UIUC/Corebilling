@@ -31,12 +31,13 @@ class User
 		$this->email="";
 		$this->departmentId=0;
 		$this->groupId=0;
-		$this->rateid=0;
-		$this->statusid=0;
+		$this->rateid=9;
+		$this->statusid=7;
 		$this->dateAdded="";
 		$this->secureKey="";
 		$this->userCfop = new UserCfop($this->sqlDataBase);
 		$this->certified = 0;
+		$this->userRoleId = 3;
 	}
 	
 	public function __destruct()
