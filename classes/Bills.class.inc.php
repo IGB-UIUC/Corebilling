@@ -104,7 +104,7 @@ left join departments de on de.id=u.department_id";
 	left join device d on d.id=s.device_id
 	left join device_rate dr on (dr.device_id=d.id and dr.rate_id=u.rate_id) 
 	LEFT JOIN groups g ON (g.id=u.group_id)
-	left join rates r on r.id=u.rate_id
+	left join rates r on r.id=s.rate_id
 	LEFT JOIN user_cfop uc ON (uc.id=s.cfop_id AND uc.default_cfop=1) 
 	left join departments de on de.id=u.`department_id`";
         $queryWhereClauseMonthUsage = " WHERE ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear) AND dr.rate_type_id=:rate_type_id";

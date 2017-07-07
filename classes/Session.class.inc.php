@@ -70,12 +70,12 @@ class Session
 				error_log("Opening session for user ".$userId." on device ".$deviceId,0);
                 $userCfop = new UserCfop($this->sqlDataBase);
                 $defaultCfopId = $userCfop->LoadDefaultCfopl($userId);
-				$queryStartSession = "INSERT INTO session (user_id,device_id,start,stop,rate,rate_type_id,min_use_time,cfop_id)
+				$queryStartSession = "INSERT INTO session (user_id,device_id,start,stop,rate,rate_type_id,min_use_time,cfop_id,rate_id)
 				                        SELECT
 				                          :user_id,
 				                          :device_id,
 				                          NOW(),
-				                          NOW(), rate, rate_type_id, min_use_time,:default_cfop_id FROM device_rate
+				                          NOW(), rate, rate_type_id, min_use_time,:default_cfop_id, rate_id FROM device_rate
 				                          WHERE device_id=:device_id
 				                          AND rate_id=(SELECT rate_id FROM users
 				                          WHERE id=:user_id LIMIT 1)";
