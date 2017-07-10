@@ -5,6 +5,7 @@
 					<li><a href="news.php">News</a></li>
 					<li><a href="user_billing.php">User Bill</a></li>
 					<li><a href="calendar_fullcalendar.php">Calendar</a>
+					<li><a href="in_use.php">Device Status</a></li>
 					<?php if ($login_user->isAdmin()){ ?>
 						  
 					<hr>
@@ -14,7 +15,6 @@
 					<li><a href="edit_devices.php">Devices</a></li>
 					<hr>
 					<li><a href="facility_billing.php">Facility Billing</a></li>
-					<li><a href="in_use.php">Device Status</a></li>
 					<li><a href="active_users.php">Active Users</a></li>
 					<li><a href="dev_statistics.php">Statistics</a></li>
 						  
