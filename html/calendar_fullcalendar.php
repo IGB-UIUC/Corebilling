@@ -45,6 +45,7 @@ if (isset ($_POST ['deviceSelected'])) {
 			<select name="deviceSelected" class="form-control" onChange='document.calform.submit();'>
 				<?php if($login_user->isAdmin()){ ?>
 				<option value="-1" <?php if($device->GetDeviceId()==-1) echo 'selected'; ?>>Missed Reservations</option>
+				<option value="-3" <?php if($device->GetDeviceId()==-3) echo 'selected'; ?>>Deleted Reservations</option>
 				<option value="-2" <?php if($device->GetDeviceId()==-2) echo 'selected'; ?>>All Devices</option>
 				<?php } ?>
 				<option value=0 <?php if(!isset($_POST['deviceSelected']) || $_POST['deviceSelected']==0) echo 'selected'; ?>>My Reservations</option>
@@ -116,7 +117,6 @@ $(document).ready(function () {
 		defaultDate: $.fullCalendar.moment(initialYear+'-'+initialMonth+'-'+initialDay),
 		eventRender: function (event, element, view) {
 			if(view.name == 'agendaWeek' || view.name == 'agendaDay'){
-				console.log(event.description);
 				element.find('.fc-content').append('<div class="fc-description">'+event.description+'</div>');
 			}
 		},
@@ -144,7 +144,6 @@ $(document).ready(function () {
 		},
 		select: function (start, end) {
 			if (start.hasTime() && end.hasTime()) {
-				console.log(end.format('X z'));
 				if(end.format('X') < new Date().getTime()/1000){
 					alert('Cannot create a reservation in the past');
 					$('#calendar').fullCalendar('unselect');
@@ -192,8 +191,8 @@ $(document).ready(function () {
 		},
 		eventClick: function (calEvent, jsEvent, view) {
 
-			//alert('event clicked');
-			if(<?php echo $device->GetDeviceId(); ?>==-1 || calEvent.end.format('X') < new Date().getTime()/1000){
+			// Cannot edit/delete events less than 2 hours before they start
+			if(<?php echo $device->GetDeviceId(); ?>==-1 || calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000){
 				$('#modifyReservationModal #reservationWindowTitle').html('Reservation Info');				
 			} else {
 				$('#modifyReservationModal #reservationWindowTitle').html('Edit Reservation');
@@ -227,7 +226,7 @@ $(document).ready(function () {
 			?>
 			// Can't update or delete events in the past, or that don't belong to us, unless we're an admin
 			<?php if(!$login_user->isAdmin()){ ?>
-			if( calEvent.end.format('X') < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>){
+			if( calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>){
 				$('#modifyReservationModal #reservationDescription').prop("readonly",true);
 				$('#modifyReservationModal #reservationTraining').prop("disabled",true);
 				$('#modifyReservationModal #reservationStartTime').prop( "readonly", true );
@@ -258,6 +257,8 @@ $(document).ready(function () {
 			}
 		},
 		eventDrop: function (event, delta) {
+			console.log(event);
+			console.log(delta);
 			$.ajax({
 				url: 'calendar_api.php',
 				data: {

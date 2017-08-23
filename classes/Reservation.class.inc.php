@@ -19,6 +19,7 @@ class Reservation {
 	private $description;
 	private $training;
 	private $dateCreated;
+	private $deleted;
 
 	private $missed = NULL;
 
@@ -96,6 +97,7 @@ class Reservation {
 			$this->description = $reservationInfoArr['description'];
 			$this->training = $reservationInfoArr['training'];
 			$this->dateCreated = $reservationInfoArr['date_created'];
+			$this->deleted = $reservationInfoArr['deleted'];
 		}
 	}
 
@@ -104,7 +106,7 @@ class Reservation {
 	 * Delete the reservation currently loaded
 	 */
 	public function DeleteReservation() {
-		$queryDeleteReservation = "DELETE FROM reservation_info WHERE id=:reservation_id";
+		$queryDeleteReservation = "UPDATE reservation_info SET deleted = 1 WHERE id=:reservation_id";
 		$deleteReservationInfo= $this->sqlDatabase->prepare($queryDeleteReservation);
 		$deleteReservationInfo->execute(array(':reservation_id'=>$this->reservationId));
 	}
@@ -138,6 +140,7 @@ class Reservation {
 	public function CheckEventConflicts($deviceId, $userId, $startTimeUnix, $stopTimeUnix, $reservationId = 0) {
 		$queryConflicts = "SELECT COUNT(*) AS num_conflicts FROM reservation_info
 				WHERE device_id=:device_id
+				AND deleted = 0
 			    AND (
 						(UNIX_TIMESTAMP(start) < UNIX_TIMESTAMP(:start_time_unix) AND UNIX_TIMESTAMP(stop) > UNIX_TIMESTAMP(:start_time_unix))
 			     	OR
@@ -156,6 +159,29 @@ class Reservation {
 			return 0;
 		}
 	}
+	
+	public function CheckEventTime($startTimeUnix, $stopTimeUnix, $reservationId = 0) {
+		if($startTimeUnix>$stopTimeUnix || $startTimeUnix - 2*60*60 < time()){
+			// Can't move an event into the past
+			return 0;
+		} else {
+			if($reservationId==0){
+				// New event
+				return 1;
+			} else {
+				// Existing event		
+				$queryTime = "SELECT UNIX_TIMESTAMP(start) as start from reservation_info where id=:reservation_id";
+				$timestmt = $this->sqlDatabase->prepare($queryTime);
+				$timestmt->execute(array(':reservation_id'=>$reservationId));
+				$timeArr = $timestmt->fetch(PDO::FETCH_ASSOC);
+				if($timeArr['start'] - 2*60*60 < time()){
+					// Can't move an event out of the past
+					return 0;
+				}
+				return 1;
+			}
+		}
+	}
 
 
 	/**Return available months for reservations
@@ -169,7 +195,7 @@ class Reservation {
 
 
 	public function GetMissedReservations($year, $month) {
-		$sql = "select * from reservation_info where id not in (select r.id from reservation_info r inner join `session` s on s.start <= r.stop and s.stop >= r.start where month(r.start)=:month and year(r.start)=:year and r.device_id=s.device_id and r.user_id=s.user_id) and year(`start`)=:year and month(`start`)=:month and `stop`<NOW()";
+		$sql = "select * from reservation_info where id not in (select r.id from reservation_info r inner join `session` s on s.start <= r.stop and s.stop >= r.start where month(r.start)=:month and year(r.start)=:year and r.device_id=s.device_id and r.user_id=s.user_id) and year(`start`)=:year and month(`start`)=:month and `stop`<NOW() and deleted=0";
 		$args = array(':year'=>$year, ':month'=>$month);
 		$missedReservations = $this->sqlDatabase->prepare($sql);
 		$missedReservations->execute($args);
@@ -216,6 +242,7 @@ class Reservation {
 			$queryEvents.=" WHERE
                             UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
                             AND UNIX_TIMESTAMP(e.stop)<= UNIX_TIMESTAMP(:stop)
+                            AND e.deleted=0
                             AND u.id=:user_id".$trainingTest."
                             ORDER BY e.device_id, e.start";
 			$queryParameters[':user_id'] =$userId;
@@ -224,6 +251,7 @@ class Reservation {
 	     					e.id not in (select r.id from reservation_info r inner join `session` s on s.start <= r.stop and s.stop >= r.start where UNIX_TIMESTAMP(r.start)>=UNIX_TIMESTAMP(:start) and UNIX_TIMESTAMP(r.start)<=UNIX_TIMESTAMP(:stop) and r.device_id=s.device_id and r.user_id=s.user_id)
 	     					and UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
 	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)
+	     					AND e.deleted=:deleted
 	     					and e.stop<NOW()".$trainingTest."
 	     					and d.status_id!=3
 	     					order by e.start";
@@ -231,11 +259,19 @@ class Reservation {
 				$queryEvents.=" WHERE
 	     					UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
 	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
+	     					AND e.deleted=0
 	     					order by e.start";
+			} else if ($deviceId == -3) { // Deleted reservations
+				$queryEvents .= " WHERE
+							UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
+							AND UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
+							AND e.deleted=1
+							ORDER BY e.start";
 			} else {
 			$queryEvents.=" WHERE
                             UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
                             AND UNIX_TIMESTAMP(e.start)<= UNIX_TIMESTAMP(:stop)
+                            AND e.deleted=0
                             AND e.device_id=:device_id".$trainingTest."
                             ORDER BY e.start";
 			$queryParameters[':device_id']=$deviceId;
@@ -263,6 +299,7 @@ class Reservation {
 			$queryEvents.=" WHERE
                             UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
                             AND UNIX_TIMESTAMP(e.stop)<= UNIX_TIMESTAMP(:stop)
+                            AND e.deleted=0
                             AND u.id=:user_id".$trainingTest."
                             ORDER BY e.device_id, e.start";
 			$queryParameters[':user_id'] =$userId;
@@ -271,6 +308,7 @@ class Reservation {
 	     					e.id not in (select r.id from reservation_info r inner join `session` s on s.start <= r.stop and s.stop >= r.start where UNIX_TIMESTAMP(r.start)>=UNIX_TIMESTAMP(:start) and UNIX_TIMESTAMP(r.start)<=UNIX_TIMESTAMP(:stop) and r.device_id=s.device_id and r.user_id=s.user_id)
 	     					and UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
 	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)
+	     					AND e.deleted=0
 	     					and e.stop<NOW()".$trainingTest."
 	     					and d.status_id!=3
 	     					order by e.start";
@@ -278,11 +316,19 @@ class Reservation {
 				$queryEvents.=" WHERE
 	     					UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
 	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
+	     					AND e.deleted=0
 	     					order by e.start";
+			} else if ($deviceId == -3) { // Deleted reservations
+				$queryEvents .= " WHERE
+							UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
+							AND UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
+							AND e.deleted=1
+							ORDER BY e.start";
 			} else {
 			$queryEvents.=" WHERE
                             UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
                             AND UNIX_TIMESTAMP(e.start)<= UNIX_TIMESTAMP(:stop)
+                            AND e.deleted=0
                             AND e.device_id=:device_id".$trainingTest."
                             ORDER BY e.start";
 			$queryParameters[':device_id']=$deviceId;

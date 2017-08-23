@@ -37,10 +37,11 @@ if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key']))
                     $reservation->DeleteReservation();
                     break;
                 case 'update_event_time':
-                    $reservation->setDeviceId($_POST ['device_id']);
-                    $reservation->setStart($_POST ['start']);
-                    $reservation->setStop($_POST ['end']);
-                    $reservation->UpdateReservation();
+                	if($reservation->CheckEventTime(strtotime($_POST['start']), strtotime($_POST['end']), $_POST['id']) != 0){
+	                    $reservation->setStart($_POST ['start']);
+	                    $reservation->setStop($_POST ['end']);
+	                    $reservation->UpdateReservation();
+	                }
                     break;
                 case 'update_event_info':
                     $training = (isset($_POST['training']))?$_POST['training']:0;
