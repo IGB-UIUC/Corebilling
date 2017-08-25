@@ -16,6 +16,7 @@
 					<hr>
 					<li><a href="facility_billing.php">Facility Billing</a></li>
 					<li><a href="active_users.php">Active Users</a></li>
+					<li><a href="reservation_use.php">Reservation Usage</a></li>
 					<li><a href="dev_statistics.php">Statistics</a></li>
 						  
 					<?php } ?>
