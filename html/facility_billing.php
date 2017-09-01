@@ -189,7 +189,7 @@ if ($sessionIdSelected > 0) {
 		</div>
 		<div class="form-group">
 			<label style="font-weight:normal">Device:</label>
-			<select id="devicefilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,8,'devicefilter')">
+			<select id="devicefilter" class="form-control" onchange="matchCol(<?php echo "Rate".$rateTypeSelected; ?>,8,'devicefilter')">
 				<option value="">All</option>
 				<?php
 					foreach($devicesList as $device){
@@ -202,7 +202,7 @@ if ($sessionIdSelected > 0) {
 		</div>
 		<div class="form-group">
 			<label style="font-weight:normal">Group:</label>
-			<select id="groupfilter" class="form-control" onchange="searchCol(<?php echo "Rate".$rateTypeSelected; ?>,14,'groupfilter')">
+			<select id="groupfilter" class="form-control" onchange="matchCol(<?php echo "Rate".$rateTypeSelected; ?>,14,'groupfilter')">
 				<option value="">All</option>
 				<?php
 					foreach($groupList as $group){
