@@ -216,7 +216,7 @@ if ($sessionIdSelected > 0) {
 		$bills->setGroupBy(0);
 
 		if ($rateTypeSelected== Bills::MONTHLY_RATE) {
-			$bills->setGroupBy(Bills::GROUP_DEVICE);
+			$bills->setGroupBy(Bills::GROUP_DEVICE_USER);
 		}
 		
 		// TODO check supervisor perms here

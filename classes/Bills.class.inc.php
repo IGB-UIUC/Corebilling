@@ -12,6 +12,7 @@ class Bills
     const GROUP_CFOP = 1;
     const GROUP_USER = 2;
     const GROUP_DEVICE = 3;
+    const GROUP_DEVICE_USER = 4;
 
     public function __construct(PDO $sqlDataBase)
     {
@@ -137,6 +138,10 @@ left join departments de on de.id=u.department_id";
                 $queryWhereClauseMonthUsage .= " GROUP BY s.user_id";
                 $querySelectClauseMonthUsage .= ", s.elapsed";
                 break;
+            case self::GROUP_DEVICE_USER:
+            	$querySelectClauseMonthUsage .= ", SUM(s.elapsed) as elapsed";
+            	$queryWhereClauseMonthUsage .= " GROUP BY s.user_id, s.device_id";
+            	break;
             default:
                 $querySelectClauseMonthUsage .= ", s.elapsed";
         }
