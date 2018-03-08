@@ -20,6 +20,7 @@ class Reservation {
 	private $training;
 	private $dateCreated;
 	private $deleted;
+	private $finishedEarly;
 
 	private $missed = NULL;
 
@@ -98,6 +99,7 @@ class Reservation {
 			$this->training = $reservationInfoArr['training'];
 			$this->dateCreated = $reservationInfoArr['date_created'];
 			$this->deleted = $reservationInfoArr['deleted'];
+			$this->finishedEarly = $reservationInfoArr['finished_early'];
 		}
 	}
 
@@ -126,6 +128,13 @@ class Reservation {
 		} else {
 			return 0;
 		}
+	}
+	
+	public function FinishEarly(){
+		$sql = "UPDATE reservation_info SET finished_early=NOW() where id=:reservation_id";
+		$updstmt = $this->sqlDatabase->prepare($sql);
+		$updstmt->execute(array(':reservation_id'=>$this->reservationId));
+		return 1;
 	}
 
 
@@ -182,6 +191,15 @@ class Reservation {
 			}
 		}
 	}
+	
+	public function IsInProgress(){
+		$sdt = new DateTime($this->start);
+		$sts = intval($sdt->format("U"));
+		$edt = new DateTime($this->stop);
+		$ets = intval($edt->format("U"));
+		$now = time();
+		return ($now > $sts && $now < $ets);
+	}
 
 
 	/**Return available months for reservations
@@ -216,7 +234,7 @@ class Reservation {
 
 		foreach ($events as $id=>$event) {
 			$missed = $this->getMissed($event['id']);
-			$buildJson = array('id'=>$event['id'], 'title'=>$event['full_device_name']." - ".$event['user_name'], 'start'=>$event['starttime'], 'end'=>$event['stoptime'], 'allDay'=>false, 'username'=>$event['user_name'], 'userid'=>$event['user_id'], 'description'=>$event['description'], 'device_name'=>$event['full_device_name'], 'training'=>$event['training'], 'color'=>$event['training']?CAL_TRAINING_COLOR:($missed?CAL_MISSED_COLOR:CAL_DEFAULT_COLOR), 'missed'=>$missed, 'borderColor'=>$missed?CAL_MISSED_COLOR:CAL_DEFAULT_COLOR);
+			$buildJson = array('id'=>$event['id'], 'title'=>$event['full_device_name']." - ".$event['user_name'], 'start'=>$event['starttime'], 'end'=>$event['stoptime'], 'allDay'=>false, 'username'=>$event['user_name'], 'userid'=>$event['user_id'], 'description'=>$event['description'], 'device_name'=>$event['full_device_name'], 'training'=>$event['training'], 'color'=>$event['training']?CAL_TRAINING_COLOR:($missed?CAL_MISSED_COLOR:CAL_DEFAULT_COLOR), 'missed'=>$missed, 'borderColor'=>$missed?CAL_MISSED_COLOR:CAL_DEFAULT_COLOR, 'finishedEarly'=>$event['finished_early']);
 			array_push($eventsArr, $buildJson);
 		}
 		return json_encode($eventsArr);
@@ -231,7 +249,7 @@ class Reservation {
 	 * @return array
 	 */
 	public function EventsRange($start, $end, $userId, $deviceId, $training) {
-		$queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training
+		$queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training, e.finished_early
                             FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id";
 		if ($training) {
 			$trainingTest = " and e.training=1";

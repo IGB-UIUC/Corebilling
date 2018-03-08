@@ -40,3 +40,11 @@
 .fc-description {
 	font-size: .9em;
 }
+.fc-early {
+	position: absolute;
+	background: #ddd;
+	opacity: 0.9;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}

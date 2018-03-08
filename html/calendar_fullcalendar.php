@@ -119,6 +119,10 @@ $(document).ready(function () {
 			if(view.name == 'agendaWeek' || view.name == 'agendaDay'){
 				element.find('.fc-content').append('<div class="fc-description">'+event.description+'</div>');
 			}
+			if( (view.name == 'agendaWeek' || view.name == 'agendaDay') && event.finishedEarly != null && Date.parse(event.end)>Date.parse(event.finishedEarly) && Date.parse(event.start)<Date.parse(event.finishedEarly)){
+				var finishedEarlyPerc = (Date.parse(event.finishedEarly)-Date.parse(event.start))/(Date.parse(event.end)-Date.parse(event.start)) * 100;
+				element.find('.fc-bg').before('<div class="fc-early" style="top:'+finishedEarlyPerc+'%"></div>');
+			}
 		},
 		loading: function (isLoading,view){
 			// Display loading gif
@@ -143,6 +147,7 @@ $(document).ready(function () {
 			$('#filterview').val( view.name );
 		},
 		select: function (start, end) {
+			$('#modifyReservationModal #finishedEarlyDiv').hide();
 			if (start.hasTime() && end.hasTime()) {
 				if(end.format('X') < new Date().getTime()/1000){
 					alert('Cannot create a reservation in the past');
@@ -190,7 +195,12 @@ $(document).ready(function () {
 			}
 		},
 		eventClick: function (calEvent, jsEvent, view) {
-
+			// If the event is in progress and belongs to us, show the I Finished Early button
+			if(calEvent.userid==<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?> && calEvent.start.format('X')<new Date().getTime()/1000 && calEvent.end.format('X')>new Date().getTime()/1000 && calEvent.finishedEarly == null){
+				$('#modifyReservationModal #finishedEarlyDiv').show();
+			} else {
+				$('#modifyReservationModal #finishedEarlyDiv').hide();
+			}
 			// Cannot edit/delete events less than 2 hours before they start
 			if(<?php echo $device->GetDeviceId(); ?>==-1 || calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000){
 				$('#modifyReservationModal #reservationWindowTitle').html('Reservation Info');				
@@ -391,6 +401,27 @@ $(document).ready(function () {
 		});
 		
 	});
+	
+	$('#finishedEarly').on('click', function(e){
+		$('#modifyReservationModal').modal('hide');
+		
+		var reservationId = $('#reservationId').val();
+		$.ajax({
+			url: "calendar_api.php",
+			type: "POST",
+			async: false,
+			data: {
+				action: "finish_early",
+				id: reservationId,
+				user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
+				key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>'
+			},
+			success: function(data){
+				console.log(data);
+			}
+		});
+		$('#calendar').fullCalendar('refetchEvents');
+	});
 
 	function doUpdateReservation() {
 		$("#modifyReservationModal").modal('hide');
@@ -554,7 +585,15 @@ $(document).ready(function () {
 							<input type="text" name="reservationEndTime" id="reservationEndTime" class="form-control">
 						</div>
 					</div>
-
+					
+					<div class="form-group" id="finishedEarlyDiv" style="display:none">
+						<div class="col-sm-3"></div>
+						<div class="col-sm-9">
+							<button type="button" class="btn btn-info" id="finishedEarly">I Finished Early!</button><br/>
+							Click here if you are finished with the instrument, to let other users know it's available.
+						</div>
+					</div>
+					
 					<input type="hidden" name="reservationId" id="reservationId">
 					<input type="hidden" name="reservationStart" id="reservationStart">
 					<input type="hidden" name="reservationEnd" id="reservationEnd">

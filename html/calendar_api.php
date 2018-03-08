@@ -43,6 +43,11 @@ if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key']))
 	                    $reservation->UpdateReservation();
 	                }
                     break;
+                case 'finish_early':
+                	if($reservation->IsInProgress()){
+	                	$reservation->FinishEarly();
+                	}
+                	break;
                 case 'update_event_info':
                     $training = (isset($_POST['training']))?$_POST['training']:0;
                     $repeat = (isset($_POST['repeat']))?(int)$_POST['repeat']:0;
