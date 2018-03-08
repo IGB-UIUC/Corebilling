@@ -33,6 +33,7 @@ class Group
         $this->description = $description;
         $this->departmentId = $departmentId;
         $this->groupId = $groupId;
+        log::log_message("Added group '$groupName'");
 	}
 
     /**Load a group into object from database given a group ID
@@ -117,7 +118,10 @@ class Group
      */
     public function setDepartmentId($departmentId)
     {
-        $this->departmentId = $departmentId;
+	    if($this->departmentId != $departmentId){
+	        $this->departmentId = $departmentId;
+	        log::log_message("Set department id for group '".$this->groupName."' to $departmentId");
+	    }
     }
 
     /**
@@ -133,7 +137,10 @@ class Group
      */
     public function setDescription($description)
     {
-        $this->description = $description;
+	    if($this->description != $description){
+	        $this->description = $description;
+	        log::log_message("Set description for group '".$this->groupName."' to '$description'");
+	    }
     }
 
     /**
@@ -149,7 +156,10 @@ class Group
      */
     public function setGroupId($groupId)
     {
-        $this->groupId = $groupId;
+	    if($this->groupId != $groupId){
+	        $this->groupId = $groupId;
+	        log::log_message("Set id for group '".$this->groupName."' to $groupId");
+	    }
     }
 
     /**
@@ -165,7 +175,10 @@ class Group
      */
     public function setGroupName($groupName)
     {
-        $this->groupName = $groupName;
+	    if($this->groupName != $groupName){
+	    	log::log_message("Set name for group '".$this->groupName."' to $groupName");
+	        $this->groupName = $groupName;
+	    }
     }
 
     /**

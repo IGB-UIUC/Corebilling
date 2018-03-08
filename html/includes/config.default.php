@@ -38,5 +38,6 @@ $ADMIN_EMAIL = array();
 //Session Tracker users to ignore
 $USER_EXCEPTIONS_ARRAY = array();
 
-
+@define('__ENABLE_LOG__',true);
+@define('__LOG_FILE__','');
 ?>

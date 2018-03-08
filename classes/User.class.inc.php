@@ -76,6 +76,7 @@ class User
 			$addUserPrepare = $this->sqlDataBase->prepare($queryAddUser);
 			$addUserPrepare->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$rateId,':status_id'=>$statusId,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0));
 			$this->userId=$this->sqlDataBase->lastInsertId();
+			log::log_message("Added user '$username'");
 		}
 	}
 
@@ -344,7 +345,10 @@ class User
 
 	public function SetUserName($username)
 	{
-		$this->username=$username;
+		if($this->username != $username){
+			log::log_message("Set username of user '".$this->username."' to '$username'");
+			$this->username=$username;
+		}
 	}
 
 	public function GetFirst()
@@ -354,7 +358,10 @@ class User
 
 	public function SetFirst($first)
 	{
-		$this->first=$first;
+		if($this->first != $first){
+			$this->first=$first;
+			log::log_message("Set first name of user '".$this->username."' to '$first'");
+		}
 	}
 
 	public function GetLast()
@@ -364,7 +371,10 @@ class User
 
 	public function SetLast($last)
 	{
-		$this->last=$last;
+		if($this->last != $last){
+			$this->last=$last;
+			log::log_message("Set last name of user '".$this->username."' to '$last'");
+		}
 	}
 
 	public function GetEmail()
@@ -374,7 +384,10 @@ class User
 
 	public function SetEmail($email)
 	{
-		$this->email = $email;
+		if($this->email != $email){
+			$this->email = $email;
+			log::log_message("Set email of user '".$this->username."' to '$email'");
+		}
 	}
 
 	public function GetDepartmentId()
@@ -384,7 +397,10 @@ class User
 	
 	public function SetDepartmentId($departmentId)
 	{
-		$this->departmentId = $departmentId;
+		if($this->departmentId != $departmentId){
+			$this->departmentId = $departmentId;
+			log::log_message("Set department of user '".$this->username."' to '$departmentId'");
+		}
 	}
 
 	public function GetGroupId()
@@ -394,7 +410,10 @@ class User
 
 	public function SetGroupId($groupId)
 	{
-		$this->groupId = $groupId;
+		if($this->groupId != $groupId){
+			$this->groupId = $groupId;
+			log::log_message("Set group of user '".$this->username."' to '$groupId'");
+		}
 	}
 
 	public function GetRateId()
@@ -404,7 +423,10 @@ class User
 
 	public function SetRateId($rateId)
 	{
-		$this->rateid = $rateId;
+		if($this->rateid != $rateId){
+			$this->rateid = $rateId;
+			log::log_message("Set rate of user '".$this->username."' to '$rateId'");
+		}
 	}
 	
 	public function GetStatusId()
@@ -414,7 +436,10 @@ class User
 
 	public function SetStatusId($statusid)
 	{
-		$this->statusid = $statusid;
+		if($this->statusid != $statusid){
+			$this->statusid = $statusid;
+			log::log_message("Set status of user '".$this->username."' to '$statusid'");
+		}
 	}
 		
 	public function GetUserRoleId()
@@ -424,7 +449,10 @@ class User
 
 	public function SetUserRoleId($usertypeid)
 	{
-		$this->userRoleId = $usertypeid;
+		if($this->userRoleId != $usertypeid){
+			$this->userRoleId = $usertypeid;
+			log::log_message("Set role of user '".$this->username."' to '$usertypeid'");
+		}
 	}
 
 	public function GetDateAdded()
@@ -443,7 +471,14 @@ class User
 	}
 	public function SetCertified($certified)
 	{
-		$this->certified = $certified;
+		if($this->certified != $certified){
+			$this->certified = $certified;
+			if($certified){
+				log::log_message("Certified user '".$this->username."'");
+			} else {
+				log::log_message("Un-certified user '".$this->username."'");
+			}
+		}
 	}
 }
 	

@@ -48,6 +48,7 @@ class UserCfop{
         $this->userCfopId =$this->sqlDataBase->lastInsertId();
         $this->LoadUserCfop($this->userCfopId);
         $this->SetDefaultCfop();
+        log::log_message("Added CFOP '$cfop' for user $userId");
     }
 
     /**Load User CFOP from cfop id
@@ -71,6 +72,9 @@ class UserCfop{
      */
     public function SetDefaultCfop()
     {
+	    if(!$this->default){
+		    log::log_message("Set default CFOP for user ".$this->userId." to '".$this->cfop."'");
+	    }
         //mark all other user cfopls as not default
         $queryRemoveDefault = "UPDATE user_cfop SET default_cfop=".UserCfop::NON_DEFAULT_CFOP." WHERE user_id=:user_id";
         $removeDefault = $this->sqlDataBase->prepare($queryRemoveDefault);

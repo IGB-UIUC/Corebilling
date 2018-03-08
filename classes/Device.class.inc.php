@@ -61,6 +61,8 @@ class Device
             $addRatesPrep = $this->sqlDataBase->prepare($queryAddRates);
             $addRatesPrep->execute(array(":device_id"=>$this->deviceId,":rate_id"=>$rateInfo["id"]));
         }
+        
+        log::log_message("Created device '$dn'");
 	}
 
     /** Load device from database into object given an authKey or id
@@ -215,7 +217,10 @@ class Device
 
     //Getters and setters for device
     public function SetDeviceId($id){
-	    $this->deviceId = $id;
+	    if($this->deviceId != $id){
+		    $this->deviceId = $id;
+			log::log_message("Set id of device '".$this->shortName."' to $id");
+		}
     }
     public function GetDeviceId()
 	{
@@ -224,7 +229,10 @@ class Device
 
 	public function SetShortName($dn)
 	{
-		$this->shortName = $dn;
+		if($this->shortName != $dn){
+			log::log_message("Set short name of device '".$this->shortName."' to '$dn'");
+			$this->shortName = $dn;
+		}
 	}
 
 	public function getShortName()
@@ -236,12 +244,18 @@ class Device
 		return $this->ldap_group;
 	}
 	public function SetLDAPGroup($ldap_group){
-		$this->ldap_group = $ldap_group;
+		if($this->ldap_group != $ldap_group){
+			$this->ldap_group = $ldap_group;
+			log::log_message("Set LDAP group of device '".$this->shortName."' to $ldap_group");
+		}
 	}
 
 	public function SetFullName($name)
 	{
-		$this->full_name = $name;
+		if($this->full_name != $name){
+			$this->full_name = $name;
+			log::log_message("Set full name of device '".$this->shortName."' to '$name'");
+		}
 	}
 	
 	public function GetFullName()
@@ -251,7 +265,10 @@ class Device
 
 	public function SetLocation($location)
 	{
-		$this->location = $location;
+		if($this->location != $location){
+			$this->location = $location;
+			log::log_message("Set location of device '".$this->shortName."' to $location");
+		}
 	}
 
 	public function GetLocation()
@@ -266,12 +283,18 @@ class Device
 
 	public function SetStatus($status)
 	{
-		$this->status = $status;
+		if($this->status != $status){
+			$this->status = $status;
+			log::log_message("Set status of device '".$this->shortName."' to $status");
+		}
 	}
 
 	public function SetDescription($description)
 	{
-		$this->description = $description;
+		if($this->description != $description){
+			$this->description = $description;
+			log::log_message("Set description of device '".$this->shortName."' to '$description'");
+		}
 	}
 
 	public function GetDescription()

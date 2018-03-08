@@ -71,8 +71,10 @@
 			);
 			$result = self::queryPOST($data);
 			if($result->code == 200){
+				log::log_message("Added user '$uid' to ldap group '$gid'");
 				return true;
 			} else {
+				log::log_message("Failed trying to add user '$uid' to ldap group '$gid' with error ".$result->code.": '".$result->msg."'");
 				return false;
 			}
 		}
@@ -87,8 +89,10 @@
 			);
 			$result = self::queryPOST($data);
 			if($result->code == 200){
+				log::log_message("Removed user '$uid' from ldap group '$gid'");
 				return true;
 			} else {
+				log::log_message("Failed trying to remove user '$uid' from ldap group '$gid' with error ".$result->code.": '".$result->msg."'");
 				return false;
 			}
 		}

@@ -37,7 +37,7 @@ class Department {
         $this->departmentName = $departmentName;
         $this->description = $description;
         $this->departmentId = $departmentId;
-
+		log::log_message("Added department '$departmentName'");
     }
 
     /**
@@ -112,7 +112,10 @@ class Department {
      */
     public function setDescription($description)
     {
-        $this->description = $description;
+	    if($this->description != $description){
+	        $this->description = $description;
+	        log::log_message("Set description of department '".$this->departmentName."' to '$description'");
+	    }
     }
 
     /**
@@ -128,7 +131,10 @@ class Department {
      */
     public function setDepartmentId($departmentId)
     {
-        $this->departmentId = $departmentId;
+	    if($this->departmentId != $departmentId){
+	        $this->departmentId = $departmentId;
+	        log::log_message("Set id of department '".$this->departmentName."' to $departmentId");
+	    }
     }
 
     /**
@@ -144,7 +150,10 @@ class Department {
      */
     public function setDepartmentName($departmentName)
     {
-        $this->departmentName = $departmentName;
+	    if($this->departmentName != $departmentName){
+		    log::log_message("Set name of department '".$this->departmentName."' to '$departmentName'");
+			$this->departmentName = $departmentName;
+		}
     }
 
     /**
