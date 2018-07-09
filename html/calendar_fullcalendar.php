@@ -115,12 +115,18 @@ $(document).ready(function () {
 		timezone: "local",
 		defaultView: initialView,
 		defaultDate: $.fullCalendar.moment(initialYear+'-'+initialMonth+'-'+initialDay),
-		eventRender: function (event, element, view) {
+		'eventRender': function (event, element, view) {
+			var finishedEarlyDate = null;
+			if(event.finishedEarly != null){
+				var dateParts = event.finishedEarly.split(/[^0-9]/);
+				finishedEarlyDate = new Date(dateParts[0],dateParts[1]-1,dateParts[2],dateParts[3],dateParts[4],dateParts[5]);
+				finishedEarlyDate = finishedEarlyDate.getTime();
+			}
 			if(view.name == 'agendaWeek' || view.name == 'agendaDay'){
 				element.find('.fc-content').append('<div class="fc-description">'+event.description+'</div>');
 			}
-			if( (view.name == 'agendaWeek' || view.name == 'agendaDay') && event.finishedEarly != null && Date.parse(event.end)>Date.parse(event.finishedEarly) && Date.parse(event.start)<Date.parse(event.finishedEarly)){
-				var finishedEarlyPerc = (Date.parse(event.finishedEarly)-Date.parse(event.start))/(Date.parse(event.end)-Date.parse(event.start)) * 100;
+			if( (view.name == 'agendaWeek' || view.name == 'agendaDay') && finishedEarlyDate != null && Date.parse(event.end)>finishedEarlyDate && Date.parse(event.start)<finishedEarlyDate){
+				var finishedEarlyPerc = (finishedEarlyDate-Date.parse(event.start))/(Date.parse(event.end)-Date.parse(event.start)) * 100;
 				element.find('.fc-bg').before('<div class="fc-early" style="top:'+finishedEarlyPerc+'%"></div>');
 			}
 		},
