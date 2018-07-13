@@ -249,8 +249,8 @@ class Reservation {
 	 * @return array
 	 */
 	public function EventsRange($start, $end, $userId, $deviceId, $training) {
-		$queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training, e.finished_early
-                            FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id";
+		$queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training, e.finished_early, g.group_name
+                            FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id LEFT JOIN groups g ON g.id=u.group_id";
 		if ($training) {
 			$trainingTest = " and e.training=1";
 		} else {

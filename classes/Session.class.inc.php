@@ -211,6 +211,15 @@ class Session
         $this->LoadSession($firstSessionIdArr["id"]);
     }
 
+	public static function GetSessions($db,$date,$device){
+		$query = "SELECT u.user_name, g.group_name, s.device_id, d.device_name, s.start, s.stop ";
+		$query .= "FROM session s inner join users u on u.id=s.user_id inner join device d on d.id=s.device_id left join groups g on g.id=u.group_id ";
+		$query .= "WHERE d.id=:device AND (DATE(s.start)=:date OR DATE(s.stop)=:date)";
+		$stmt = $db->prepare($query);
+		$stmt->execute(array(":date"=>$date,":device"=>$device));
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
 	/** Get an array of sessions and their time usage
 	 * can use an array to filter the sessions by users device and group
 	 * the filter consists of an associative array with keys 'user', 'device' and 'group'
