@@ -240,6 +240,7 @@ if ($sessionIdSelected > 0) {
 
 			//Change usage to hours
 			$monthlyUsage[$rowId]['elapsed'] = round($monthSession['elapsed'] / 60, 2);
+			$monthlyUsage[$rowId]['elapsed_unrounded'] = $monthSession['elapsed'] / 60;
 
 			//Minimum usage time
 			$monthlyUsage[$rowId]['min_use_time'] = round(($monthSession['min_use_time'] / 60), 2);
@@ -335,10 +336,10 @@ if ($sessionIdSelected > 0) {
 			<div class="row">
 				<?php
 				echo VisualizeData::ListSessionsTableHiddenCols($monthlyUsage,
-					array('id', 'NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department', 'Opt.'),
-					array('id', 'user_name', 'full_name', 'start','stop', 'Date', 'cfop', 'full_device_name', 'elapsed', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'department_name', 'options'),
-					array('Date'),
-					array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department'), "Rate".$rateTypeSelected, $rowSelected, true, false);
+					array('id', 'NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department', 'Opt.'),
+					array('id', 'user_name', 'full_name', 'start','stop', 'Date', 'cfop', 'full_device_name', 'elapsed', 'elapsed_unrounded', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'department_name', 'options'),
+					array('Date','Elapsed','elapsed_unrounded'),
+					array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department'), "Rate".$rateTypeSelected, $rowSelected, true, false);
 				?>
 			</div>
 
