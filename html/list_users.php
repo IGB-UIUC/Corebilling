@@ -30,19 +30,19 @@ $group = new Group($sqlDataBase);
 				<?php
 				$usersFullInfoList = $selectedUser->GetAllUsersFullInfo();
 				echo VisualizeData::ListSessionsTable($usersFullInfoList,
-					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Last Login', 'Status', ''),
-					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'last_login', 'status', 'edit'), 'usersTable',0);
+					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Created', 'Last Login', 'Status', ''),
+					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'date_added', 'last_login', 'status', 'edit'), 'usersTable',0);
 				?>
 				<script type="text/javascript">
 					// Sort by status, then name to show active users first
 					$(document).ready(function(){
-						usersTable.column(6).search('Active').draw();
+						usersTable.column(7).search('Active').draw();
 						$('<label>Show disabled users <input type="checkbox" id="filteractive" /> &nbsp;</label>').prependTo('#usersTable_filter');
 						$('#filteractive').on('change',function(e){
 							if(this.checked){
-								usersTable.column(6).search('').draw();
+								usersTable.column(7).search('').draw();
 							} else {
-								usersTable.column(6).search('Active').draw();
+								usersTable.column(7).search('Active').draw();
 							}
 						});
 						});

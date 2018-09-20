@@ -208,7 +208,7 @@ class User
 
 	public function GetAllUsersFullInfo()
 	{
-		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, (select max(`stop`) from `session` where user_id=u.`id`) as last_login, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status, u.id
+		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, u.date_added, (select max(`stop`) from `session` where user_id=u.`id`) as last_login, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status, u.id
 								FROM users u
 									LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1)
 									LEFT JOIN groups g ON (g.id=u.group_id)
