@@ -15,8 +15,10 @@ $rate = new Rate($sqlDataBase);
 $group = new Group($sqlDataBase);
 $device = new Device($sqlDataBase);
 
+$ldapinfo = null;
 if (isset($_REQUEST['user_id'])) {
 	$selectedUser->LoadUser($_REQUEST['user_id']);
+	$ldapinfo = $ldapman->getUser($selectedUser->GetUserName());
 }
 
 if(isset($_POST['cancel_user'])){
@@ -122,6 +124,11 @@ if (isset($_REQUEST['user_id'])) {
 ?>
 
 <h3><?php echo $selectedUser->GetUserId()>0 ? 'Edit':'Add';?> User</h3>
+<?php
+	if ($selectedUser->GetUserId()>0 && $ldapinfo == null){
+		echo html::error_message("This user does not have an IGB account. Any changes made to their device access will not take effect. Please make sure to get their IGB account created before making changes here.","No IGB Account");
+	}
+?>
 <form action="edit_users.php" method=POST>
 	<div class="row">
 		<div class="col-sm-12">
@@ -266,10 +273,16 @@ if (isset($_REQUEST['user_id'])) {
 									</div>
 								</div>
 								<?php if ($selectedUser->GetUserId() > 0) { ?>
-								<div class="form-group">
+								<div class="form-group" style="margin-bottom:0">
 									<label class="col-sm-2 control-label" for="editUser">Created</label>
 									<div class="col-sm-10">
 										<h5><?php echo $selectedUser->GetDateAdded();?></h5>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label" for="editUser">Last Login</label>
+									<div class="col-sm-10">
+										<h5><?php echo $selectedUser->GetLastLogin();?></h5>
 									</div>
 								</div>
 								<?php } ?>
