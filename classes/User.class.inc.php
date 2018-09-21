@@ -177,6 +177,33 @@ class User
 		}
 		
 	}
+	
+	public function hasAccessTo($deviceId){
+		if($this->isAdmin()){ // Admins can access everything
+			return true;
+		} else {
+			$query = "SELECT * FROM access_control WHERE device_id=:resource_id AND user_id=:user_id LIMIT 1";
+			$stmt = $this->sqlDataBase->prepare($query);
+	        $stmt->execute(array(":resource_id" => $deviceId, ":user_id" => $this->GetUserId()));
+	        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+	        return $result !== false;
+		}
+	}
+	
+	public function giveAccessTo($deviceId){
+		$query = "INSERT INTO access_control (user_id, device_id) VALUES (:userid,:deviceid)";
+		$stmt = $this->sqlDataBase->prepare($query);
+		if( $stmt->execute(array(":userid"=>$this->GetUserId(),":deviceid"=>$deviceId)) ){
+			log::log_message("Gave user '".$this->GetUserName()."' access to device $deviceId");
+		}
+	}
+	public function removeAccessTo($deviceId){
+		$query = "DELETE FROM access_control WHERE user_id=:userid AND device_id=:deviceid LIMIT 1";
+		$stmt = $this->sqlDataBase->prepare($query);
+		if( $stmt->execute(array(":userid" => $this->GetUserId(), ":deviceid" => $deviceId)) ){
+			log::log_message("Removed access to device $deviceId for user '".$this->GetUserName()."'");
+		}
+	}
 
 	/**
 	 * Update security key for user

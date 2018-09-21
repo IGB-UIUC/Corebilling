@@ -54,7 +54,7 @@ if (isset ($_POST ['deviceSelected'])) {
 				foreach ($deviceList as $id => $availDevices) {
 					
 					// For now, let anyone schedule any device
-					if (/*$accessControl->GetPermissionLevel($authenticate->getAuthenticatedUser()->GetUserId(), AccessControl::RESOURCE_DEVICE, $availDevices['id']) && */($availDevices['status_id']==1 || $availDevices['status_id']==3)) {
+					if ( $availDevices['status_id']==1 || $availDevices['status_id']==3 ) {
 						echo "<option value=" . $availDevices ['id'];
 						if ($availDevices['id'] == $device->GetDeviceId()) {
 							echo " SELECTED";

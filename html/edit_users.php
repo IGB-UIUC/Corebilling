@@ -66,17 +66,20 @@ if (isset($_POST['update_user'])) {
 // 	if(isset($_POST['access'])){
 		$deviceList = $device->GetDevicesList();
 		foreach($deviceList as $deviceInfo){
-			$accessToDevice = $accessControl->AccessExists(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId());
 			if(isset($_POST['access']) && array_key_exists($deviceInfo['id'],$_POST['access'])){
-				if(LDAPMAN_API_ENABLED && ($accessToDevice===0 || !$accessToDevice['permission'])){
-					$ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+				if(!$selectedUser->hasAccessTo($deviceInfo['id'])){
+					if(LDAPMAN_API_ENABLED){
+						$ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+					}
+					$selectedUser->giveAccessTo($deviceInfo['id']);
 				}
-				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_ALLOW);
 			} else {
-				if(LDAPMAN_API_ENABLED && $accessToDevice!==0 && $accessToDevice['permission']){
-					$ldapman->removeGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+				if($selectedUser->hasAccessTo($deviceInfo['id'])){
+					if(LDAPMAN_API_ENABLED){
+						$ldapman->removeGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+					}
+					$selectedUser->removeAccessTo($deviceInfo['id']);
 				}
-				$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_DISALLOW);
 			}
 		}
 // 	}
@@ -106,9 +109,7 @@ if (isset($_POST['create_user'])) {
 			$deviceList = $device->GetDevicesList();
 			foreach($deviceList as $deviceInfo){
 				if(array_key_exists($deviceInfo['id'],$_POST['access'])){
-					$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_ALLOW);
-				} else {
-					$accessControl->SetAccess(AccessControl::RESOURCE_DEVICE, $deviceInfo['id'], AccessControl::PARTICIPANT_USER, $selectedUser->GetUserId(), AccessControl::PERM_DISALLOW);
+					$selectedUser->giveAccessTo($deviceInfo['id']);
 				}
 			}
 		}
@@ -309,7 +310,7 @@ if (isset($_REQUEST['user_id'])) {
 								foreach($deviceList as $deviceInfo){
 									if($deviceInfo['status_id']==1 || $deviceInfo['status_id']==3){
 										$checked="";
-										if($accessControl->GetPermissionLevel($selectedUser->GetUserId(), AccessControl::RESOURCE_DEVICE, $deviceInfo['id'])){
+										if( $selectedUser->hasAccessTo($deviceInfo['id']) ){
 											$checked=" checked='checked'";
 										}
 										echo "<div class='col-sm-2'><label><input type='checkbox'".$checked." name='access[".$deviceInfo['id']."]'/> ".$deviceInfo['full_device_name']."</label></div>";

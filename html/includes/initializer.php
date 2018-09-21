@@ -17,7 +17,4 @@ if(LDAPMAN_API_ENABLED){
 //Authenticates to website database
 $authenticate = new Authenticate($sqlDataBase, $authen);
 
-//Loads access control for website which controls device and web page access
-$accessControl = new AccessControl($sqlDataBase);
-
 ?>
