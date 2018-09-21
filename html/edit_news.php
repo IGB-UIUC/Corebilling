@@ -9,8 +9,8 @@ if(!$login_user->isAdmin()){
 $adminType = 1;
 $selectedArticle = 0;
 
-$article = new Articles($sqlDataBase);
-$user = new User($sqlDataBase);
+$article = new Articles($db);
+$user = new User($db);
 
 if (isset($_GET['edit'])) {
 	$selectedArticle = $_GET['edit'];

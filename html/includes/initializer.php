@@ -15,6 +15,6 @@ if(LDAPMAN_API_ENABLED){
 }
 
 //Authenticates to website database
-$authenticate = new Authenticate($sqlDataBase, $authen);
+$authenticate = new Authenticate($db, $authen);
 
 ?>

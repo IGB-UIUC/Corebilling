@@ -3,9 +3,9 @@ require_once 'includes/header.inc.php';
 
 $rateTypesList = array(Bills::CONTINUOUS_RATE => "Continuous", Bills::MONTHLY_RATE => "Monthly");
 
-$userToBill = new User($sqlDataBase);
-$bills = new Bills($sqlDataBase);
-$userCfop = new UserCfop($sqlDataBase);
+$userToBill = new User($db);
+$bills = new Bills($db);
+$userCfop = new UserCfop($db);
 
 if($login_user->isAdmin()){
 	$selectableUsersList = $userToBill->GetAllUsers();

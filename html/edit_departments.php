@@ -6,7 +6,7 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 
-$department = new Department($sqlDataBase);
+$department = new Department($db);
 
 if (isset($_POST['Submit'])) {
 	$departmentName = $_POST['department_name'];

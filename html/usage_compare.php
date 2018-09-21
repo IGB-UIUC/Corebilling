@@ -5,8 +5,8 @@ if(!$login_user->isAdmin()){
 	require_once 'includes/footer.inc.php';
 	exit;
 }
-$device = new Device($sqlDataBase);
-$res = new Reservation($sqlDataBase);
+$device = new Device($db);
+$res = new Reservation($db);
 
 if (isset ($_GET['device'])) {
 	$device->LoadDevice($_GET['device']);
@@ -18,7 +18,7 @@ if(isset($_GET['date'])){
 	$date = DateTime::createFromFormat("Y-m-d",$_GET['date']);
 }
 $reservations = $res->EventsRange($date->format("Y-m-d")." 00:00:00", $date->format("Y-m-d")." 23:59:59", null, $device->GetDeviceId(), false);
-$sessions = Session::GetSessions($sqlDataBase, $date->format("Y-m-d"), $device->GetDeviceId());
+$sessions = Session::GetSessions($db, $date->format("Y-m-d"), $device->GetDeviceId());
 ?>
 
 <h3>Usage Comparison<?php if($device->GetDeviceId()!=0){echo " - ".$device->GetFullName();} ?> - <?php echo $date->format("m/d/Y"); ?></h3>

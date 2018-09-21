@@ -8,14 +8,15 @@
 
 class Rate
 {
-    private $sqlDataBase;
+    private $db;
+    
     private $rateId;
     private $rateName;
     private $rateTypeId;
 
-    public function __construct(PDO $sqlDataBase)
+    public function __construct(PDO $db)
     {
-        $this->sqlDataBase = $sqlDataBase;
+        $this->db = $db;
     }
 
     public function __destruct()
@@ -30,21 +31,21 @@ class Rate
     public function CreateRate($rateName,$rateTypeId)
     {
         $queryAddRate = "INSERT INTO rates (rate_name)VALUES(:rate_name)";
-        $addRate = $this->sqlDataBase->prepare($queryAddRate);
+        $addRate = $this->db->prepare($queryAddRate);
         $addRate->execute(array(":rate_name"=>$rateName));
 
-        $this->rateId = $this->sqlDataBase->lastInsertId();
+        $this->rateId = $this->db->lastInsertId();
 
-        $device = new Device($this->sqlDataBase);
+        $device = new Device($this->db);
         $devicesArr = $device->GetDevicesList();
 
 
         foreach($devicesArr as $id=>$rateDevice)
         {
             $queryAddRateToDevice = "INSERT INTO device_rate (rate,device_id,rate_id,min_use_time,rate_type_id)VALUES(0,:device_id,:rate_id,0,:rate_type_id)";
-            $addRateToDevice = $this->sqlDataBase->prepare($queryAddRateToDevice);
+            $addRateToDevice = $this->db->prepare($queryAddRateToDevice);
             $addRateToDevice->execute(array(':device_id'=>$rateDevice['id'],':rate_id'=>$this->rateId,':rate_type_id'=>$rateTypeId));
-            $this->rateId=$this->sqlDataBase->lastInsertId();
+            $this->rateId=$this->db->lastInsertId();
         }
 
         $this->rateName = $rateName;
@@ -57,7 +58,7 @@ class Rate
     public function LoadRate($rateId)
     {
         $queryLoadRate = "SELECT rate_name, rateytpeid FROM rates WHERE id=:rate_id";
-        $loadRatePrep = $this->sqlDataBase->prepare($queryLoadRate);
+        $loadRatePrep = $this->db->prepare($queryLoadRate);
         $loadRatePrep->execute(array(":rate_id"=>$rateId));
         $loadRateArr = $loadRatePrep->fetch(PDO::FETCH_ASSOC);
         if($loadRateArr)
@@ -74,7 +75,7 @@ class Rate
     public function UpdateRate()
     {
         $queryUpdateRate = "UPDATE rates SET rate_name=:rate_name, rate_type_id=:rate_type_id";
-        $updateRatePrep = $this->sqlDataBase->prepare($queryUpdateRate);
+        $updateRatePrep = $this->db->prepare($queryUpdateRate);
         $updateRatePrep->execute(array(":rate_name"=>$this->rateName,":rate_type_id"=>$this->rateTypeId));
     }
 
@@ -84,7 +85,7 @@ class Rate
     public function GetRateTypes()
     {
         $queryRateTypes = "SELECT rate_type_name, id FROM rate_types";
-        $rateTypes = $this->sqlDataBase->query($queryRateTypes);
+        $rateTypes = $this->db->query($queryRateTypes);
         return $rateTypes->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -94,7 +95,7 @@ class Rate
     public function GetRates()
     {
         $queryRatesList = "SELECT rate_name, id FROM rates";
-        $rateList = $this->sqlDataBase->query($queryRatesList);
+        $rateList = $this->db->query($queryRatesList);
         return $rateList->fetchAll(PDO::FETCH_ASSOC);
     }
 

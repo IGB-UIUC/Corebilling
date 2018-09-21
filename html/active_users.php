@@ -6,15 +6,15 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 //Declare objects
-$device = new Device($sqlDataBase);
+$device = new Device($db);
 $devicesList = $device->GetDevicesList();
-$user = new User($sqlDataBase);
+$user = new User($db);
 $userList = $user->GetAllUsers();
-$group = new Group($sqlDataBase);
+$group = new Group($db);
 $groupList = $group->GetGroupsList();
-$bills = new Bills($sqlDataBase);
-$session = new Session($sqlDataBase);
-$userCfop = new UserCfop($sqlDataBase);
+$bills = new Bills($db);
+$session = new Session($db);
+$userCfop = new UserCfop($db);
 
 $sessionIdSelected = 0;
 $rowSelected = 0;

@@ -6,8 +6,8 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 
-$device = new Device($sqlDataBase);
-$rate = new Rate($sqlDataBase);
+$device = new Device($db);
+$rate = new Rate($db);
 $rateTypes = $rate->GetRateTypes();
 
 if (isset($_POST['device_option'])) {

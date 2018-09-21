@@ -6,13 +6,13 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 
-$department = new Group($sqlDataBase); // TODO this isn't confusing AT ALL
-$device = new Device($sqlDataBase);
-$user = new User ($sqlDataBase);
-$session = new Session($sqlDataBase);
-$firstSession = new Session($sqlDataBase);
+$department = new Group($db); // TODO this isn't confusing AT ALL
+$device = new Device($db);
+$user = new User ($db);
+$session = new Session($db);
+$firstSession = new Session($db);
 $firstSession->LoadFirstSession();
-$lastSession = new Session($sqlDataBase);
+$lastSession = new Session($db);
 $lastSession->LoadLastSession();
 
 $user->LoadUser($authenticate->getAuthenticatedUser()->getUserId());

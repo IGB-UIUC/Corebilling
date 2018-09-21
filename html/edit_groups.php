@@ -6,8 +6,8 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 
-$group = new Group($sqlDataBase);
-$department = new Department($sqlDataBase);
+$group = new Group($db);
+$department = new Department($db);
 
 if (isset($_POST['Submit'])) {
 	$groupName = $_POST['group_name'];

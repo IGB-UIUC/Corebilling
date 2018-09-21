@@ -10,7 +10,7 @@
  */
 class Reservation {
 	const ALL=1, NON_TRAINING=2, TRAINING=3;
-	private $sqlDatabase;
+	private $db;
 	private $reservationId;
 	private $deviceId;
 	private $userId;
@@ -24,8 +24,8 @@ class Reservation {
 
 	private $missed = NULL;
 
-	public function __construct(PDO $sqlDatabase) {
-		$this->sqlDatabase = $sqlDatabase;
+	public function __construct(PDO $db) {
+		$this->db = $db;
 		$this->reservationId = 0;
 		$this->userId = 0;
 		$this->deviceId = 0;
@@ -70,9 +70,9 @@ class Reservation {
 		if ($this->CheckEventConflicts($this->deviceId, $this->userId, $this->start, $this->stop) == 1) {
 			$queryCreateReservation = "INSERT INTO reservation_info (device_id,user_id,start,stop,description,training,date_created)
 										VALUES(:device_id,:user_id,:start,:stop,:description,:training,NOW())";
-			$createReservation = $this->sqlDatabase->prepare($queryCreateReservation);
+			$createReservation = $this->db->prepare($queryCreateReservation);
 			$createReservation->execute(array(':device_id'=>$this->deviceId, ':user_id'=>$this->userId, ':start'=>$this->start, ':stop'=>$this->stop, ':description'=>$this->description, ':training'=>$this->training));
-			$this->reservationId = $this->sqlDatabase->lastInsertId();
+			$this->reservationId = $this->db->lastInsertId();
 			return 1;
 		} else {
 			return 0;
@@ -86,7 +86,7 @@ class Reservation {
 	 */
 	public function LoadReservation($reservationId) {
 		$queryLoadReservationInfo = "SELECT * FROM reservation_info WHERE id=:reservation_id";
-		$reservationInfo = $this->sqlDatabase->prepare($queryLoadReservationInfo);
+		$reservationInfo = $this->db->prepare($queryLoadReservationInfo);
 		$reservationInfo->execute(array(':reservation_id'=>$reservationId));
 		$reservationInfoArr = $reservationInfo->fetch(PDO::FETCH_ASSOC);
 		if ($reservationInfoArr) {
@@ -109,7 +109,7 @@ class Reservation {
 	 */
 	public function DeleteReservation() {
 		$queryDeleteReservation = "UPDATE reservation_info SET deleted = 1 WHERE id=:reservation_id";
-		$deleteReservationInfo= $this->sqlDatabase->prepare($queryDeleteReservation);
+		$deleteReservationInfo= $this->db->prepare($queryDeleteReservation);
 		$deleteReservationInfo->execute(array(':reservation_id'=>$this->reservationId));
 	}
 
@@ -121,7 +121,7 @@ class Reservation {
 		//No update feature needed yet
 		if ($this->CheckEventConflicts($this->deviceId, $this->userId, $this->start, $this->stop, $this->reservationId) == 1) {
 			$queryUpdateReservation = "UPDATE reservation_info SET start=:start, stop=:stop, description=:description, training=:training WHERE id=:reservation_id" ;
-			$updateReservation = $this->sqlDatabase->prepare($queryUpdateReservation);
+			$updateReservation = $this->db->prepare($queryUpdateReservation);
 			$updateReservation->execute(array(':start'=>$this->start, ':stop'=>$this->stop, ':reservation_id'=>$this->reservationId, ':description'=>$this->description, ':training'=>$this->training));
 
 			return 1;
@@ -132,7 +132,7 @@ class Reservation {
 	
 	public function FinishEarly(){
 		$sql = "UPDATE reservation_info SET finished_early=NOW() where id=:reservation_id";
-		$updstmt = $this->sqlDatabase->prepare($sql);
+		$updstmt = $this->db->prepare($sql);
 		$updstmt->execute(array(':reservation_id'=>$this->reservationId));
 		return 1;
 	}
@@ -157,7 +157,7 @@ class Reservation {
 					OR
 						(UNIX_TIMESTAMP(start) >= UNIX_TIMESTAMP(:start_time_unix) AND UNIX_TIMESTAMP(stop) <= UNIX_TIMESTAMP(:stop_time_unix ))
 					) AND ID!=:reservation_id";
-		$deviceconflicts = $this->sqlDatabase->prepare($queryConflicts);
+		$deviceconflicts = $this->db->prepare($queryConflicts);
 		$deviceconflicts->execute(array(':device_id'=>$deviceId, ':start_time_unix'=>$startTimeUnix, ':stop_time_unix'=>$stopTimeUnix, ':reservation_id'=>$reservationId));
 		$conflictsArr = $deviceconflicts->fetch(PDO::FETCH_ASSOC);
 
@@ -180,7 +180,7 @@ class Reservation {
 			} else {
 				// Existing event		
 				$queryTime = "SELECT UNIX_TIMESTAMP(start) as start from reservation_info where id=:reservation_id";
-				$timestmt = $this->sqlDatabase->prepare($queryTime);
+				$timestmt = $this->db->prepare($queryTime);
 				$timestmt->execute(array(':reservation_id'=>$reservationId));
 				$timeArr = $timestmt->fetch(PDO::FETCH_ASSOC);
 				if($timeArr['start'] - 2*60*60 < time()){
@@ -207,7 +207,7 @@ class Reservation {
      */
 	public function GetAvailableReservationMonths() {
 		$queryAvailableMonths = "SELECT DISTINCT DATE_FORMAT(start,'%M %Y') AS mon_yr, MONTH(start) AS month, YEAR(start) AS year FROM reservation_info ORDER BY start DESC";
-		$availableMonths = $this->sqlDatabase->query($queryAvailableMonths);
+		$availableMonths = $this->db->query($queryAvailableMonths);
 		return $availableMonths;
 	}
 
@@ -215,7 +215,7 @@ class Reservation {
 	public function GetMissedReservations($year, $month) {
 		$sql = "select * from reservation_info where id not in (select r.id from reservation_info r inner join `session` s on s.start <= r.stop and s.stop >= r.start where month(r.start)=:month and year(r.start)=:year and r.device_id=s.device_id and r.user_id=s.user_id) and year(`start`)=:year and month(`start`)=:month and `stop`<NOW() and deleted=0";
 		$args = array(':year'=>$year, ':month'=>$month);
-		$missedReservations = $this->sqlDatabase->prepare($sql);
+		$missedReservations = $this->db->prepare($sql);
 		$missedReservations->execute($args);
 		return $missedReservations->fetchAll(PDO::FETCH_ASSOC);
 	}
@@ -298,7 +298,7 @@ class Reservation {
 		$queryParameters[':start']=$start;
 		$queryParameters[':stop']=$end;
 
-		$events = $this->sqlDatabase->prepare($queryEvents);
+		$events = $this->db->prepare($queryEvents);
 		$events->execute($queryParameters);
 		$eventsArr = $events->fetchAll(PDO::FETCH_ASSOC);
 
@@ -355,7 +355,7 @@ class Reservation {
 		$queryParameters[':start']=$start;
 		$queryParameters[':stop']=$end;
 
-		$events = $this->sqlDatabase->prepare($queryEvents);
+		$events = $this->db->prepare($queryEvents);
 		$events->execute($queryParameters);
 		$eventsArr = $events->fetchAll(PDO::FETCH_ASSOC);
 
@@ -370,7 +370,7 @@ class Reservation {
 	public function getMissed($id) {
 		$sql = "select (case UNIX_TIMESTAMP(r.stop)<UNIX_TIMESTAMP(NOW()) and d.status_id!=3 when true then count(r.id) when false then 1 end) as count from reservation_info r inner join `session` s on s.start<=r.stop and s.stop>=r.start inner join device d on d.id=r.device_id where r.device_id=s.device_id and r.user_id=s.user_id and r.id=:id";
 		$args = array(":id"=>$id);
-		$missed = $this->sqlDatabase->prepare($sql);
+		$missed = $this->db->prepare($sql);
 		$missed->execute($args);
 		$missed = $missed->fetch(PDO::FETCH_ASSOC);
 		return $missed['count']==0;

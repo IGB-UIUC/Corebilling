@@ -7,15 +7,16 @@
  */
 class Articles
 {
-    private $sqlDataBase;
+    private $db;
+    
     private $userId;
     private $title;
     private $description;
     private $articleId;
 
-    public function __construct(PDO $sqlDataBase)
+    public function __construct(PDO $db)
     {
-        $this->sqlDataBase = $sqlDataBase;
+        $this->db = $db;
     }
 
     public function __destruct()
@@ -36,9 +37,9 @@ class Articles
 
         $queryAddArticle = "INSERT INTO articles (created,text,title,user_id)VALUES(NOW(),:description, :title, :user_id)";
 
-        $addArticle = $this->sqlDataBase->prepare($queryAddArticle);
+        $addArticle = $this->db->prepare($queryAddArticle);
         $addArticle->execute(array(':description' => $description, ':title' => $title, ':user_id' => $userId));
-        $this->articleId = $this->sqlDataBase->lastInsertId();
+        $this->articleId = $this->db->lastInsertId();
     }
 
     /**Load an article using the article ID
@@ -47,7 +48,7 @@ class Articles
     public function LoadArticle($articleId)
     {
         $queryLoadArticle = "SELECT * FROM articles WHERE id=:article_id";
-        $loadArticle = $this->sqlDataBase->prepare($queryLoadArticle);
+        $loadArticle = $this->db->prepare($queryLoadArticle);
         $loadArticle->execute(array(':article_id' => $articleId));
         $loadArticleArr = $loadArticle->fetch(PDO::FETCH_ASSOC);
         if ($loadArticleArr) {
@@ -64,7 +65,7 @@ class Articles
     public function RemoveArticle($articleId)
     {
         $queryDeleteArticle = "DELETE FROM articles WHERE id=:article_id";
-        $deleteArticle = $this->sqlDataBase->prepare($queryDeleteArticle);
+        $deleteArticle = $this->db->prepare($queryDeleteArticle);
         $deleteArticle->execute(array('article_id' => $articleId));
     }
 
@@ -74,7 +75,7 @@ class Articles
     public function UpdateArticle()
     {
         $queryUpdateArticle = "UPDATE articles SET created=NOW(), text=:description, title=:title, user_id=:user_id WHERE id=:articleid";
-        $updateArticle = $this->sqlDataBase->prepare($queryUpdateArticle);
+        $updateArticle = $this->db->prepare($queryUpdateArticle);
         $updateArticle->execute(array(':description' => $this->description, ':title' => $this->title, ':user_id' => $this->userId, ':articleid' => $this->articleId));
     }
 
@@ -84,7 +85,7 @@ class Articles
     public function GetArticles()
     {
         $queryArticleList = "SELECT * FROM articles ORDER BY created DESC";
-        $articleListArr = $this->sqlDataBase->query($queryArticleList);
+        $articleListArr = $this->db->query($queryArticleList);
 
         return $articleListArr;
     }

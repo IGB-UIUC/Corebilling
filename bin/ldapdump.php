@@ -11,11 +11,11 @@ if(LDAPMAN_API_ENABLED){
 	$ldapman = new LdapManager(LDAPMAN_API_URL);
 }
 
-$selectedUser = new User($sqlDataBase);
+$selectedUser = new User($db);
 $allUsers = $selectedUser->GetAllUsers();
-$dev = new Device($sqlDataBase);
+$dev = new Device($db);
 $allDevices = $dev->GetDevicesList();
-$accessControl = new AccessControl($sqlDataBase);
+$accessControl = new AccessControl($db);
 
 foreach($allDevices as $device){
 	if($device['status_id']==1){ // Only devices with tracking enabled

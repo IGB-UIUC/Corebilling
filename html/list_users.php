@@ -8,10 +8,10 @@ if(!$login_user->isAdmin()){
 
 $ldapSearchResults = array();
 
-$selectedUser = new User($sqlDataBase);
-$userDepartment = new Department($sqlDataBase);
-$rate = new Rate($sqlDataBase);
-$group = new Group($sqlDataBase);
+$selectedUser = new User($db);
+$userDepartment = new Department($db);
+$rate = new Rate($db);
+$group = new Group($db);
 
 ?>
 

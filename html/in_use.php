@@ -11,7 +11,7 @@ require_once 'includes/header.inc.php';
 	</tr>
 	
 	<?php
-	$device = new Device($sqlDataBase);
+	$device = new Device($db);
 	$devicesInUse = $device->GetDevicesInUse();
 	
 	foreach($devicesInUse as $id=>$deviceUseInfo) {

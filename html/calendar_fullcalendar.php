@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/header.inc.php';
-$device = new Device($sqlDataBase);
+$device = new Device($db);
 
 if (isset ($_POST ['deviceSelected'])) {
 	if($_POST['deviceSelected']<0){

@@ -2,7 +2,8 @@
 
 class Bills
 {
-    private $sqlDataBase;
+    private $db;
+    
     private $groupBy;
     private $userId;
     private $deviceId;
@@ -14,9 +15,9 @@ class Bills
     const GROUP_DEVICE = 3;
     const GROUP_DEVICE_USER = 4;
 
-    public function __construct(PDO $sqlDataBase)
+    public function __construct(PDO $db)
     {
-        $this->sqlDataBase = $sqlDataBase;
+        $this->db = $db;
         $this->groupBy = 0; //Do not group by default
         $this->userId = 0;
         $this->deviceId = 0;
@@ -33,7 +34,7 @@ class Bills
      */
     public function VerifyBill($billId)
     {
-        $session = new Session($this->sqlDataBase);
+        $session = new Session($this->db);
         $session->LoadSession($billId);
         $session->Verify();
     }
@@ -89,7 +90,7 @@ left join departments de on de.id=u.department_id";
                 $querySelectClauseMonthUsage .= ", s.elapsed";
         }
 
-        $queryMonthUsagePrepare = $this->sqlDataBase->prepare($querySelectClauseMonthUsage . $queryTablesClauseMonthUsage . $queryWhereClauseMonthUsage, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+        $queryMonthUsagePrepare = $this->db->prepare($querySelectClauseMonthUsage . $queryTablesClauseMonthUsage . $queryWhereClauseMonthUsage, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
         $queryMonthUsagePrepare->execute($pdoParameters);
         $monthUsage = $queryMonthUsagePrepare->fetchAll(PDO::FETCH_ASSOC);
 
@@ -146,7 +147,7 @@ left join departments de on de.id=u.department_id";
                 $querySelectClauseMonthUsage .= ", s.elapsed";
         }
 
-        $queryMonthUsagePrepare = $this->sqlDataBase->prepare($querySelectClauseMonthUsage . $queryTablesClauseMonthUsage . $queryWhereClauseMonthUsage, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+        $queryMonthUsagePrepare = $this->db->prepare($querySelectClauseMonthUsage . $queryTablesClauseMonthUsage . $queryWhereClauseMonthUsage, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
         $queryMonthUsagePrepare->execute($pdoParameters);
         $monthUsage = $queryMonthUsagePrepare->fetchAll(PDO::FETCH_ASSOC);
 
@@ -160,7 +161,7 @@ left join departments de on de.id=u.department_id";
     public function GetAvailableBillingMonths()
     {
         $queryAvailableMonths = "SELECT DISTINCT DATE_FORMAT(start,'%M %Y') AS mon_yr, MONTH(start) AS month, YEAR(start) AS year FROM session ORDER BY start DESC";
-        $availableMonths = $this->sqlDataBase->query($queryAvailableMonths);
+        $availableMonths = $this->db->query($queryAvailableMonths);
         return $availableMonths;
     }
 
@@ -170,8 +171,8 @@ left join departments de on de.id=u.department_id";
     public function SetToDefaultCFOP($sessionIdArray)
     {
         //Load user cfop and session objects
-        $userCfop = new UserCfop($this->sqlDataBase);
-        $billSession = new Session($this->sqlDataBase);
+        $userCfop = new UserCfop($this->db);
+        $billSession = new Session($this->db);
 
         //Cycle through each session bill for the month
         foreach($sessionIdArray as $sessionId)

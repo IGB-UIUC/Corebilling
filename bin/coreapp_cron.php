@@ -47,7 +47,7 @@ $queryUnusedReservations = "SELECT u.first,u.last,u.email,u.user_name, ei.start,
                                         )
                                 )
 				";
-$unusedReservations = $sqlDataBase->query($queryUnusedReservations);
+$unusedReservations = $db->query($queryUnusedReservations);
 
 if(isset($unusedReservations))
 {
@@ -61,7 +61,7 @@ if(isset($unusedReservations))
                 	$subject = "Unused reserved time";
 	
         		$queryUserAdmins = "SELECT email,id FROM users WHERE usertypeid=".$userTypeAdmin;
-              		$adminUsers = $sqlDataBase->query($queryUserAdmins);
+              		$adminUsers = $db->query($queryUserAdmins);
              		//Email the user the event blongs too
              		$to = $unusedReservation['email'];
 		        $headers = 'From: core-training@igb.illinois.edu' . "\r\n" .

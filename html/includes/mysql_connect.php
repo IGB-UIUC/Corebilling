@@ -4,9 +4,9 @@
 //mysql_select_db(DB_NAME,$dbc) OR die ('could not select the database: '.mysql_error());
 
 //Open SQL connection
-//$sqlDataBase = new SQLDataBase(DB_HOST,DB_NAME, DB_USER, DB_PASSWORD);
+//$db = new SQLDataBase(DB_HOST,DB_NAME, DB_USER, DB_PASSWORD);
 try{
-    $sqlDataBase = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME,DB_USER,DB_PASSWORD);
+    $db = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME,DB_USER,DB_PASSWORD);
 }catch(PDOException $e)
 {
     echo $e->getMessage();

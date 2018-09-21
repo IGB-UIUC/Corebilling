@@ -1,7 +1,8 @@
 <?php
 class User
 {
-
+	private $db;
+	
 	const ACTIVE = 5, HIDDEN = 6, DISABLED = 7;
 	const STATUS_TYPE_USER=2;
 
@@ -15,15 +16,14 @@ class User
 	private $rateid;
 	private $statusid;
 	private $userRoleId;
-	private $sqlDataBase;
 	private $dateAdded;
 	private $secureKey;
 	private $userCfop;
 	private $certified;
 	
-	public function __construct(PDO $sqlDataBase)
+	public function __construct(PDO $db)
 	{
-		$this->sqlDataBase = $sqlDataBase;
+		$this->db = $db;
 		$this->userId=0;
 		$this->username="";
 		$this->first="";
@@ -35,7 +35,7 @@ class User
 		$this->statusid=7;
 		$this->dateAdded="";
 		$this->secureKey="";
-		$this->userCfop = new UserCfop($this->sqlDataBase);
+		$this->userCfop = new UserCfop($this->db);
 		$this->certified = 0;
 		$this->userRoleId = 3;
 	}
@@ -73,9 +73,9 @@ class User
 		{
 			$queryAddUser = "INSERT INTO users (user_name, first,last,email,department_id,group_id,rate_id,status_id,date_added,secure_key,user_role_id,certified)
 								   VALUES(:user_name,:first,:last,:email,:department_id,:group_id,:rate_id,:status_id,NOW(), MD5(RAND()),:user_role_id,:certified)";
-			$addUserPrepare = $this->sqlDataBase->prepare($queryAddUser);
+			$addUserPrepare = $this->db->prepare($queryAddUser);
 			$addUserPrepare->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$rateId,':status_id'=>$statusId,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0));
-			$this->userId=$this->sqlDataBase->lastInsertId();
+			$this->userId=$this->db->lastInsertId();
 			log::log_message("Added user '$username'");
 		}
 	}
@@ -117,7 +117,7 @@ class User
 	public function LoadUser($id)
 	{
 		$queryUserInfo = "SELECT * FROM users WHERE id=:user_id";
-		$userInfo=$this->sqlDataBase->prepare($queryUserInfo);
+		$userInfo=$this->db->prepare($queryUserInfo);
 		$userInfo->execute(array(":user_id"=>$id));
 		$userInfoArr = $userInfo->fetch(PDO::FETCH_ASSOC);
 		$this->userId = $userInfoArr["id"];
@@ -152,7 +152,7 @@ class User
 							user_role_id=:user_role_id,
 							certified=:certified
 							WHERE id=:user_id";
-		$updateUserPrep = $this->sqlDataBase->prepare($queryUpdateUser);
+		$updateUserPrep = $this->db->prepare($queryUpdateUser);
 		return $updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0,':user_id'=>$this->userId));
 	}
 
@@ -163,7 +163,7 @@ class User
 	public function Exists($username)
 	{
 		$queryUserName = "SELECT id FROM users WHERE user_name = :user_name";
-		$userName = $this->sqlDataBase->prepare($queryUserName);
+		$userName = $this->db->prepare($queryUserName);
 		$userName->execute(array(":user_name"=>$username));
 		$userNameArr = $userName->fetch(PDO::FETCH_ASSOC);
 
@@ -183,7 +183,7 @@ class User
 			return true;
 		} else {
 			$query = "SELECT * FROM access_control WHERE device_id=:resource_id AND user_id=:user_id LIMIT 1";
-			$stmt = $this->sqlDataBase->prepare($query);
+			$stmt = $this->db->prepare($query);
 	        $stmt->execute(array(":resource_id" => $deviceId, ":user_id" => $this->GetUserId()));
 	        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 	        return $result !== false;
@@ -192,14 +192,14 @@ class User
 	
 	public function giveAccessTo($deviceId){
 		$query = "INSERT INTO access_control (user_id, device_id) VALUES (:userid,:deviceid)";
-		$stmt = $this->sqlDataBase->prepare($query);
+		$stmt = $this->db->prepare($query);
 		if( $stmt->execute(array(":userid"=>$this->GetUserId(),":deviceid"=>$deviceId)) ){
 			log::log_message("Gave user '".$this->GetUserName()."' access to device $deviceId");
 		}
 	}
 	public function removeAccessTo($deviceId){
 		$query = "DELETE FROM access_control WHERE user_id=:userid AND device_id=:deviceid LIMIT 1";
-		$stmt = $this->sqlDataBase->prepare($query);
+		$stmt = $this->db->prepare($query);
 		if( $stmt->execute(array(":userid" => $this->GetUserId(), ":deviceid" => $deviceId)) ){
 			log::log_message("Removed access to device $deviceId for user '".$this->GetUserName()."'");
 		}
@@ -211,11 +211,11 @@ class User
 	public function UpdateSecureKey()
 	{
 		$queryUpdateSecureKey = "UPDATE users SET secure_key=MD5(RAND()) WHERE id = :user_id";
-		$updateSecureKey = $this->sqlDataBase->prepare($queryUpdateSecureKey);
+		$updateSecureKey = $this->db->prepare($queryUpdateSecureKey);
 		$updateSecureKey->execute(array(":user_id"=>$this->userId));
 
 		$queryGetSecureKey = "SELECT secure_key FROM users WHERE id = :user_id";
-		$secureKey = $this->sqlDataBase->prepare($queryGetSecureKey);
+		$secureKey = $this->db->prepare($queryGetSecureKey);
 		$secureKey->execute(array(":user_id"=>$this->userId));
 		$secureKeyArr = $secureKey->fetch(PDO::FETCH_ASSOC);
 		$this->secureKey = $secureKeyArr['secure_key'];
@@ -227,7 +227,7 @@ class User
 	public function GetAllUsers()
 	{
 	   $queryAllUsers = "SELECT id, user_name FROM users ORDER BY user_name";
-	   $allUsers = $this->sqlDataBase->prepare($queryAllUsers);
+	   $allUsers = $this->db->prepare($queryAllUsers);
 	   $allUsers->execute();
 	   $allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
 	   return $allUsersArr;
@@ -241,7 +241,7 @@ class User
 									LEFT JOIN groups g ON (g.id=u.group_id)
 									LEFT JOIN departments d ON (d.id=u.department_id)
 									LEFT JOIN status s ON s.id=u.status_id";
-		$allUserInfo = $this->sqlDataBase->prepare($queryAllUserInfo);
+		$allUserInfo = $this->db->prepare($queryAllUserInfo);
 		$allUserInfo->execute();
 		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
 
@@ -259,7 +259,7 @@ class User
 								from users u left join groups g on g.id=u.group_id left join departments d on d.id=u.department_id left join `session` s on s.user_id=u.id
 								where u.`status_id`=5 and ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear) 
 								group by u.user_name";
-		$allUserInfo = $this->sqlDataBase->prepare($queryAllUserInfo);
+		$allUserInfo = $this->db->prepare($queryAllUserInfo);
 		$allUserInfo->execute(array(':startyear'=>$startyear, ':startmonth'=>$startmonth, ':endyear'=>$endyear, ':endmonth'=>$endmonth));
 		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
 
@@ -273,7 +273,7 @@ class User
 	public function GetUsers($statusId)
 	{
 		$queryAllUsers = "SELECT id, user_name FROM users WHERE status_id=:status_id ORDER BY user_name";
-		$allUsers = $this->sqlDataBase->prepare($queryAllUsers);
+		$allUsers = $this->db->prepare($queryAllUsers);
 		$allUsers->execute(array(":status_id"=>$statusId));
 		$allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
 
@@ -287,7 +287,7 @@ class User
 	public function GetGroupUsers($groupId)
 	{
 		$queryGroupUsers = "SELECT * FROM users WHERE group_id=:group_id";
-		$groupUsers = $this->sqlDataBase->prepare($queryGroupUsers);
+		$groupUsers = $this->db->prepare($queryGroupUsers);
 		$groupUsers->execute(array(":group_id"=>$groupId));
 		$groupUsersArr = $groupUsers->fetchAll(PDO::FETCH_ASSOC);
 
@@ -301,7 +301,7 @@ class User
 	public function GetDepartmentUsers($departmentId)
 	{
 		$queryDepartmentUsers = "SELECT * FROM users WHERE department_id=:department_id";
-		$departmentUsers = $this->sqlDataBase->prepare($queryDepartmentUsers);
+		$departmentUsers = $this->db->prepare($queryDepartmentUsers);
 		$departmentUsers->execute(array(":department_id"=>$departmentId));
 		$departmentUsersArr = $departmentUsers->fetchAll(PDO::FETCH_ASSOC);
 
@@ -314,7 +314,7 @@ class User
 	public function GetUserRoles()
 	{
 		$queryUserRoles = "SELECT * FROM user_roles";
-		$userRoles = $this->sqlDataBase->prepare($queryUserRoles);
+		$userRoles = $this->db->prepare($queryUserRoles);
 		$userRoles->execute();
 		return $userRoles->fetchAll(PDO::FETCH_ASSOC);
 	}
@@ -322,7 +322,7 @@ class User
 	public function GetUserStatusList()
 	{
 		$queryUserStatusList = "SELECT * FROM status WHERE type=:type";
-		$userStatusList = $this->sqlDataBase->prepare($queryUserStatusList);
+		$userStatusList = $this->db->prepare($queryUserStatusList);
 		$userStatusList->execute(array(':type'=>User::STATUS_TYPE_USER));
 		$userStatusListArr = $userStatusList->fetchAll(PDO::FETCH_ASSOC);
 
@@ -489,7 +489,7 @@ class User
 	
 	public function GetLastLogin(){
 		$query = "select max(`stop`) as last_login from `session` where user_id=?";
-		$stmt = $this->sqlDataBase->prepare($query);
+		$stmt = $this->db->prepare($query);
 		$stmt->execute(array($this->userId));
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		return $row['last_login'];

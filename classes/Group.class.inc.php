@@ -1,15 +1,15 @@
 <?php
 class Group
 {
-    private $sqlDataBase;
+    private $db;
     private $groupId;
     private $groupName;
     private $description;
     private $departmentId;
 
-	public function __construct(PDO $sqlDataBase)
+	public function __construct(PDO $db)
 	{
-		$this->sqlDataBase = $sqlDataBase;
+		$this->db = $db;
         $this->groupName="New Group";
 	}
 	
@@ -26,9 +26,9 @@ class Group
     public function AddGroup($groupName, $description, $departmentId)
 	{
 		$queryAddGroup = "INSERT INTO groups (group_name, description, department_id)VALUES(:group_name,:description,:department_id)";
-        $addGroupPrep = $this->sqlDataBase->prepare($queryAddGroup);
+        $addGroupPrep = $this->db->prepare($queryAddGroup);
         $addGroupPrep->execute(array(':group_name'=>$groupName,':description'=>$description,':department_id'=>$departmentId));
-        $groupId = $this->sqlDataBase->lastInsertId();
+        $groupId = $this->db->lastInsertId();
         $this->groupName = $groupName;
         $this->description = $description;
         $this->departmentId = $departmentId;
@@ -42,7 +42,7 @@ class Group
     public function LoadGroup($groupId)
 	{
 		$queryGroupInfo = "SELECT * FROM groups WHERE id=:id";
-        $groupInfo = $this->sqlDataBase->prepare($queryGroupInfo);
+        $groupInfo = $this->db->prepare($queryGroupInfo);
         $groupInfo->execute(array(':id'=>$groupId));
         $groupInfoArr = $groupInfo->fetch(PDO::FETCH_ASSOC);
         $this->groupName = $groupInfoArr['group_name'];
@@ -62,7 +62,7 @@ class Group
                                 department_id=:department_id
                                 WHERE id=:group_id";
 
-        $updateGroup = $this->sqlDataBase->prepare($queryUpdateGroup);
+        $updateGroup = $this->db->prepare($queryUpdateGroup);
         $updateGroup->execute(array(":group_name"=>$this->groupName,":description"=>$this->description,":department_id"=>$this->departmentId,":group_id"=>$this->groupId));
     }
 
@@ -72,7 +72,7 @@ class Group
     public function GetGroupsList()
 	{
 		$queryGroupList = "SELECT id, group_name FROM groups ORDER BY group_name";
-        $groupList = $this->sqlDataBase->query($queryGroupList);
+        $groupList = $this->db->query($queryGroupList);
         $groupListArr = $groupList->fetchAll(PDO::FETCH_ASSOC);
 
         return $groupListArr;
@@ -85,7 +85,7 @@ class Group
     public function Exists($groupName)
     {
         $queryGroup = "SELECT COUNT(*) FROM groups WHERE group_name=:group_name";
-        $group = $this->sqlDataBase->prepare($queryGroup);
+        $group = $this->db->prepare($queryGroup);
         $group->execute(array(':group_name'=>$groupName));
         $groupCount = $group->fetchColumn();
 
@@ -103,7 +103,7 @@ class Group
     {
         if($this->getGroupId())
         {
-            $user = new User($this->sqlDataBase);
+            $user = new User($this->db);
             $groupMembers = $user->GetGroupUsers($this->groupId);
             return $groupMembers;
         }

@@ -6,7 +6,8 @@
  * Used to authenticate a user using ldap and set session variables and authentication keys.
  */
 class Authenticate {
-    private $sqlDataBase;
+    private $db;
+    
     private $ldapAuth;
     private $authenticatedUser;
     private $logonError;
@@ -17,12 +18,12 @@ class Authenticate {
     public $lastActivity = null;
     public $sessMethod = null;
 
-    public function __construct(PDO $sqlDataBase, LdapAuth $ldapAuth)
+    public function __construct(PDO $db, LdapAuth $ldapAuth)
     {
-        $this->sqlDataBase = $sqlDataBase;
+        $this->db = $db;
         $this->ldapAuth = $ldapAuth;
         $this->verified = false;
-        $this->authenticatedUser = new User($this->sqlDataBase);
+        $this->authenticatedUser = new User($this->db);
     }
 
     public function __destruct()
@@ -111,7 +112,7 @@ class Authenticate {
 	    $this->LoadSession();
         if($this->user_id != null) {
             if(time() - $this->lastActivity < LOGIN_TIMEOUT) {
-                $this->authenticatedUser = new User ( $this->sqlDataBase );
+                $this->authenticatedUser = new User ( $this->db );
                 $this->authenticatedUser->LoadUser($this->user_id);
 
                 if($this->authenticatedUser->GetSecureKey() == $this->key)

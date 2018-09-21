@@ -8,12 +8,12 @@ if(!$login_user->isAdmin()){
 
 $ldapSearchResults = array();
 
-$selectedUser = new User($sqlDataBase);
-$userCfop = new UserCfop($sqlDataBase);
-$userDepartment = new Department($sqlDataBase);
-$rate = new Rate($sqlDataBase);
-$group = new Group($sqlDataBase);
-$device = new Device($sqlDataBase);
+$selectedUser = new User($db);
+$userCfop = new UserCfop($db);
+$userDepartment = new Department($db);
+$rate = new Rate($db);
+$group = new Group($db);
+$device = new Device($db);
 
 $ldapinfo = null;
 if (isset($_REQUEST['user_id'])) {
@@ -87,7 +87,7 @@ if (isset($_POST['update_user'])) {
 	if($selectedUser->UpdateUser()){
 		$message .= html::success_message("User updated successfully");
 	} else {
-		$error = $sqlDataBase->errorInfo();
+		$error = $db->errorInfo();
 		$message .= html::error_message("User update failed: ".$error[2]);
 	}
 
@@ -254,7 +254,7 @@ if (isset($_REQUEST['user_id'])) {
 											$userStatus = 2;
 											$queryUsersStatus = "SELECT statusname,id FROM status WHERE type=" . $userStatus;
 					
-											foreach ($sqlDataBase->query($queryUsersStatus) as $usersStatus) {
+											foreach ($db->query($queryUsersStatus) as $usersStatus) {
 												echo "<option value=" . $usersStatus['id'];
 												if ($usersStatus['id'] == $selectedUser->GetStatusId()) {
 													echo " SELECTED";

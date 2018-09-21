@@ -4,13 +4,13 @@
 // error_log("session attempt",0);
 if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key'])) {
     include('includes/initializer.php');
-    $deviceInfo = new Device($sqlDataBase);
+    $deviceInfo = new Device($db);
     $deviceInfo->LoadDevice(0, $_POST['key']);
     //check if device token matches
 
     if ($deviceInfo->GetDeviceId() > 0) {
-        $sessionInfo = new Session($sqlDataBase);
-        $userInfo = new User($sqlDataBase);
+        $sessionInfo = new Session($db);
+        $userInfo = new User($db);
         $userId = $userInfo->Exists($_POST['username']);
 
         //check if user_name exists

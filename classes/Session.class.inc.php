@@ -23,9 +23,9 @@ class Session
 	private $rate;
 
 	
-	public function __construct(PDO $sqlDataBase)
+	public function __construct(PDO $db)
 	{
-		$this->sqlDataBase = $sqlDataBase;
+		$this->db = $db;
 		$this->sessionId=0;
 		$this->userId=0;
 		$this->start="";
@@ -53,7 +53,7 @@ class Session
 		{
 			$queryOpenSession = "SELECT id FROM session WHERE user_id=:user_id AND device_id=:device_id AND (TIMESTAMPDIFF(MINUTE,stop,NOW()) < 15) ORDER BY id DESC";
 
-			$openSession = $this->sqlDataBase->prepare($queryOpenSession);
+			$openSession = $this->db->prepare($queryOpenSession);
             $openSession->execute(array(':device_id'=>$deviceId,':user_id'=>$userId));
             $openSessionArr = $openSession->fetch(PDO::FETCH_ASSOC);
 
@@ -62,13 +62,13 @@ class Session
 			{
 // 				error_log("Open session detected updating".$userId,0);
 				$queryUpdateSession = "UPDATE session SET stop=NOW(), elapsed=TIMESTAMPDIFF(MINUTE,start,NOW()) WHERE id =:id";
-                $updateSession = $this->sqlDataBase->prepare($queryUpdateSession);
+                $updateSession = $this->db->prepare($queryUpdateSession);
                 $updateSession->execute(array(':id'=>$openSessionArr['id']));
 			}
 			else
 			{
 				error_log("Opening session for user ".$userId." on device ".$deviceId,0);
-                $userCfop = new UserCfop($this->sqlDataBase);
+                $userCfop = new UserCfop($this->db);
                 $defaultCfopId = $userCfop->LoadDefaultCfopl($userId);
 				$queryStartSession = "INSERT INTO session (user_id,device_id,start,stop,rate,rate_type_id,min_use_time,cfop_id,rate_id)
 				                        SELECT
@@ -80,20 +80,20 @@ class Session
 				                          AND rate_id=(SELECT rate_id FROM users
 				                          WHERE id=:user_id LIMIT 1)";
 				 error_log($userId." ".$deviceId." ".$defaultCfopId,0);
-				 $startSession = $this->sqlDataBase->prepare($queryStartSession);
+				 $startSession = $this->db->prepare($queryStartSession);
                  $startSession->execute(array(':user_id'=>$userId,':device_id'=>$deviceId,':default_cfop_id'=>$defaultCfopId));
-                 $sessionId = $this->sqlDataBase->lastInsertId();
+                 $sessionId = $this->db->lastInsertId();
 			}
 
 			$queryUpdateDeviceUser = "UPDATE device SET loggeduser=:loggeduser, lasttick=NOW() WHERE id=:id";
-            $updateDeviceUser = $this->sqlDataBase->prepare($queryUpdateDeviceUser);
+            $updateDeviceUser = $this->db->prepare($queryUpdateDeviceUser);
             $updateDeviceUser->execute(array(':loggeduser'=>$userId,':id'=>$deviceId));
 
 		}	
 		else
 		{
 			$queryUpdateDeviceNonUser = "UPDATE device SET loggeduser=0, lasttick=NOW() WHERE id=:id";
-			$updateDeviceNonUser = $this->sqlDataBase->prepare($queryUpdateDeviceNonUser);
+			$updateDeviceNonUser = $this->db->prepare($queryUpdateDeviceNonUser);
             $updateDeviceNonUser->execute(array(':id'=>$deviceId));
 		}
 	}
@@ -120,7 +120,7 @@ class Session
 		$queryInsertSession="INSERT INTO session (user_id,start,stop,status,device_id,description,elapsed,cfop_id)
 		                        VALUES(:user_id,:start,:stop,:status,device_id,:description,TIMESTAMPDIFF(MINUTE,:start,:stop),:cfop_id)";
 
-		$insertSessionInfo = $this->sqlDataBase->prepare($queryInsertSession);
+		$insertSessionInfo = $this->db->prepare($queryInsertSession);
         $insertSessionInfo->execute(array(':user_id'=>$this->userId,':start'=>$this->start,':stop'=>$this->stop,':status'=>$this->status,':device_id'=>$this->deviceId,':description'=>$this->description,':cfop_id'=>$this->cfopId));
 
         $this->sessionId;
@@ -132,7 +132,7 @@ class Session
 	public function LoadSession($id)
 	{
 		$querySessionInfo = "SELECT * FROM session WHERE id=:session_id";
-		$sessionInfo=$this->sqlDataBase->prepare($querySessionInfo);
+		$sessionInfo=$this->db->prepare($querySessionInfo);
         $sessionInfo->execute(array(':session_id'=>$id));
         $sessionInfoArr = $sessionInfo->fetch(PDO::FETCH_ASSOC);
 		$this->sessionId = $sessionInfoArr["id"];
@@ -163,7 +163,7 @@ class Session
 		                        cfop_id=\"".$this->cfopId."\",
 		                        rate=".$this->rate."
 		                       WHERE id=".$this->sessionId;
-		$updateSession = $this->sqlDataBase->prepare($queryUpdateSession);
+		$updateSession = $this->db->prepare($queryUpdateSession);
         $updateSession->execute(array(
                             ':user_id'=>$this->userId,
                             ':start'=>$this->start,
@@ -183,7 +183,7 @@ class Session
 	public function Delete()
 	{
 		$queryDeleteSession = "DELETE FROM session WHERE id=:id";
-		$deleteSession = $this->sqlDataBase->prepare($queryDeleteSession);
+		$deleteSession = $this->db->prepare($queryDeleteSession);
         $deleteSession->execute(array(':id'=>$this->sessionId));
 	}
 
@@ -193,7 +193,7 @@ class Session
     public function LoadLastSession()
     {
         $queryLastSession = "SELECT id FROM sessions ORDER BY start DESC LIMIT 1";
-        $lastSessionId = $this->sqlDataBase->prepare($queryLastSession);
+        $lastSessionId = $this->db->prepare($queryLastSession);
         $lastSessionId->execute();
         $lastSessionIdArr = $lastSessionId->fetch(PDO::FETCH_ASSOC);
         $this->LoadSession($lastSessionIdArr["id"]);
@@ -205,7 +205,7 @@ class Session
     public function LoadFirstSession()
     {
         $queryFirstSession = "SELECT id FROM sessions ORDER BY start ASC LIMIT 1";
-        $firstSessionId = $this->sqlDataBase->prepare($queryFirstSession);
+        $firstSessionId = $this->db->prepare($queryFirstSession);
         $firstSessionId->execute();
         $firstSessionIdArr = $firstSessionId->fetch(PDO::FETCH_ASSOC);
         $this->LoadSession($firstSessionIdArr["id"]);
@@ -345,7 +345,7 @@ class Session
                 break;
         }
 
-        $sessionsUsage = $this->sqlDataBase->prepare($querySessions);
+        $sessionsUsage = $this->db->prepare($querySessions);
         $sessionsUsage->execute();
         $sessionUsageArr = $sessionsUsage->fetchAll(PDO::FETCH_ASSOC);
 

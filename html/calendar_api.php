@@ -3,14 +3,14 @@ set_time_limit(20);
 include('includes/initializer.php');
 if (isset($_POST['action']) && isset($_POST['user_id']) && isset($_POST['key'])) {
     //Load User information for user_id
-    $user = new User ($sqlDataBase);
+    $user = new User ($db);
     $user->LoadUser($_POST['user_id']);
 
     //Verify the user is who is is saying he is by comparing the user key from the database to key given to the api
     if ($user->GetSecureKey() == $_POST ['key']) {
 
         //Create reservation object and load reservation info if we are given a reservation id
-        $reservation = new Reservation ($sqlDataBase);
+        $reservation = new Reservation ($db);
         if (isset($_POST['id'])) {
             $reservation->LoadReservation($_POST ['id']);
         }

@@ -1,8 +1,8 @@
 <?php
 require_once 'includes/header.inc.php';
 
-$article = new Articles($sqlDataBase);
-$user = new User($sqlDataBase);
+$article = new Articles($db);
+$user = new User($db);
 
 $articlesList = $article->GetArticles();
 ?>

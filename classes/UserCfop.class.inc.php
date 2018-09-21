@@ -16,11 +16,11 @@ class UserCfop{
     private $active;
     private $default;
     private $createdDate;
-    private $sqlDataBase;
+    private $db;
 
-    public function __construct(PDO $sqlDataBase)
+    public function __construct(PDO $db)
     {
-            $this->sqlDataBase = $sqlDataBase;
+            $this->db = $db;
             $this->userCfopId = 0;
             $this->default = 1;
             $this->active = 1;
@@ -43,9 +43,9 @@ class UserCfop{
         $this->description = $description;
 
         $insertUserCfopl = "INSERT INTO user_cfop (user_id,cfop,description,active,default_cfop,created)VALUES(:user_id,:cfop,:description,:active,:default_cfop,NOW())";
-        $userCfoplInfo = $this->sqlDataBase->prepare($insertUserCfopl);
+        $userCfoplInfo = $this->db->prepare($insertUserCfopl);
         $userCfoplInfo->execute(array(':user_id'=>$this->userId,':cfop'=>$this->cfop,':description'=>$this->description,':active'=>$this->active,':default_cfop'=>UserCfop::DEFAULT_CFOP));
-        $this->userCfopId =$this->sqlDataBase->lastInsertId();
+        $this->userCfopId =$this->db->lastInsertId();
         $this->LoadUserCfop($this->userCfopId);
         $this->SetDefaultCfop();
         log::log_message("Added CFOP '$cfop' for user $userId");
@@ -57,7 +57,7 @@ class UserCfop{
     public function LoadUserCfop($userCfopId)
     {
         $queryUserCfop = "SELECT * FROM user_cfop WHERE id=:user_cfop_id";
-        $userCfopInfo = $this->sqlDataBase->prepare($queryUserCfop);
+        $userCfopInfo = $this->db->prepare($queryUserCfop);
         $userCfopInfo->execute(array(':user_cfop_id'=>$userCfopId));
         $userCfopArr = $userCfopInfo->fetch(PDO::FETCH_ASSOC);
         $this->userId = $userCfopArr['user_id'];
@@ -77,12 +77,12 @@ class UserCfop{
 	    }
         //mark all other user cfopls as not default
         $queryRemoveDefault = "UPDATE user_cfop SET default_cfop=".UserCfop::NON_DEFAULT_CFOP." WHERE user_id=:user_id";
-        $removeDefault = $this->sqlDataBase->prepare($queryRemoveDefault);
+        $removeDefault = $this->db->prepare($queryRemoveDefault);
         $removeDefault->execute(array(':user_id'=>$this->userId));
 
         //mark current cfop as default
         $querySetDefault = "UPDATE user_cfop SET default_cfop=".UserCfop::DEFAULT_CFOP." WHERE id=:user_cfop_id";
-        $setDefault = $this->sqlDataBase->prepare($querySetDefault);
+        $setDefault = $this->db->prepare($querySetDefault);
         $setDefault->execute(array(':user_cfop_id'=>$this->userCfopId));
     }
 
@@ -93,7 +93,7 @@ class UserCfop{
     public function LoadDefaultCfopl($userId)
     {
         $queryDefaultCfop = "SELECT id FROM user_cfop WHERE user_id=:user_id AND default_cfop=1";
-        $defaultCfop = $this->sqlDataBase->prepare($queryDefaultCfop);
+        $defaultCfop = $this->db->prepare($queryDefaultCfop);
         $defaultCfop->execute(array(':user_id'=>$userId));
         $defaultCfopArr = $defaultCfop->fetch(PDO::FETCH_ASSOC);
 
@@ -115,7 +115,7 @@ class UserCfop{
     {
         //mark as inactive
         $queryDeactivateCfop = "UPDATE user_cfop SET active=".UserCfop::NON_DEFAULT_CFOP." WHERE id=:user_cfop_id";
-        $deactivateCfop = $this->sqlDataBase->prepare($queryDeactivateCfop);
+        $deactivateCfop = $this->db->prepare($queryDeactivateCfop);
         $deactivateCfop->execute(array(':user_cfop_id'=>$this->userCfopId));
     }
 
@@ -126,7 +126,7 @@ class UserCfop{
     public function ListCfops($userId)
     {
         $queryListCfops = "SELECT * FROM user_cfop WHERE user_id=:user_id AND active=".UserCfop::ACTIVE_CFOP;
-        $listCfops = $this->sqlDataBase->prepare($queryListCfops);
+        $listCfops = $this->db->prepare($queryListCfops);
         $listCfops->execute(array(':user_id'=>$userId));
         $listCfopsArr = $listCfops->fetchAll(PDO::FETCH_ASSOC);
 
