@@ -7,44 +7,40 @@ if(!$login_user->isAdmin()){
 }
 //Declare objects
 $rateTypesList = array(Bills::CONTINUOUS_RATE => "Continuous", Bills::MONTHLY_RATE => "Monthly");
-$device = new Device($db);
-$devicesList = $device->GetDevicesList();
-$user = new User($db);
-$userList = $user->GetAllUsers();
-$group = new Group($db);
-$groupList = $group->GetGroupsList();
+$devicesList = Device::getAllDevices($db);
+$userList = User::getAllUsers($db);
+$groupList = Group::getAllGroups($db);
 $bills = new Bills($db);
 $session = new Session($db);
 $userCfop = new UserCfop($db);
 
 $sessionIdSelected = 0;
-$rowSelected = 0;
 
 //TODO check permissions here
 if (isset($_POST['createSession'])) {
 	$startTimeStamp = strtotime($_POST['startDate'] . " " . $_POST['starttime']);
 	$start = Date("Y-m-d H:i:s", $startTimeStamp);
 	$stop = Date("Y-m-d H:i:s", $startTimeStamp + ($_POST['usage'] * 60 * 60));
-	$session->CreateSession($_POST['user_id'], $start, $_POST['stop'], $_POST['status'], $_POST['device_id'], $_POST['description'], $_POST['cfop']);
-	$session->SetRate($_POST['rate'] / 60);
-	$session->UpdateSession();
+	$session->create($_POST['user_id'], $start, $_POST['stop'], $_POST['status'], $_POST['device_id'], $_POST['description'], $_POST['cfop']);
+	$session->setRate($_POST['rate'] / 60);
+	$session->update();
 	$session->ManualVerify();
 }
 
 if (isset($_POST['update_session'])) {
-	$session->LoadSession($_POST['edit_session_id']);
-	if ($session->GetUserID() == $_POST['user_id']) {
-		$session->SetCfopId($_POST['user_cfop_id']);
+	$session->load($_POST['edit_session_id']);
+	if ($session->getUserId() == $_POST['user_id']) {
+		$session->setCfopId($_POST['user_cfop_id']);
 	} else {
-		$session->SetCfopId($userCfop->LoadDefaultCfopl($_POST['user_id']));
+		$session->setCfopId($userCfop->loadDefaultCfop($_POST['user_id']));
 	}
-	$session->SetUserID($_POST['user_id']);
-	$session->SetDeviceID($_POST['device_id']);
-	$session->SetRate($_POST['rate'] / 60);
-	$session->SetElapsed( (strtotime($_POST['endtime'])-strtotime($_POST['starttime']))/60 );
-	$session->SetStart(date('Y-m-d H:i:s', strtotime($_POST['starttime'])));
-	$session->SetStop(date('Y-m-d H:i:s', strtotime($_POST['endtime'])));
-	$session->UpdateSession();
+	$session->setUserId($_POST['user_id']);
+	$session->setDeviceId($_POST['device_id']);
+	$session->setRate($_POST['rate'] / 60);
+	$session->setElapsed( (strtotime($_POST['endtime'])-strtotime($_POST['starttime']))/60 );
+	$session->setStart(date('Y-m-d H:i:s', strtotime($_POST['starttime'])));
+	$session->setStop(date('Y-m-d H:i:s', strtotime($_POST['endtime'])));
+	$session->update();
 	$sessionIdSelected = $_POST['edit_session_id'];
 }
 
@@ -64,12 +60,6 @@ if (isset($_POST['applyAction'])) {
 }
 
 if (isset($_GET['session_id'])) {
-	if (isset($_GET['rowid'])) {
-		$rowSelected = $_GET['rowid'];
-	}
-	if (isset($_POST['edit_session_row'])) {
-		$rowSelected = $_POST['edit_session_row'];
-	}
 	$sessionIdSelected = $_GET['session_id'];
 }
 
@@ -91,9 +81,9 @@ else
 }
 
 if ($sessionIdSelected > 0) {
-	$session->LoadSession($sessionIdSelected);
+	$session->load($sessionIdSelected);
 	if(!isset($startmonth)){
-		$startDate = $session->GetStart();
+		$startDate = $session->getStart();
 		$startDateArr = getdate(strtotime($startDate));
 		$startmonth = $startDateArr['mon'];
 		$endmonth = $startmonth;
@@ -257,7 +247,7 @@ if ($sessionIdSelected > 0) {
 			$monthlyUsage[$rowId]['cfop'] = $cfopString;
 
 			//If we want to edit this session info then load selected row with input input fields
-			if ($session->GetSessionId() == $monthSession['id']) {
+			if ($session->getId() == $monthSession['id']) {
 				//User options for edit session
 				$userNameString = "<select name=\"user_id\" class=\"form-control input-xs\">";
 				foreach ($userList as $id => $userToSelect) {
@@ -279,7 +269,7 @@ if ($sessionIdSelected > 0) {
 				$monthlyUsage[$rowId]['stop'] = $endTimeString;
 
 				//CFOP options for edit session
-				$userCfopList = $userCfop->ListCfops($monthSession['user_id']);
+				$userCfopList = UserCfop::getAllCFOPs($db,$monthSession['user_id']);
 				$cfopString = "<select name=\"user_cfop_id\" class=\"form-control input-xs\">";
 				foreach ($userCfopList as $userCfopInfo) {
 					$cfopString .= "<option value=" . $userCfopInfo['id'];
@@ -339,7 +329,7 @@ if ($sessionIdSelected > 0) {
 					array('id', 'NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department', 'Opt.'),
 					array('id', 'user_name', 'full_name', 'start','stop', 'Date', 'cfop', 'full_device_name', 'elapsed', 'elapsed_unrounded', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'department_name', 'options'),
 					array('Date','Elapsed','elapsed_unrounded'),
-					array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department'), "Rate".$rateTypeSelected, $rowSelected, true, false);
+					array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department'), "Rate".$rateTypeSelected, true, false);
 				?>
 			</div>
 

@@ -7,8 +7,7 @@
  */
 class Session
 {
-
-	const DAY = 1, WEEK=2, YEAR=3, PERSON=4, GROUP=5, DEPARTMENT=6, DEVICE=7,MONTH=8,ALL_SESSIONS=0;
+	private $db;
 
     private $sessionId;
 	private $userId;
@@ -47,13 +46,13 @@ class Session
 	 * @param $deviceId
 	 * @param $userId
 	 */
-	public function TrackSession($deviceId,$userId)
+	public static function trackSession($db,$deviceId,$userId)
 	{
 		if($userId>0)
 		{
 			$queryOpenSession = "SELECT id FROM session WHERE user_id=:user_id AND device_id=:device_id AND (TIMESTAMPDIFF(MINUTE,stop,NOW()) < 15) ORDER BY id DESC";
 
-			$openSession = $this->db->prepare($queryOpenSession);
+			$openSession = $db->prepare($queryOpenSession);
             $openSession->execute(array(':device_id'=>$deviceId,':user_id'=>$userId));
             $openSessionArr = $openSession->fetch(PDO::FETCH_ASSOC);
 
@@ -62,14 +61,14 @@ class Session
 			{
 // 				error_log("Open session detected updating".$userId,0);
 				$queryUpdateSession = "UPDATE session SET stop=NOW(), elapsed=TIMESTAMPDIFF(MINUTE,start,NOW()) WHERE id =:id";
-                $updateSession = $this->db->prepare($queryUpdateSession);
+                $updateSession = $db->prepare($queryUpdateSession);
                 $updateSession->execute(array(':id'=>$openSessionArr['id']));
 			}
 			else
 			{
 				error_log("Opening session for user ".$userId." on device ".$deviceId,0);
-                $userCfop = new UserCfop($this->db);
-                $defaultCfopId = $userCfop->LoadDefaultCfopl($userId);
+                $userCfop = new UserCfop($db);
+                $defaultCfopId = $userCfop->loadDefaultCfop($userId);
 				$queryStartSession = "INSERT INTO session (user_id,device_id,start,stop,rate,rate_type_id,min_use_time,cfop_id,rate_id)
 				                        SELECT
 				                          :user_id,
@@ -80,20 +79,20 @@ class Session
 				                          AND rate_id=(SELECT rate_id FROM users
 				                          WHERE id=:user_id LIMIT 1)";
 				 error_log($userId." ".$deviceId." ".$defaultCfopId,0);
-				 $startSession = $this->db->prepare($queryStartSession);
+				 $startSession = $db->prepare($queryStartSession);
                  $startSession->execute(array(':user_id'=>$userId,':device_id'=>$deviceId,':default_cfop_id'=>$defaultCfopId));
-                 $sessionId = $this->db->lastInsertId();
+                 $sessionId = $db->lastInsertId();
 			}
 
 			$queryUpdateDeviceUser = "UPDATE device SET loggeduser=:loggeduser, lasttick=NOW() WHERE id=:id";
-            $updateDeviceUser = $this->db->prepare($queryUpdateDeviceUser);
+            $updateDeviceUser = $db->prepare($queryUpdateDeviceUser);
             $updateDeviceUser->execute(array(':loggeduser'=>$userId,':id'=>$deviceId));
 
 		}	
 		else
 		{
 			$queryUpdateDeviceNonUser = "UPDATE device SET loggeduser=0, lasttick=NOW() WHERE id=:id";
-			$updateDeviceNonUser = $this->db->prepare($queryUpdateDeviceNonUser);
+			$updateDeviceNonUser = $db->prepare($queryUpdateDeviceNonUser);
             $updateDeviceNonUser->execute(array(':id'=>$deviceId));
 		}
 	}
@@ -107,7 +106,7 @@ class Session
 	 * @param $description
 	 * @param $cfop
 	 */
-	public function CreateSession($userId,$start,$stop,$status,$deviceId,$description,$cfop)
+	public function create($userId,$start,$stop,$status,$deviceId,$description,$cfop)
 	{
 		$this->userId=$userId;
 		$this->start=$start;
@@ -129,7 +128,7 @@ class Session
 	/**Load a session form the database into this object
 	 * @param $id
 	 */
-	public function LoadSession($id)
+	public function load($id)
 	{
 		$querySessionInfo = "SELECT * FROM session WHERE id=:session_id";
 		$sessionInfo=$this->db->prepare($querySessionInfo);
@@ -150,7 +149,7 @@ class Session
 	/**
 	 * Update the session with variables changed using the Setters
 	 */
-	public function UpdateSession()
+	public function update()
 	{
 		$queryUpdateSession = "UPDATE session SET
 		                        user_id=".$this->userId.",
@@ -177,41 +176,7 @@ class Session
                             ':id'=>$this->sessionId));
 	}
 
-	/**
-	 * Delete the currently loaded session
-	 */
-	public function Delete()
-	{
-		$queryDeleteSession = "DELETE FROM session WHERE id=:id";
-		$deleteSession = $this->db->prepare($queryDeleteSession);
-        $deleteSession->execute(array(':id'=>$this->sessionId));
-	}
-
-	/**
-	 * Load the last session form the database into this object
-	 */
-    public function LoadLastSession()
-    {
-        $queryLastSession = "SELECT id FROM sessions ORDER BY start DESC LIMIT 1";
-        $lastSessionId = $this->db->prepare($queryLastSession);
-        $lastSessionId->execute();
-        $lastSessionIdArr = $lastSessionId->fetch(PDO::FETCH_ASSOC);
-        $this->LoadSession($lastSessionIdArr["id"]);
-    }
-
-	/**
-	 * Load the first session from the database into this object
-	 */
-    public function LoadFirstSession()
-    {
-        $queryFirstSession = "SELECT id FROM sessions ORDER BY start ASC LIMIT 1";
-        $firstSessionId = $this->db->prepare($queryFirstSession);
-        $firstSessionId->execute();
-        $firstSessionIdArr = $firstSessionId->fetch(PDO::FETCH_ASSOC);
-        $this->LoadSession($firstSessionIdArr["id"]);
-    }
-
-	public static function GetSessions($db,$date,$device){
+	public static function getSessions($db,$date,$device){
 		$query = "SELECT u.user_name, g.group_name, s.device_id, d.device_name, s.start, s.stop ";
 		$query .= "FROM session s inner join users u on u.id=s.user_id inner join device d on d.id=s.device_id left join groups g on g.id=u.group_id ";
 		$query .= "WHERE d.id=:device AND (DATE(s.start)=:date OR DATE(s.stop)=:date)";
@@ -220,231 +185,97 @@ class Session
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	/** Get an array of sessions and their time usage
-	 * can use an array to filter the sessions by users device and group
-	 * the filter consists of an associative array with keys 'user', 'device' and 'group'
-	 * consisting of IDs for each group
-	 * Can group by different rows please see switch statement in function
-	 * @param $startDateRange
-	 * @param $endDateRange
-	 * @param $groupBy
-	 * @param $filtersArr
-	 * @return array
-	 */
-    public function GetSessionsUsage($startDateRange, $endDateRange, $groupBy, $filtersArr)
-    {
-        $querySessions = "SELECT u.user_name, g.group_name, s.device_id, d.device_name, s.start, s.stop";
-
-        if($groupBy)
-        {
-            $querySessions .= ", (SUM(s.elapsed/60)) as elapsed, (s.rate * SUM(s.elapsed)) as bill ";
-        }
-        else{
-            $querySessions .=", (s.elapsed/60) as elapsed, (s.rate * s.elapsed) as bill ";
-        }
-
-        $querySessions .= "FROM session s, groups g, users u, device d
-                            WHERE DATE(s.start) >= \"".$startDateRange."\"
-                                AND DATE(s.stop)<=\"".$endDateRange."\"
-                                AND s.user_id = u.id
-                                AND s.device_id = d.id
-                                AND u.group_id=g.id";
-
-        //WHERE FILTERS
-		//Filter based on users selected
-        if(!empty($filtersArr['user']))
-        {
-            $querySessions .= " AND (";
-            $count = 0;
-            $userArr = $filtersArr['user'];
-            foreach( $userArr as $userId)
-            {
-                if($count)
-                {
-                    $querySessions .= " OR s.user_id=".$userId;
-                }
-                else{
-                    $querySessions .= " s.user_id=".$userId;
-                }
-                $count++;
-            }
-            $querySessions .= ")";
-        }
-
-		//Filters based on devices selected
-        if(!empty($filtersArr['device']))
-        {
-            $querySessions .= " AND (";
-            $count = 0;
-            $deviceArr = $filtersArr['device'];
-            foreach($deviceArr as $deviceId)
-            {
-                if($count)
-                {
-                    $querySessions .= " OR s.device_id=".$deviceId;
-                }
-                else{
-                    $querySessions .= " s.device_id=".$deviceId;
-                }
-                $count++;
-
-            }
-            $querySessions .= ")";
-        }
-
-		//Filter based on the groups selected
-        if(!empty($filtersArr['group']))
-        {
-            $querySessions .= " AND (";
-            $count = 0;
-            $groupArr = $filtersArr['group'];
-            foreach( $groupArr as $groupId)
-            {
-                if($count)
-                {
-                    $querySessions .= " OR u.group_id=".$groupId;
-                }
-                else{
-                    $querySessions .= " u.group_id=".$groupId;
-                }
-                $count++;
-            }
-            $querySessions .= ")";
-        }
-
-        //GROUP BY Filters
-        switch ($groupBy)
-        {
-            case $this::DAY:
-                //query by day
-                $querySessions .= " GROUP BY DATE(s.start)";
-                break;
-            case $this::WEEK:
-                //query by week
-                $querySessions .= " GROUP BY YEAR(s.start), WEEK(s.start)";
-                break;
-            case $this::MONTH:
-                //query by month
-                $querySessions .= " GROUP BY YEAR(s.start), MONTH(s.start)";
-                break;
-            case $this::YEAR:
-                //query by year
-                $querySessions .= " GROUP BY YEAR(s.start)";
-                break;
-            case $this::PERSON:
-                //query by user
-                $querySessions .= " GROUP BY s.user_id";
-                break;
-            case $this::GROUP:
-                //query by group
-                $querySessions .= " GROUP BY u.group_id";
-                break;
-            case $this::DEVICE:
-                //query by group
-                $querySessions .= " GROUP BY s.device_id";
-                break;
-        }
-
-        $sessionsUsage = $this->db->prepare($querySessions);
-        $sessionsUsage->execute();
-        $sessionUsageArr = $sessionsUsage->fetchAll(PDO::FETCH_ASSOC);
-
-        return $sessionUsageArr;
-
-    }
-
-	public function GetSessionId()
+	public function getId()
 	{
 		return $this->sessionId;
 	}
 	
-	public function GetUserID()
+	public function getUserId()
 	{
 		return $this->userId;
 	}
 
-	public function SetUserID($userId)
+	public function setUserId($userId)
 	{
 		$this->userId=$userId;
 	}
 
-	public function GetStart()
+	public function getStart()
 	{
 		return $this->start;
 	}	
 
-	public function SetStart($start)
+	public function setStart($start)
 	{
 		$this->start = $start;
 	}
 
-	public function GetStop()
+	public function getStop()
 	{
 		return $this->stop;
 	}
 
-	public function SetStop($stop)
+	public function setStop($stop)
 	{
 		$this->stop = $stop;
 	}
 
-	public function GetStatus()
+	public function getStatus()
 	{
 		return $this->status;
 	}	
 
-	public function SetStatus($status)
+	public function setStatus($status)
 	{
 		$this->status=$status;
 	}
 
-	public function GetDeviceID()
+	public function getDeviceId()
 	{
 		return $this->deviceId;
 	}
 	
-	public function SetDeviceID($deviceId)
+	public function setDeviceId($deviceId)
 	{
 		$this->deviceId=$deviceId;
 	}
 
-	public function GetElapsed()
+	public function getElapsed()
 	{
 		return $this->elapsed;
 	}
 
-	public function SetElapsed($elapsed)
+	public function setElapsed($elapsed)
 	{
 		$this->elapsed=$elapsed;
 	}
 
-	public function GetRate()
+	public function getRate()
 	{
-
 		return $this->rate;
 	}
 	
-	public function SetRate($rate)
+	public function setRate($rate)
 	{
 		$this->rate=$rate;
 	}
 
-	public function GetDescription()
+	public function getDescription()
 	{
 		return $this->description;
 	}
 
-	public function SetDescription($description)	
+	public function setDescription($description)	
 	{
 		$this->description=$description;
 	}
 
-	public function GetCfopId()
+	public function getCfopId()
 	{
 		return $this->cfopId;
 	}
 
-	public function SetCfopId($cfopId)
+	public function setCfopId($cfopId)
 	{
 		$this->cfopId=$cfopId;
 	}	

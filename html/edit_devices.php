@@ -8,23 +8,23 @@ if(!$login_user->isAdmin()){
 
 $device = new Device($db);
 $rate = new Rate($db);
-$rateTypes = $rate->GetRateTypes();
+$rateTypes = Rate::getAllRateTypes($db);
 
 if (isset($_POST['device_option'])) {
 	$device_option = $_POST['device_option'];
 	if ($device_option != 'new') {
-		$device->LoadDevice($device_option);
+		$device->load($device_option);
 	}
 }
 
 if (isset($_POST['ModifyDevice'])) {
-	$device->LoadDevice($_POST['device_id']);
-	$device->SetShortName($_POST['dnsName']);
-	$device->SetFullName($_POST['deviceName']);
-	$device->SetLocation($_POST['location']);
-	$device->SetDescription($_POST['description']);
-	$device->SetStatus($_POST['status']);
-	$device->UpdateDevice();
+	$device->load($_POST['device_id']);
+	$device->setShortName($_POST['dnsName']);
+	$device->setFullName($_POST['deviceName']);
+	$device->setLocation($_POST['location']);
+	$device->setDescription($_POST['description']);
+	$device->setStatus($_POST['status']);
+	$device->update();
 	$ratesArr = $_POST['ratesBox'];
 
 	foreach ($ratesArr as $key => $value) {
@@ -32,18 +32,18 @@ if (isset($_POST['ModifyDevice'])) {
 		$rateValue = $_POST["rate-" . $value] / 60;
 		$minTime = $_POST["mintime-" . $value];
 		$rateTypeId = $_POST["rate_type-" . $value];
-		$device->UpdateDeviceRate($rateId, $rateValue, $minTime, $rateTypeId);
+		$device->updateRate($rateId, $rateValue, $minTime, $rateTypeId);
 	}
 
 }
 
 if (isset($_POST['add_rate'])) {
 
-	$rate->CreateRate($_POST['new_rate_name'], $_POST['new_rate_type']);
+	$rate->create($_POST['new_rate_name'], $_POST['new_rate_type']);
 }
 
 if (isset($_POST['CreateNewDevice'])) {
-	$device->CreateDevice($_POST['dnsName'], $_POST['deviceName'], $_POST['location'], $_POST['description'], $_POST['status']);
+	$device->create($_POST['dnsName'], $_POST['deviceName'], $_POST['location'], $_POST['description'], $_POST['status']);
 
 }
 
@@ -52,7 +52,7 @@ if (isset($_POST['CreateNewDevice'])) {
 <form action="edit_devices.php" method=POST>
 	<div class="form-group">
 		<?php
-		if ($device->GetDeviceId() > 0) {
+		if ($device->getId() > 0) {
 			echo "<input name=\"ModifyDevice\" type=\"submit\" class=\"btn btn-primary\" id=\"Modify\" value=\"Modify\">";
 		} else {
 			echo "  <input name=\"CreateNewDevice\" type=\"submit\" class=\"btn btn-primary\" id=\"Submit\" value=\"Create\" >";
@@ -68,10 +68,10 @@ if (isset($_POST['CreateNewDevice'])) {
 						<select name="device_option" class="form-control">
 							<option selected value='new'>New Device</option>
 							<?php
-							$devicesList = $device->GetDevicesList();
+							$devicesList = Device::getAllDevices($db);
 							foreach ($devicesList as $id => $deviceInfo) {
 								echo "<option value=" . $deviceInfo["id"];
-								if ($device->GetDeviceId() == $deviceInfo["id"]) {
+								if ($device->getId() == $deviceInfo["id"]) {
 									echo " selected";
 								}
 								echo ">" . $deviceInfo["full_device_name"] . "</option>";
@@ -88,24 +88,24 @@ if (isset($_POST['CreateNewDevice'])) {
 				<div class="form-group">
 					<label class="col-sm-3 control-label" for="editDevice">
 						Device ID (
-						<?php echo $device->GetDeviceId(); ?>
+						<?php echo $device->getId(); ?>
 						):
 					</label>
 					<div class="col-sm-9">
-						<input name="device_id" type="hidden" value="<?php echo $device->GetDeviceId(); ?>">
+						<input name="device_id" type="hidden" value="<?php echo $device->getId(); ?>">
 						<input name="dnsName" type="text" value="<?php echo $device->getShortName(); ?>" class="form-control">
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label" for="editDevice">Auth. Token:</label>
 					<div class="col-sm-9">
-						<input type="text" name="auth_key" value="<?php echo $device->GetDeviceToken(); ?>" class="form-control" readonly>
+						<input type="text" name="auth_key" value="<?php echo $device->getDeviceToken(); ?>" class="form-control" readonly>
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label" for="editDevice">Device Name:</label>
 					<div class="col-sm-9">
-						<input type="text" name="deviceName" class="form-control" value="<?php echo $device->GetFullName(); ?>">
+						<input type="text" name="deviceName" class="form-control" value="<?php echo $device->getFullName(); ?>">
 					</div>
 				</div>
 				<div class="form-group">
@@ -113,11 +113,10 @@ if (isset($_POST['CreateNewDevice'])) {
 					<div class="col-sm-9">
 						<select name="status" class="form-control">
 							<?php
-							$statusList = $device->DeviceStatusList();
-							$queryStatusOptions = "SELECT id,statusname FROM status WHERE type=1";
+							$statusList = Device::deviceStatusList($db);
 							foreach ($statusList as $id => $statusOption) {
 								echo "<option value=" . $statusOption["id"];
-								if ($device->GetStatus() == $statusOption["id"]) {
+								if ($device->getStatus() == $statusOption["id"]) {
 									echo " SELECTED";
 								}
 								echo ">" . $statusOption["statusname"] . "</option>";
@@ -129,19 +128,19 @@ if (isset($_POST['CreateNewDevice'])) {
 				<div class="form-group">
 					<label class="col-sm-3 control-label" for="editDevice">Location:</label>
 					<div class="col-sm-9">
-						<input type="text" name="location" class="form-control" value="<?php echo $device->GetLocation(); ?>">
+						<input type="text" name="location" class="form-control" value="<?php echo $device->getLocation(); ?>">
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label" for="ldap_group">LDAP Group:</label>
 					<div class="col-sm-9">
-						<input type="text" name="ldap_group" id="ldap_group" class="form-control" value="<?php echo $device->GetLDAPGroup(); ?>">
+						<input type="text" name="ldap_group" id="ldap_group" class="form-control" value="<?php echo $device->getLDAPGroup(); ?>">
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label" for="editDevice">Notes</label>
 					<div class="col-sm-9">
-						<textarea name="description" class="form-control"><?php echo $device->GetDescription();?></textarea>
+						<textarea name="description" class="form-control"><?php echo $device->getDescription();?></textarea>
 					</div>
 				</div>
 			</div>
@@ -172,7 +171,7 @@ if (isset($_POST['CreateNewDevice'])) {
 			</div>
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					<h4>Device Rates <?php echo $device->GetFullName(); ?><h4>
+					<h4>Device Rates <?php echo $device->getFullName(); ?><h4>
 				</div>
 				<div class="panel-body">
 					<table class="table table-hover">
@@ -183,8 +182,8 @@ if (isset($_POST['CreateNewDevice'])) {
 							<th>Usage Period</th>
 						</tr>
 						<?php
-						if ($device->GetDeviceId() > 0) {
-							$deviceRates = $device->GetRatesList();
+						if ($device->getId() > 0) {
+							$deviceRates = $device->getRates();
 							foreach ($deviceRates as $id => $deviceRateInfo) {
 								echo "<tr>
 										<td>

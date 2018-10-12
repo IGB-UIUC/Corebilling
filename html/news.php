@@ -1,10 +1,9 @@
 <?php
 require_once 'includes/header.inc.php';
 
-$article = new Articles($db);
 $user = new User($db);
 
-$articlesList = $article->GetArticles();
+$articlesList = Article::getAllArticles($db);
 ?>
 
 <div>
@@ -29,8 +28,8 @@ foreach ($articlesList as $id => $articleInfo) {
 		if ($login_user->isAdmin()) {
 			echo "<a href=\"edit_news.php?edit=" . $articleInfo['id'] . "\">Edit</a> | <a href=\"edit_news.php?delete=" . $articleInfo['id'] . "\">Delete</a> | ";
 		}
-		$user->LoadUser($articleInfo['user_id']);
-		echo "<small>".$user->GetFirst() . " " . $user->GetLast() . " | " . $user->GetEmail() . " | " . $articleInfo['created'] . "</small>";
+		$user->load($articleInfo['user_id']);
+		echo "<small>".$user->getFirstName() . " " . $user->getLastName() . " | " . $user->getEmail() . " | " . $articleInfo['created'] . "</small>";
 		?>
 	</div>
 </div>

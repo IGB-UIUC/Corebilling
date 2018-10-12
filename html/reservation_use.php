@@ -6,19 +6,12 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 //Declare objects
-$device = new Device($db);
-$devicesList = $device->GetDevicesList();
-$user = new User($db);
-$userList = $user->GetAllUsers();
-$group = new Group($db);
-$groupList = $group->GetGroupsList();
 $bills = new Bills($db);
 $session = new Session($db);
 $userCfop = new UserCfop($db);
 $stats = new Statistics($db);
 
 $sessionIdSelected = 0;
-$rowSelected = 0;
 
 //TODO check permissions here
 
@@ -79,8 +72,7 @@ if (isset($_POST['endMonthSelected'])) {
 		</div>
 	</div>
 	<?php
-// 		$resUse = $user->GetReservationUsage($startyear, $startmonth, $endyear, $endmonth);
-		$resUse = $stats->get_reservation_usage($startyear,$startmonth,$endyear,$endmonth);
+		$resUse = $stats->getReservationUsage($startyear,$startmonth,$endyear,$endmonth);
 	?>
 	<div class="panel panel-default">
 		<div id="user_list_heading" class="panel-heading">
@@ -93,7 +85,7 @@ if (isset($_POST['endMonthSelected'])) {
 					array('NetId', 'Reserved Time (Hours)', 'Used Time (Hours)', 'Used Time/Reserved Time', 'Missed Reservations', 'Deleted Reservations'),
 					array('user_name', 'res_time', 'used_time', 'used_ratio', 'missed_res', 'deleted_res'),
 					array(),
-					array('NetId', 'Reserved Time (Hours)', 'Used Time (Hours)', 'Used Time/Reserved Time', 'Missed Reservations', 'Deleted Reservations'), 'user_list', $rowSelected, false, false);
+					array('NetId', 'Reserved Time (Hours)', 'Used Time (Hours)', 'Used Time/Reserved Time', 'Missed Reservations', 'Deleted Reservations'), 'user_list', false, false);
 				?>
 			</div>
 		</div>

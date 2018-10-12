@@ -7,7 +7,7 @@ class Statistics
 		$this->db = $db;
 	}
 	
-	public function get_reservation_usage($startyear,$startmonth,$endyear,$endmonth){
+	public function getReservationUsage($startyear,$startmonth,$endyear,$endmonth){
 		$userQuery = "SELECT u.user_name, u.id from users u left join reservation_info r on r.user_id=u.id where u.`status_id`=5 and ((MONTH(r.start)>=:startmonth AND YEAR(r.start)=:startyear) OR YEAR(r.start)>:startyear) AND ((MONTH(r.start)<=:endmonth AND YEAR(r.start)=:endyear) OR YEAR(r.start)<:endyear) group by u.id";
 		$userStmt = $this->db->prepare($userQuery);
 		$userStmt->execute(array(':startyear'=>$startyear,':startmonth'=>$startmonth,':endyear'=>$endyear,':endmonth'=>$endmonth));

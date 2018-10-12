@@ -13,12 +13,11 @@ $userCfop = new UserCfop($db);
 $userDepartment = new Department($db);
 $rate = new Rate($db);
 $group = new Group($db);
-$device = new Device($db);
 
 $ldapinfo = null;
 if (isset($_REQUEST['user_id'])) {
-	$selectedUser->LoadUser($_REQUEST['user_id']);
-	$ldapinfo = $ldapman->getUser($selectedUser->GetUserName());
+	$selectedUser->load($_REQUEST['user_id']);
+	$ldapinfo = $ldapman->getUser($selectedUser->getUsername());
 }
 
 if(isset($_POST['cancel_user'])){
@@ -31,52 +30,52 @@ $message = "";
 //If Modified user form
 if (isset($_POST['update_user'])) {
 	//Update user info
-	$selectedUser->SetFirst($_POST['first']);
-	$selectedUser->SetLast($_POST['last']);
-	$selectedUser->SetEmail($_POST['email']);
-	$selectedUser->SetDepartmentId($_POST['department']);
+	$selectedUser->setFirstName($_POST['first']);
+	$selectedUser->setLastName($_POST['last']);
+	$selectedUser->setEmail($_POST['email']);
+	$selectedUser->setDepartmentId($_POST['department']);
 	if ($login_user->isAdmin()) {
-		$selectedUser->SetUserName($_POST['user_name']);
-		$selectedUser->SetRateId($_POST['rate']);
-		$selectedUser->SetStatusId($_POST['status']);
-		$selectedUser->SetUserRoleId($_POST['user_role_id']);
-		$selectedUser->SetGroupId($_POST['group']);
-		$selectedUser->SetCertified(isset($_POST['safetyquiz']));
+		$selectedUser->setUsername($_POST['user_name']);
+		$selectedUser->setRateId($_POST['rate']);
+		$selectedUser->setStatusId($_POST['status']);
+		$selectedUser->setRoleId($_POST['user_role_id']);
+		$selectedUser->setGroupId($_POST['group']);
+		$selectedUser->setCertified(isset($_POST['safetyquiz']));
 	}
-	
+
 	$_POST['cfop_to_add']=UserCfop::formatCfop($_POST['cfop_to_add']);
-	if( $_POST['cfop_to_add']!="---" && $_POST['cfop_to_add']!=$userCfop->LoadDefaultCfopl($selectedUser->getUserId()) )
+	if( $_POST['cfop_to_add']!="---" && $_POST['cfop_to_add']!=$userCfop->loadDefaultCfop($selectedUser->getUserId()) )
 	{
 		// Look in old cfops to see if we're reusing an old one
-		$cfopList = $selectedUser->ListCfops();
+		$cfopList = $selectedUser->getAllCFOPs();
 		$foundcfop = false;
 		for($i=0;$i<count($cfopList);$i++){
 			if(UserCfop::formatCfop($cfopList[$i]['cfop']) == $_POST['cfop_to_add']){
 				$foundcfop = true;
-				$selectedUser->SetDefaultCfop($cfopList[$i]['id']);
+				$selectedUser->setDefaultCFOP($cfopList[$i]['id']);
 				break;
 			}
 		}
 		// Otherwise, add new cfop
 		if(!$foundcfop){
-			$selectedUser->AddCfop($_POST['cfop_to_add']);
+			$selectedUser->addCFOP($_POST['cfop_to_add']);
 		}
 	}
 
 // 	if(isset($_POST['access'])){
-		$deviceList = $device->GetDevicesList();
+		$deviceList = Device::getAllDevices($db);
 		foreach($deviceList as $deviceInfo){
 			if(isset($_POST['access']) && array_key_exists($deviceInfo['id'],$_POST['access'])){
 				if(!$selectedUser->hasAccessTo($deviceInfo['id'])){
 					if(LDAPMAN_API_ENABLED){
-						$ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+						$ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->getUsername());
 					}
 					$selectedUser->giveAccessTo($deviceInfo['id']);
 				}
 			} else {
 				if($selectedUser->hasAccessTo($deviceInfo['id'])){
 					if(LDAPMAN_API_ENABLED){
-						$ldapman->removeGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->GetUserName());
+						$ldapman->removeGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->getUsername());
 					}
 					$selectedUser->removeAccessTo($deviceInfo['id']);
 				}
@@ -84,7 +83,7 @@ if (isset($_POST['update_user'])) {
 		}
 // 	}
 
-	if($selectedUser->UpdateUser()){
+	if($selectedUser->update()){
 		$message .= html::success_message("User updated successfully");
 	} else {
 		$error = $db->errorInfo();
@@ -95,38 +94,38 @@ if (isset($_POST['update_user'])) {
 
 // Submitted new cfop
 if (isset($_POST['add_cfop'])) {
-	$selectedUser->AddCfop($_POST['cfop_to_add']);
+	$selectedUser->addCFOP($_POST['cfop_to_add']);
 }
 
 // Submitted New User
 if (isset($_POST['create_user'])) {
-	if($selectedUser->Exists($_POST['user_name'])){
+	if(User::exists($db,$_POST['user_name'])){
 		$message .= html::error_message("User ".$_POST['user_name']." already exists in database.");
 	} else {
-		$selectedUser->CreateUser($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], isset($_POST['safetyquiz']));
-		$selectedUser->AddCfop($_POST['cfop_to_add']);
+		$selectedUser->create($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], isset($_POST['safetyquiz']));
+		$selectedUser->addCFOP($_POST['cfop_to_add']);
 		if(isset($_POST['access'])){
-			$deviceList = $device->GetDevicesList();
+			$deviceList = Device::getAllDevices($db);
 			foreach($deviceList as $deviceInfo){
 				if(array_key_exists($deviceInfo['id'],$_POST['access'])){
 					$selectedUser->giveAccessTo($deviceInfo['id']);
 				}
 			}
 		}
-		$selectedUser->UpdateUser();
-		$_REQUEST['user_id'] = $selectedUser->GetUserId();
+		$selectedUser->update();
+		$_REQUEST['user_id'] = $selectedUser->getId();
 		$message .= html::success_message("User ".$_POST['user_name']." added to database.");
 	}
 }
 
 if (isset($_REQUEST['user_id'])) {
-	$selectedUser->LoadUser($_REQUEST['user_id']);
+	$selectedUser->load($_REQUEST['user_id']);
 }
 ?>
 
-<h3><?php echo $selectedUser->GetUserId()>0 ? 'Edit':'Add';?> User</h3>
+<h3><?php echo $selectedUser->getId()>0 ? 'Edit':'Add';?> User</h3>
 <?php
-	if ($selectedUser->GetUserId()>0 && $ldapinfo == null){
+	if ($selectedUser->getId()>0 && $ldapinfo == null){
 		echo html::error_message("This user does not have an IGB account. Any changes made to their device access will not take effect. Please make sure to get their IGB account created before making changes here.","No IGB Account");
 	}
 ?>
@@ -144,26 +143,26 @@ if (isset($_REQUEST['user_id'])) {
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Netid</label>
 									<div class="col-sm-10">
-										<input name="user_name" id="user_name" type="text" class="form-control" value='<?php echo $selectedUser->GetUserName(); ?>'>
+										<input name="user_name" id="user_name" type="text" class="form-control" value='<?php echo $selectedUser->getUsername(); ?>'>
 										<input type="hidden" name="user_id" value="<?php if(isset($_REQUEST['user_id'])){ echo $_REQUEST['user_id'];} ?>"/>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">First</label>
 									<div class="col-sm-10">
-										<input name="first" id="first" type="text" class="form-control" value='<?php echo $selectedUser->GetFirst(); ?>'>
+										<input name="first" id="first" type="text" class="form-control" value='<?php echo $selectedUser->getFirstName(); ?>'>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Last</label>
 									<div class="col-sm-10">
-										<input name="last" id="last" type="text" class="form-control" value='<?php echo $selectedUser->GetLast(); ?>'>
+										<input name="last" id="last" type="text" class="form-control" value='<?php echo $selectedUser->getLastName(); ?>'>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Mail</label>
 									<div class="col-sm-10">
-										<input name="email" id="email" type="email" class="form-control" value='<?php echo $selectedUser->GetEmail(); ?>'>
+										<input name="email" id="email" type="email" class="form-control" value='<?php echo $selectedUser->getEmail(); ?>'>
 									</div>
 								</div>
 								<div class="form-group">
@@ -172,10 +171,10 @@ if (isset($_REQUEST['user_id'])) {
 										<select name="department" class="form-control" id="depart-select">
 											<option value=""></option>
 											<?php
-											$departmentsList = $userDepartment->GetDepartmentList();
+											$departmentsList = Department::getAllDepartments($db);
 											foreach ($departmentsList as $departmentInfo) {
 												echo "<option value=" . $departmentInfo['id'];
-												if ($departmentInfo['id'] == $selectedUser->GetDepartmentId()) {
+												if ($departmentInfo['id'] == $selectedUser->getDepartmentId()) {
 													echo " SELECTED";
 												}
 												echo " >" . $departmentInfo['department_name'] . "</option>";
@@ -187,7 +186,7 @@ if (isset($_REQUEST['user_id'])) {
 								<div class="form-group">
 									<label class="col-sm-2 control-label">CFOP</label>
 									<div class="col-sm-10">
-										<input type="text" class="form-control" id="cfop" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx" value="<?php if($selectedUser->GetUserId()>0){echo UserCfop::formatCfop($selectedUser->GetDefaultCfop());}?>">
+										<input type="text" class="form-control" id="cfop" name="cfop_to_add" placeholder="1-xxxxxx-xxxxxx-xxxxxx" value="<?php if($selectedUser->getId()>0){echo UserCfop::formatCfop($selectedUser->getDefaultCFOP());}?>">
 									</div>
 								</div>
 							</div>
@@ -199,11 +198,11 @@ if (isset($_REQUEST['user_id'])) {
 									<div class="col-sm-10">
 										<select name="rate" class="form-control">
 											<?php
-					
-											$listRates = $rate->GetRates();
+
+											$listRates = Rate::getAllRates($db);
 											foreach ($listRates as $id => $rate) {
 												echo "<option value=" . $rate['id'];
-												if ($rate['id'] == $selectedUser->GetRateId()) {
+												if ($rate['id'] == $selectedUser->getRateId()) {
 													echo " SELECTED";
 												}
 												echo ">" . $rate['rate_name'] . "</option>";
@@ -217,10 +216,10 @@ if (isset($_REQUEST['user_id'])) {
 									<div class="col-sm-10">
 										<select name="group" class="form-control">
 											<?php
-											$listGroups = $group->GetGroupsList();
+											$listGroups = Group::getAllGroups($db);
 											foreach ($listGroups as $id => $groupToSelect) {
 												echo "<option value=" . $groupToSelect['id'];
-												if ($selectedUser->GetGroupId() == $groupToSelect['id']) {
+												if ($selectedUser->getGroupId() == $groupToSelect['id']) {
 													echo " SELECTED";
 												}
 												echo ">" . $groupToSelect['group_name'] . "</option>";
@@ -234,10 +233,10 @@ if (isset($_REQUEST['user_id'])) {
 									<div class="col-sm-10">
 										<select name="user_role_id" class="form-control">
 											<?php
-											$userRolesList = $selectedUser->GetUserRoles();
+											$userRolesList = User::getUserRoles($db);
 											foreach ($userRolesList as $userRole) {
 												echo "<option value=" . $userRole['id'];
-												if ($selectedUser->GetUserRoleId() == $userRole['id']) {
+												if ($selectedUser->getRoleId() == $userRole['id']) {
 													echo " SELECTED";
 												}
 												echo ">" . $userRole['role_name'] . "</option>";
@@ -251,12 +250,11 @@ if (isset($_REQUEST['user_id'])) {
 									<div class="col-sm-10">
 										<select name="status" class="form-control">
 											<?php
-											$userStatus = 2;
-											$queryUsersStatus = "SELECT statusname,id FROM status WHERE type=" . $userStatus;
-					
-											foreach ($db->query($queryUsersStatus) as $usersStatus) {
+											$statusList = User::getUserStatusList($db);
+
+											foreach ($statusList as $usersStatus) {
 												echo "<option value=" . $usersStatus['id'];
-												if ($usersStatus['id'] == $selectedUser->GetStatusId()) {
+												if ($usersStatus['id'] == $selectedUser->getStatusId()) {
 													echo " SELECTED";
 												}
 												echo ">" . $usersStatus['statusname'] . "</option>";
@@ -269,21 +267,21 @@ if (isset($_REQUEST['user_id'])) {
 									<label class="col-sm-2 control-label">Safety Quiz</label>
 									<div class="col-sm-10">
 										<div class="checkbox">
-											<label><input type="checkbox" name="safetyquiz" <?php if($selectedUser->GetCertified()){ echo " checked";} ?>></label>
+											<label><input type="checkbox" name="safetyquiz" <?php if($selectedUser->isCertified()){ echo " checked";} ?>></label>
 										</div>
 									</div>
 								</div>
-								<?php if ($selectedUser->GetUserId() > 0) { ?>
+								<?php if ($selectedUser->getId() > 0) { ?>
 								<div class="form-group" style="margin-bottom:0">
 									<label class="col-sm-2 control-label" for="editUser">Created</label>
 									<div class="col-sm-10">
-										<h5><?php echo $selectedUser->GetDateAdded();?></h5>
+										<h5><?php echo $selectedUser->getDateAdded();?></h5>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Last Login</label>
 									<div class="col-sm-10">
-										<h5><?php echo $selectedUser->GetLastLogin();?></h5>
+										<h5><?php echo $selectedUser->getLastLogin();?></h5>
 									</div>
 								</div>
 								<?php } ?>
@@ -306,7 +304,7 @@ if (isset($_REQUEST['user_id'])) {
 							if($selectedUser->isAdmin()){
 								echo "<div class='col-sm-12'>Admins have access to all devices.</div>";
 							} else {
-								$deviceList = $device->GetDevicesList();
+								$deviceList = Device::getAllDevices($db);
 								foreach($deviceList as $deviceInfo){
 									if($deviceInfo['status_id']==1 || $deviceInfo['status_id']==3){
 										$checked="";
@@ -323,13 +321,13 @@ if (isset($_REQUEST['user_id'])) {
 			</div>
 		</div>
 	</div>
-	
+
 	<?php echo $message; ?>
-	
+
 	<div class="form-group">
 		<div class="col-sm-12">
 			<?php
-			if ($selectedUser->GetUserId() > 0) {
+			if ($selectedUser->getId() > 0) {
 				echo '<input name="update_user" type="submit" class="btn btn-primary" value="Update User">';
 			} else {
 				echo '<input name="create_user" type="submit" class="btn btn-primary" value="Create User" >';
@@ -338,7 +336,7 @@ if (isset($_REQUEST['user_id'])) {
 			<input name="cancel_user" type="submit" class="btn btn-default" value="Cancel" />
 		</div>
 	</div>
-	
+
 </form>
 
 <script type="text/javascript">
@@ -354,13 +352,13 @@ if (isset($_REQUEST['user_id'])) {
 			showTextArea = false;
 			$textarea.removeClass('hidden');
 			$textarea[0].select();
-			
+
 			try {
 				var success = document.execCommand('copy');
 			} catch(err) {
 				showTextArea = true;
 			}
-			
+
  			$textarea.addClass('hidden');
 			window.getSelection().removeAllRanges();
 		}
@@ -369,7 +367,7 @@ if (isset($_REQUEST['user_id'])) {
 		}
 		e.preventDefault();
 	});
-	
+
 	var seqnum = 0;
 	$('#user_name').on('input',function(){
 		var $this = $(this);
@@ -393,7 +391,7 @@ if (isset($_REQUEST['user_id'])) {
 			}
 		});
 	});
-	
+
 </script>
 <?php
 require_once 'includes/footer.inc.php';

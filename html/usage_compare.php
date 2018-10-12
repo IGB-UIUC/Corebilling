@@ -6,32 +6,31 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 $device = new Device($db);
-$res = new Reservation($db);
 
 if (isset ($_GET['device'])) {
-	$device->LoadDevice($_GET['device']);
+	$device->load($_GET['device']);
 } else {
-	$device->LoadDevice(43); // Load the NMR by default TODO find a better way to grab the default
+	$device->load(43); // Load the NMR by default TODO find a better way to grab the default
 }
 $date = new DateTime();
 if(isset($_GET['date'])){
 	$date = DateTime::createFromFormat("Y-m-d",$_GET['date']);
 }
-$reservations = $res->EventsRange($date->format("Y-m-d")." 00:00:00", $date->format("Y-m-d")." 23:59:59", null, $device->GetDeviceId(), false);
-$sessions = Session::GetSessions($db, $date->format("Y-m-d"), $device->GetDeviceId());
+$reservations = Reservation::getEventsInRange($db,$date->format("Y-m-d")." 00:00:00", $date->format("Y-m-d")." 23:59:59", null, $device->getId(), false);
+$sessions = Session::getSessions($db, $date->format("Y-m-d"), $device->getId());
 ?>
 
-<h3>Usage Comparison<?php if($device->GetDeviceId()!=0){echo " - ".$device->GetFullName();} ?> - <?php echo $date->format("m/d/Y"); ?></h3>
+<h3>Usage Comparison<?php if($device->getId()!=0){echo " - ".$device->getFullName();} ?> - <?php echo $date->format("m/d/Y"); ?></h3>
 <div class="well">
 	<form method="GET" name="calform" class="form-inline">
 		<div class="form-group">
 			<select name="device" class="form-control" onChange='document.calform.submit();'>
 				<?php
-				$deviceList = $device->GetDevicesList();
+				$deviceList = Device::getAllDevices($db);
 				foreach ($deviceList as $id => $availDevices) {
 					if (($availDevices['status_id']==1 || $availDevices['status_id']==3)) {
 						echo "<option value=" . $availDevices ['id'];
-						if ($availDevices['id'] == $device->GetDeviceId()) {
+						if ($availDevices['id'] == $device->getId()) {
 							echo " SELECTED";
 						}
 						echo ">" . $availDevices ['full_device_name'] . "</option>";

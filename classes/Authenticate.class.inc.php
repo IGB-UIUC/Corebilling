@@ -41,46 +41,22 @@ class Authenticate {
         $this->logonError = "";
 
         //Check if user has access by checking LDAP
-        if ($this->ldapAuth->Authenticate ( $userName, $password) )
-        {
-            $userId = $this->authenticatedUser->Exists($userName);
+        if ($this->ldapAuth->Authenticate ( $userName, $password) ) {
+            $userId = User::exists($this->db,$userName);
             if ($userId)
             {
                 //If user is in the system then load this user
-                $this->authenticatedUser->LoadUser($userId);
+                $this->authenticatedUser->load($userId);
             } else {
 	            // If user is not in the system, deny them.
 	            $this->verified=false;
 	            $this->logonError = "Unauthorized user.";
 	            return false;
-/*
-                //If user is not in system then create a default profile for them
-                $this->authenticatedUser->CreateUser($userName,'','',
-                                                        $userName.'@'.DEFAULT_USER_EMAIL_DOMAIN,
-                                                        DEFAULT_USER_DEPARTMENT_ID,
-                                                        DEFAULT_USER_GROUP_ID,
-                                                        DEFAULT_USER_RATE_ID,
-                                                        DEFAULT_USER_STATUS_ID,
-                                                        DEFAULT_USER_ROLE_ID);
-
-                try{
-                    $mail = new Mailer();
-                    $mail->setFrom(PAGE_TITLE,ADMIN_EMAIL);
-                    $mail->addRecipient('Admin',ADMIN_EMAIL);
-                    $mail->fillSubject("New user created: ".$userName);
-                    $mail->fillMessage("New user has logged into the ".PAGE_TITLE." website.\n Account was created for: ".$userName);
-                    $mail->send();
-                } catch(Exception $e)
-                {
-                    echo $e->getMessage();
-                }
-*/
-
             }
 
             //Generate a secure key for user
-            $this->authenticatedUser->UpdateSecureKey();
-            $this->SetSession($this->authenticatedUser->GetSecureKey(), $this->authenticatedUser->GetUserId() );
+            $this->authenticatedUser->updateSecureKey();
+            $this->SetSession($this->authenticatedUser->getSecureKey(), $this->authenticatedUser->getId() );
             $this->verified = true;
 
             return true;
@@ -109,16 +85,16 @@ class Authenticate {
      */
     public function VerifySession()
     {
-	    $this->LoadSession();
+	    $this->load();
         if($this->user_id != null) {
             if(time() - $this->lastActivity < LOGIN_TIMEOUT) {
                 $this->authenticatedUser = new User ( $this->db );
-                $this->authenticatedUser->LoadUser($this->user_id);
+                $this->authenticatedUser->load($this->user_id);
 
-                if($this->authenticatedUser->GetSecureKey() == $this->key)
+                if($this->authenticatedUser->getSecureKey() == $this->key)
                 {
-                    $this->authenticatedUser->UpdateSecureKey();
-                    $this->SetSession($this->authenticatedUser->GetSecureKey(), $this->authenticatedUser->GetUserId());
+                    $this->authenticatedUser->updateSecureKey();
+                    $this->SetSession($this->authenticatedUser->getSecureKey(), $this->authenticatedUser->getId());
                 }
                 $this->verified = true;
                 return true;
@@ -144,7 +120,7 @@ class Authenticate {
 		setcookie('coreapp_created', time(), time()+LOGIN_TIMEOUT);
     }
     
-    public function LoadSession(){
+    public function load(){
 	    if(isset($_SESSION['coreapp_user_id'])){
 		    $this->user_id = $_SESSION['coreapp_user_id'];
 		    $this->key = $_SESSION['coreapp_key'];

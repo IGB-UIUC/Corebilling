@@ -13,10 +13,10 @@ if (isset($_POST['Submit'])) {
 	$description = $_POST['description'];
 	$departmentId = $_POST['department_id'];
 
-	if ($department->Exists($departmentName)) {
+	if (Department::exists($db,$departmentName)) {
 		$warnings .= "Department name already exists.";
 	} else {
-		$department->AddDepartment($departmentName,$description);
+		$department->create($departmentName,$description);
 
 	}
 
@@ -27,16 +27,16 @@ if (isset($_POST['Modify'])) {
 	$departmentId = $_POST['department_id'];
 	$description = $_POST['description'];
 
-	$department->LoadDepartment($departmentId);
+	$department->load($departmentId);
 	$department->setDepartmentName($departmentName);
 	$department->setDescription($description);
-	$department->UpdateDepartment();
+	$department->update();
 }
 
 
 if (isset($_POST['Select'])) {
 	$departmentId = $_POST['selectDepartment'];
-	$department->LoadDepartment($departmentId);
+	$department->load($departmentId);
 
 	$announce = "<h4>Modify Department:</h4>Modify department details, click modify to apply changes.";
 	$newDepartmentBtn = ' <input name="Reset" type="submit" class="btn btn-primary" id="reset" value="Reset" >';
@@ -64,7 +64,7 @@ if (isset($_POST['Select'])) {
 					<div class="col-sm-5">
 						<select name="selectDepartment" class="form-control">
 							<?php
-							$departmentList = $department->GetDepartmentList();
+							$departmentList = Department::getAllDepartments($db);
 							echo "<option value=\"0\">New Department</option>";
 							foreach ($departmentList as $departmentInfo) {
 								echo "<option value=" . $departmentInfo["id"];
@@ -109,7 +109,7 @@ if (isset($_POST['Select'])) {
 							<th>Full Name</th>
 						</tr>
 						<?php
-						$members = $department->GetMembers();
+						$members = $department->getMembers();
 						foreach($members as $id=>$member)
 						{
 							echo "<tr><td>".$member['user_name']."</td><td>".$member['first']." ".$member['last']."</td></tr>";

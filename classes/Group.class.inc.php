@@ -2,6 +2,7 @@
 class Group
 {
     private $db;
+    
     private $groupId;
     private $groupName;
     private $description;
@@ -23,7 +24,7 @@ class Group
      * @param $description
      * @param $departmentId
      */
-    public function AddGroup($groupName, $description, $departmentId)
+    public function create($groupName, $description, $departmentId)
 	{
 		$queryAddGroup = "INSERT INTO groups (group_name, description, department_id)VALUES(:group_name,:description,:department_id)";
         $addGroupPrep = $this->db->prepare($queryAddGroup);
@@ -39,7 +40,7 @@ class Group
     /**Load a group into object from database given a group ID
      * @param $groupId
      */
-    public function LoadGroup($groupId)
+    public function load($groupId)
 	{
 		$queryGroupInfo = "SELECT * FROM groups WHERE id=:id";
         $groupInfo = $this->db->prepare($queryGroupInfo);
@@ -54,7 +55,7 @@ class Group
     /**
      * Update group parameters in database
      */
-    public function UpdateGroup()
+    public function update()
     {
         $queryUpdateGroup = "UPDATE groups SET
                                 group_name=:group_name,
@@ -69,10 +70,10 @@ class Group
     /**Get a list of all groups by id and group_name
      * @return array
      */
-    public function GetGroupsList()
+    public static function getAllGroups($db)
 	{
 		$queryGroupList = "SELECT id, group_name FROM groups ORDER BY group_name";
-        $groupList = $this->db->query($queryGroupList);
+        $groupList = $db->query($queryGroupList);
         $groupListArr = $groupList->fetchAll(PDO::FETCH_ASSOC);
 
         return $groupListArr;
@@ -82,10 +83,10 @@ class Group
      * @param $groupName
      * @return bool
      */
-    public function Exists($groupName)
+    public static function exists($groupName)
     {
         $queryGroup = "SELECT COUNT(*) FROM groups WHERE group_name=:group_name";
-        $group = $this->db->prepare($queryGroup);
+        $group = $db->prepare($queryGroup);
         $group->execute(array(':group_name'=>$groupName));
         $groupCount = $group->fetchColumn();
 
@@ -99,13 +100,15 @@ class Group
     /**Get a list of all group members
      * @return array
      */
-    public function GetMembers()
+    public function getMembers()
     {
-        if($this->getGroupId())
+        if($this->getId())
         {
-            $user = new User($this->db);
-            $groupMembers = $user->GetGroupUsers($this->groupId);
-            return $groupMembers;
+            $queryGroupUsers = "SELECT * FROM users WHERE group_id=:group_id";
+			$groupUsers = $this->db->prepare($queryGroupUsers);
+			$groupUsers->execute(array(":group_id"=>$this->getId()));
+			$groupUsersArr = $groupUsers->fetchAll(PDO::FETCH_ASSOC);
+            return $groupUsersArr;
         }
         return array();
     }
@@ -154,7 +157,7 @@ class Group
     /**
      * @param mixed $groupId
      */
-    public function setGroupId($groupId)
+    public function setId($groupId)
     {
 	    if($this->groupId != $groupId){
 	        $this->groupId = $groupId;
@@ -165,7 +168,7 @@ class Group
     /**
      * @return mixed
      */
-    public function getGroupId()
+    public function getId()
     {
         return $this->groupId;
     }
@@ -173,7 +176,7 @@ class Group
     /**
      * @param mixed $groupName
      */
-    public function setGroupName($groupName)
+    public function setName($groupName)
     {
 	    if($this->groupName != $groupName){
 	    	log::log_message("Set name for group '".$this->groupName."' to $groupName");
@@ -184,7 +187,7 @@ class Group
     /**
      * @return mixed
      */
-    public function getGroupName()
+    public function getName()
     {
         return $this->groupName;
     }

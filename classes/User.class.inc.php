@@ -1,8 +1,7 @@
 <?php
-class User
-{
+class User {
 	private $db;
-	
+
 	const ACTIVE = 5, HIDDEN = 6, DISABLED = 7;
 	const STATUS_TYPE_USER=2;
 
@@ -20,7 +19,7 @@ class User
 	private $secureKey;
 	private $userCfop;
 	private $certified;
-	
+
 	public function __construct(PDO $db)
 	{
 		$this->db = $db;
@@ -39,10 +38,10 @@ class User
 		$this->certified = 0;
 		$this->userRoleId = 3;
 	}
-	
+
 	public function __destruct()
 	{
-		
+
 	}
 
 	/**Create User
@@ -56,7 +55,7 @@ class User
 	 * @param $statusId
 	 * @param $userRoleId
 	 */
-	public function CreateUser($username, $first, $last, $email,$departmentId,$groupId,$rateId,$statusId,$userRoleId,$certified)
+	public function create($username, $first, $last, $email,$departmentId,$groupId,$rateId,$statusId,$userRoleId,$certified)
 	{
 		$this->username = $username;
 		$this->first = $first;
@@ -69,7 +68,7 @@ class User
 		$this->userRoleId = $userRoleId;
 		$this->dateAdded = date('Y-m-d H:i:s');
 		$this->certified = $certified;
-		if($this->Exists($this->username)==0)
+		if(User::exists($this->db,$this->username)==0)
 		{
 			$queryAddUser = "INSERT INTO users (user_name, first,last,email,department_id,group_id,rate_id,status_id,date_added,secure_key,user_role_id,certified)
 								   VALUES(:user_name,:first,:last,:email,:department_id,:group_id,:rate_id,:status_id,NOW(), MD5(RAND()),:user_role_id,:certified)";
@@ -80,41 +79,10 @@ class User
 		}
 	}
 
-	/**Load user info from ldap by netid
-	 * @param $netid
-	 * @return array
-	 */
-	public function LoadLdapUser($netid)
-	{
-		$info = LdapHelper::LoadIGBUser($netid);
-		if($info['count']!=0)
-		{
-			$this->username=$info[0]["uid"][0];
-			@list($firstName,$lastName) = explode(' ',$info[0]["cn"][0]);
-			$this->first=$firstName;
-			$this->last=$lastName;
-			$this->email=$info[0]["mail"][0];
-			if($info['count']>1)
-			{
-				return $info;
-			}
-			else
-			{
-				$info =	 array();
-				return $info;
-			}
-		}
-		else
-		{
-			$info = array();
-			return $info;
-		}
-	}
-
 	/**Load user into this object
 	 * @param $id
 	 */
-	public function LoadUser($id)
+	public function load($id)
 	{
 		$queryUserInfo = "SELECT * FROM users WHERE id=:user_id";
 		$userInfo=$this->db->prepare($queryUserInfo);
@@ -138,7 +106,8 @@ class User
 	/**
 	 * Update user into database based on changes made to this object
 	 */
-	public function UpdateUser()
+	 // TODO the db should be updated on *every* set function, not just when this update function is called.
+	public function update()
 	{
 		$queryUpdateUser = "UPDATE users SET
 							user_name=:user_name,
@@ -160,10 +129,10 @@ class User
 	 * @param $username
 	 * @return int
 	 */
-	public function Exists($username)
+	public static function exists($db,$username)
 	{
 		$queryUserName = "SELECT id FROM users WHERE user_name = :user_name";
-		$userName = $this->db->prepare($queryUserName);
+		$userName = $db->prepare($queryUserName);
 		$userName->execute(array(":user_name"=>$username));
 		$userNameArr = $userName->fetch(PDO::FETCH_ASSOC);
 
@@ -175,40 +144,40 @@ class User
 		{
 			return 0;
 		}
-		
+
 	}
-	
+
 	public function hasAccessTo($deviceId){
 		if($this->isAdmin()){ // Admins can access everything
 			return true;
 		} else {
 			$query = "SELECT * FROM access_control WHERE device_id=:resource_id AND user_id=:user_id LIMIT 1";
 			$stmt = $this->db->prepare($query);
-	        $stmt->execute(array(":resource_id" => $deviceId, ":user_id" => $this->GetUserId()));
+	        $stmt->execute(array(":resource_id" => $deviceId, ":user_id" => $this->getId()));
 	        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 	        return $result !== false;
 		}
 	}
-	
+
 	public function giveAccessTo($deviceId){
 		$query = "INSERT INTO access_control (user_id, device_id) VALUES (:userid,:deviceid)";
 		$stmt = $this->db->prepare($query);
-		if( $stmt->execute(array(":userid"=>$this->GetUserId(),":deviceid"=>$deviceId)) ){
-			log::log_message("Gave user '".$this->GetUserName()."' access to device $deviceId");
+		if( $stmt->execute(array(":userid"=>$this->getId(),":deviceid"=>$deviceId)) ){
+			log::log_message("Gave user '".$this->getUsername()."' access to device $deviceId");
 		}
 	}
 	public function removeAccessTo($deviceId){
 		$query = "DELETE FROM access_control WHERE user_id=:userid AND device_id=:deviceid LIMIT 1";
 		$stmt = $this->db->prepare($query);
-		if( $stmt->execute(array(":userid" => $this->GetUserId(), ":deviceid" => $deviceId)) ){
-			log::log_message("Removed access to device $deviceId for user '".$this->GetUserName()."'");
+		if( $stmt->execute(array(":userid" => $this->getId(), ":deviceid" => $deviceId)) ){
+			log::log_message("Removed access to device $deviceId for user '".$this->getUsername()."'");
 		}
 	}
 
 	/**
 	 * Update security key for user
 	 */
-	public function UpdateSecureKey()
+	public function updateSecureKey()
 	{
 		$queryUpdateSecureKey = "UPDATE users SET secure_key=MD5(RAND()) WHERE id = :user_id";
 		$updateSecureKey = $this->db->prepare($queryUpdateSecureKey);
@@ -224,24 +193,17 @@ class User
 	/**List all users by id and username on the application
 	 * @return array
 	 */
-	public function GetAllUsers()
-	{
+	public static function getAllUsers($db) {
 	   $queryAllUsers = "SELECT id, user_name FROM users ORDER BY user_name";
-	   $allUsers = $this->db->prepare($queryAllUsers);
+	   $allUsers = $db->prepare($queryAllUsers);
 	   $allUsers->execute();
 	   $allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
 	   return $allUsersArr;
 	}
 
-	public function GetAllUsersFullInfo()
-	{
-		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, u.date_added, (select max(`stop`) from `session` where user_id=u.`id`) as last_login, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status, u.id
-								FROM users u
-									LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1)
-									LEFT JOIN groups g ON (g.id=u.group_id)
-									LEFT JOIN departments d ON (d.id=u.department_id)
-									LEFT JOIN status s ON s.id=u.status_id";
-		$allUserInfo = $this->db->prepare($queryAllUserInfo);
+	public static function getAllUsersFullInfo($db) {
+		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, u.date_added, (select max(`stop`) from `session` where user_id=u.`id`) as last_login, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status, u.id FROM users u LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1) LEFT JOIN groups g ON (g.id=u.group_id) LEFT JOIN departments d ON (d.id=u.department_id) LEFT JOIN status s ON s.id=u.status_id";
+		$allUserInfo = $db->prepare($queryAllUserInfo);
 		$allUserInfo->execute();
 		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
 
@@ -252,77 +214,35 @@ class User
 
 		return $allUserInfoArr;
 	}
-	
-	public function GetActiveUsers($startyear,$startmonth,$endyear,$endmonth)
+
+	public static function getActiveUsers($db,$startyear,$startmonth,$endyear,$endmonth)
 	{
 		$queryAllUserInfo = "SELECT u.first, u.last, u.id, u.user_name, u.email, u.department_id, u.group_id, g.group_name, d.department_name, CONCAT(u.last, ', ', u.first) as full_name
 								from users u left join groups g on g.id=u.group_id left join departments d on d.id=u.department_id left join `session` s on s.user_id=u.id
-								where u.`status_id`=5 and ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear) 
+								where u.`status_id`=5 and ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear)
 								group by u.user_name";
-		$allUserInfo = $this->db->prepare($queryAllUserInfo);
+		$allUserInfo = $db->prepare($queryAllUserInfo);
 		$allUserInfo->execute(array(':startyear'=>$startyear, ':startmonth'=>$startmonth, ':endyear'=>$endyear, ':endmonth'=>$endmonth));
 		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
 
 		return $allUserInfoArr;
 	}
-	
-	/**Get all users with a certain status
-	 * @param $statusId
-	 * @return array
-	 */
-	public function GetUsers($statusId)
-	{
-		$queryAllUsers = "SELECT id, user_name FROM users WHERE status_id=:status_id ORDER BY user_name";
-		$allUsers = $this->db->prepare($queryAllUsers);
-		$allUsers->execute(array(":status_id"=>$statusId));
-		$allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
-
-		return $allUsersArr;
-	}
-
-	/**Get all users which are in a given group
-	 * @param $groupId
-	 * @return array
-	 */
-	public function GetGroupUsers($groupId)
-	{
-		$queryGroupUsers = "SELECT * FROM users WHERE group_id=:group_id";
-		$groupUsers = $this->db->prepare($queryGroupUsers);
-		$groupUsers->execute(array(":group_id"=>$groupId));
-		$groupUsersArr = $groupUsers->fetchAll(PDO::FETCH_ASSOC);
-
-		return $groupUsersArr;
-	}
-
-	/**Get all users which are in a department
-	 * @param $departmentId
-	 * @return array
-	 */
-	public function GetDepartmentUsers($departmentId)
-	{
-		$queryDepartmentUsers = "SELECT * FROM users WHERE department_id=:department_id";
-		$departmentUsers = $this->db->prepare($queryDepartmentUsers);
-		$departmentUsers->execute(array(":department_id"=>$departmentId));
-		$departmentUsersArr = $departmentUsers->fetchAll(PDO::FETCH_ASSOC);
-
-		return $departmentUsersArr;
-	}
 
 	/**Get all user roles
 	 * @return mixed
 	 */
-	public function GetUserRoles()
+	public static function getUserRoles($db)
 	{
 		$queryUserRoles = "SELECT * FROM user_roles";
-		$userRoles = $this->db->prepare($queryUserRoles);
+		$userRoles = $db->prepare($queryUserRoles);
 		$userRoles->execute();
 		return $userRoles->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function GetUserStatusList()
+	public static function getUserStatusList($db)
 	{
 		$queryUserStatusList = "SELECT * FROM status WHERE type=:type";
-		$userStatusList = $this->db->prepare($queryUserStatusList);
+		$userStatusList = $db->prepare($queryUserStatusList);
 		$userStatusList->execute(array(':type'=>User::STATUS_TYPE_USER));
 		$userStatusListArr = $userStatusList->fetchAll(PDO::FETCH_ASSOC);
 
@@ -330,47 +250,46 @@ class User
 
 	}
 
-	public function AddCfop($cfop)
+	public function addCFOP($cfop)
 	{
-		$this->userCfop->CreateUserCfop($this->userId, $cfop, "");
+		$this->userCfop->create($this->userId, $cfop, "");
 	}
 
-	public function ListCfops()
+	public function getAllCFOPs()
 	{
-
-		return $this->userCfop->ListCfops($this->userId);
+		return UserCfop::getAllCFOPs($db,$this->userId);
 	}
 
-	public function GetDefaultCfop(){
-		$this->userCfop->LoadDefaultCfopl($this->userId);
+	public function getDefaultCFOP(){
+		$this->userCfop->loadDefaultCfop($this->userId);
 		return $this->userCfop->getCfop();
 	}
 
-	public function SetDefaultCfop($defaultCfopId)
+	public function setDefaultCFOP($defaultCfopId)
 	{
-		$this->userCfop->LoadUserCfop($defaultCfopId);
-		$this->userCfop->SetDefaultCfop();
+		$this->userCfop->load($defaultCfopId);
+		$this->userCfop->setAsDefaultCFOP();
 	}
-	
+
 	public function isAdmin(){
-		 return $this->GetUserRoleId()==1;
+		 return $this->getRoleId()==1;
 	}
 	public function isSupervisor(){
-		 return $this->GetUserRoleId()==2;
+		 return $this->getRoleId()==2;
 	}
-	
+
 	//Getters and setters
-	public function GetUserId()
+	public function getId()
 	{
 		return $this->userId;
 	}
 
-	public function GetUserName()
+	public function getUsername()
 	{
 		return $this->username;
 	}
 
-	public function SetUserName($username)
+	public function setUsername($username)
 	{
 		if($this->username != $username){
 			log::log_message("Set username of user '".$this->username."' to '$username'");
@@ -378,12 +297,12 @@ class User
 		}
 	}
 
-	public function GetFirst()
+	public function getFirstName()
 	{
 		return $this->first;
 	}
 
-	public function SetFirst($first)
+	public function setFirstName($first)
 	{
 		if($this->first != $first){
 			$this->first=$first;
@@ -391,12 +310,12 @@ class User
 		}
 	}
 
-	public function GetLast()
+	public function getLastName()
 	{
 		return $this->last;
 	}
 
-	public function SetLast($last)
+	public function setLastName($last)
 	{
 		if($this->last != $last){
 			$this->last=$last;
@@ -404,12 +323,12 @@ class User
 		}
 	}
 
-	public function GetEmail()
+	public function getEmail()
 	{
 		return $this->email;
 	}
 
-	public function SetEmail($email)
+	public function setEmail($email)
 	{
 		if($this->email != $email){
 			$this->email = $email;
@@ -417,12 +336,12 @@ class User
 		}
 	}
 
-	public function GetDepartmentId()
+	public function getDepartmentId()
 	{
 		return $this->departmentId;
 	}
-	
-	public function SetDepartmentId($departmentId)
+
+	public function setDepartmentId($departmentId)
 	{
 		if($this->departmentId != $departmentId){
 			$this->departmentId = $departmentId;
@@ -430,12 +349,12 @@ class User
 		}
 	}
 
-	public function GetGroupId()
+	public function getGroupId()
 	{
 		return $this->groupId;
 	}
 
-	public function SetGroupId($groupId)
+	public function setGroupId($groupId)
 	{
 		if($this->groupId != $groupId){
 			$this->groupId = $groupId;
@@ -443,38 +362,38 @@ class User
 		}
 	}
 
-	public function GetRateId()
+	public function getRateId()
 	{
 		return $this->rateid;
 	}
 
-	public function SetRateId($rateId)
+	public function setRateId($rateId)
 	{
 		if($this->rateid != $rateId){
 			$this->rateid = $rateId;
 			log::log_message("Set rate of user '".$this->username."' to '$rateId'");
 		}
 	}
-	
-	public function GetStatusId()
+
+	public function getStatusId()
 	{
 		return $this->statusid;
 	}
 
-	public function SetStatusId($statusid)
+	public function setStatusId($statusid)
 	{
 		if($this->statusid != $statusid){
 			$this->statusid = $statusid;
 			log::log_message("Set status of user '".$this->username."' to '$statusid'");
 		}
 	}
-		
-	public function GetUserRoleId()
+
+	public function getRoleId()
 	{
 		return $this->userRoleId;
 	}
 
-	public function SetUserRoleId($usertypeid)
+	public function setRoleId($usertypeid)
 	{
 		if($this->userRoleId != $usertypeid){
 			$this->userRoleId = $usertypeid;
@@ -482,12 +401,12 @@ class User
 		}
 	}
 
-	public function GetDateAdded()
+	public function getDateAdded()
 	{
 		return $this->dateAdded;
-	}	
-	
-	public function GetLastLogin(){
+	}
+
+	public function getLastLogin(){
 		$query = "select max(`stop`) as last_login from `session` where user_id=?";
 		$stmt = $this->db->prepare($query);
 		$stmt->execute(array($this->userId));
@@ -495,16 +414,16 @@ class User
 		return $row['last_login'];
 	}
 
-	public function GetSecureKey()
+	public function getSecureKey()
 	{
 		return $this->secureKey;
 	}
-	
-	public function GetCertified()
+
+	public function isCertified()
 	{
 		return $this->certified;
 	}
-	public function SetCertified($certified)
+	public function setCertified($certified)
 	{
 		if($this->certified != $certified){
 			$this->certified = $certified;
@@ -516,5 +435,5 @@ class User
 		}
 	}
 }
-	
+
 ?>

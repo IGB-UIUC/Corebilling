@@ -8,10 +8,10 @@ if(!$login_user->isAdmin()){
 
 $ldapSearchResults = array();
 
-$selectedUser = new User($db);
 $userDepartment = new Department($db);
 $rate = new Rate($db);
 $group = new Group($db);
+
 
 ?>
 
@@ -28,7 +28,7 @@ $group = new Group($db);
 			</div>
 			<div class="body">
 				<?php
-				$usersFullInfoList = $selectedUser->GetAllUsersFullInfo();
+				$usersFullInfoList = User::getAllUsersFullInfo($db);
 				echo VisualizeData::ListSessionsTable($usersFullInfoList,
 					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Created', 'Last Login', 'Status', ''),
 					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'date_added', 'last_login', 'status', 'edit'), 'usersTable',0);
@@ -46,7 +46,7 @@ $group = new Group($db);
 							}
 						});
 						});
-					
+
 				</script>
 			</div>
 		</div>

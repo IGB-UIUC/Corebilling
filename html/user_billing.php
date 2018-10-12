@@ -8,9 +8,11 @@ $bills = new Bills($db);
 $userCfop = new UserCfop($db);
 
 if($login_user->isAdmin()){
-	$selectableUsersList = $userToBill->GetAllUsers();
+	$selectableUsersList = User::getAllUsers($db);
 } elseif($login_user->isSupervisor()){
-	$selectableUsersList = $userToBill->GetGroupUsers($authenticate->getAuthenticatedUser()->GetGroupId());
+	$group = new Group($db);
+	$group->load($authenticate->getAuthenticatedUser()->getGroupId());
+	$selectableUsersList = $group->getMembers();
 } else {
 	$selectableUsersList = array();
 }
@@ -23,9 +25,9 @@ if (isset($_POST['monthSelected'])) {
 }
 
 if (isset($_POST['selectedUser'])) {
-	$userToBill->LoadUser($_POST['selectedUser']);
+	$userToBill->load($_POST['selectedUser']);
 } else {
-	$userToBill->LoadUser($authenticate->getAuthenticatedUser()->GetUserId());
+	$userToBill->load($authenticate->getAuthenticatedUser()->getId());
 }
 
 ?>
@@ -44,11 +46,11 @@ if (isset($_POST['selectedUser'])) {
 		<select name="selectedUser" class="form-control" id="selectUser">
 			<?php
 			if (empty($selectableUsersList)) {
-				echo "<option value=" . $userToBill->GetUserId() . ">" . $userToBill->GetUserName() . "</option>";
+				echo "<option value=" . $userToBill->getId() . ">" . $userToBill->getUsername() . "</option>";
 			} else {
 				foreach ($selectableUsersList as $id => $availUser) {
 					echo "<option value=" . $availUser['id'];
-					if ($userToBill->GetUserId() == $availUser['id']) {
+					if ($userToBill->getId() == $availUser['id']) {
 						echo " SELECTED ";
 					}
 					echo ">" . $availUser['user_name'] . "</option>";
@@ -84,15 +86,15 @@ if (isset($_POST['selectedUser'])) {
 		<table class="table table-striped">
 			<tr>
 				<th>Netid: </th>
-				<td><?php echo $userToBill->GetUserName();?></td>
+				<td><?php echo $userToBill->getUsername();?></td>
 			</tr>
 			<tr>
 				<th>Name:</th>
-				<td><?php echo $userToBill->GetFirst()." ".$userToBill->GetLast();?></td>
+				<td><?php echo $userToBill->getFirstName()." ".$userToBill->getLastName();?></td>
 			</tr>
 			<tr>
 				<th>E-Mail:</th>
-				<td><?php echo $userToBill->GetEmail();?></td>
+				<td><?php echo $userToBill->getEmail();?></td>
 			</tr>
 		</table>
 	</div>
@@ -117,7 +119,7 @@ foreach ($rateTypesList as $rateTypeId => $rateTypeName) { ?>
 			</tr>
 			<?php
 				$i = 0;
-				$bills->setUserId($userToBill->GetUserId());
+				$bills->setUserId($userToBill->getId());
 				if ($rateTypeId == Bills::MONTHLY_RATE) {
 					$bills->setGroupBy(Bills::GROUP_DEVICE);
 				}

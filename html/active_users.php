@@ -6,17 +6,7 @@ if(!$login_user->isAdmin()){
 	exit;
 }
 //Declare objects
-$device = new Device($db);
-$devicesList = $device->GetDevicesList();
-$user = new User($db);
-$userList = $user->GetAllUsers();
-$group = new Group($db);
-$groupList = $group->GetGroupsList();
 $bills = new Bills($db);
-$session = new Session($db);
-$userCfop = new UserCfop($db);
-
-$sessionIdSelected = 0;
 $rowSelected = 0;
 
 //TODO check permissions here
@@ -78,7 +68,7 @@ if (isset($_POST['endMonthSelected'])) {
 		</div>
 	</div>
 	<?php
-		$activeUsers = $user->GetActiveUsers($startyear, $startmonth, $endyear, $endmonth);
+		$activeUsers = User::getActiveUsers($db,$startyear, $startmonth, $endyear, $endmonth);
 	?>
 	<div class="panel panel-default">
 		<div id="user_list_heading" class="panel-heading">

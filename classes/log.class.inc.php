@@ -7,7 +7,7 @@ class log {
 	public static function log_message($message) {
 		global $login_user;
 		if(isset($login_user)){
-			$user_str = $login_user->GetUserName();
+			$user_str = $login_user->getUsername();
 		} else {
 			$user_str = "guest";
 		}

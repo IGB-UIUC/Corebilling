@@ -11,8 +11,7 @@ require_once 'includes/header.inc.php';
 	</tr>
 	
 	<?php
-	$device = new Device($db);
-	$devicesInUse = $device->GetDevicesInUse();
+	$devicesInUse = Device::getAllDevicesStatus($db);
 	
 	foreach($devicesInUse as $id=>$deviceUseInfo) {
 		if($deviceUseInfo['lastseen']==null) {

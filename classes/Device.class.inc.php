@@ -37,7 +37,7 @@ class Device
      * @param $description
      * @param $status
      */
-    public function CreateDevice($dn, $name,$location, $description, $status)
+    public function create($dn, $name,$location, $description, $status)
 	{
 		$this->shortName = $dn;
 		$this->full_name = $name;
@@ -53,8 +53,7 @@ class Device
 		$this->deviceId = $this->db->lastInsertId();
 
         //Add device rates rows to device rates table with default value of 0 for all values
-        $rate= new Rate($this->db);
-        $ratesArr = $rate->GetRates();
+        $ratesArr = Rate::getAllRates($this->db);
         foreach ($ratesArr as $id => $rateInfo) {
             $queryAddRates = "INSERT INTO device_rate (rate,device_id,rate_id, min_use_time, rate_type_id)VALUES(0,:device_id,:rate_id,0,0)";
             $addRatesPrep = $this->db->prepare($queryAddRates);
@@ -68,7 +67,7 @@ class Device
      * @param $id
      * @param int $authKey
      */
-    public function LoadDevice($id,$authKey=0)
+    public function load($id,$authKey=0)
 	{
 		$queryDeviceInfo = "SELECT * FROM device WHERE id=:id OR (device_token=:device_token AND device_token!=\"0\")";
         $deviceInfoPrep = $this->db->prepare($queryDeviceInfo);
@@ -92,14 +91,14 @@ class Device
     /**
      * Update device object in database with getters and setters
      */
-    public function UpdateDevice()
+    public function update()
 	{
 		$queryUpdateDevice = "UPDATE device SET device_name=:device_name, location=:location,description=:description,full_device_name=:full_device_name, status_id=:status_id, ldap_group=:ldap_group WHERE id=:id";
         $updateDevicePrep = $this->db->prepare($queryUpdateDevice);
         $updateDevicePrep->execute(array(":device_name"=>$this->shortName,":location"=>$this->location,":description"=>$this->description,":full_device_name"=>$this->full_name,":status_id"=>$this->status,":id"=>$this->deviceId,":ldap_group"=>$this->ldap_group));
 	}
 
-	public function UpdateLastTick($username="")
+	public function updateLastTick($username="")
 	{
 		if($username==""){
 			$loggeduser = 0;
@@ -115,7 +114,7 @@ class Device
      * @param $deviceName
      * @return int
      */
-    public function Exists($deviceName)
+    public function exists($deviceName)
 	{
 		$queryDeviceCount = "SELECT COUNT(*) AS num_devices FROM device WHERE device_name=:device_name";
 		$deviceCount = $this->db->prepare($queryDeviceCount);
@@ -131,35 +130,22 @@ class Device
 		}
 	}
 
-    /**Set currently logged user
-     * @param $userId
-     * @param string $unauthorizedUser
-     */
-    public function SetLoggedUser($userId,$unauthorizedUser="")
-	{
-		$updateLoggedUser = "UPDATE device SET loggeduser=:loggeduser, unauthorized=:unauthorized WHERE id=:id";
-
-		$loggedUser = $this->db->prepare($updateLoggedUser);
-        $loggedUser->execute(array(':loggeduser'=>$userId,':unauthorized'=>$unauthorizedUser,':id'=>$this->deviceId));
-
-	}
-
     /**List all devices
      * @return array
      */
-    public function GetDevicesList()
+    public static function getAllDevices($db)
     {
         $queryAllDevices = "SELECT id, device_name, full_device_name, status_id FROM device ORDER BY full_device_name";
-        $allDevices = $this->db->query($queryAllDevices);
+        $allDevices = $db->query($queryAllDevices);
         $allDevicesArr = $allDevices->fetchAll(PDO::FETCH_ASSOC);
 
         return $allDevicesArr;
     }
 
-    public function GetDevicesInUse()
+    public static function getAllDevicesStatus($db)
     {
         $queryDevicesUse = "SELECT d.full_device_name, d.location, u.user_name, d.loggeduser,u.first, u.last, TIMESTAMPDIFF(SECOND, lasttick, NOW()) AS lastseen , unauthorized FROM users u RIGHT JOIN device d ON u.id=d.loggeduser WHERE d.status_id=1 OR d.status_id=2 order by d.full_device_name";
-        $devicesUse = $this->db->prepare($queryDevicesUse);
+        $devicesUse = $db->prepare($queryDevicesUse);
         $devicesUse->execute();
         $devicesUseArr = $devicesUse->fetchAll(PDO::FETCH_ASSOC);
         return $devicesUseArr;
@@ -167,7 +153,7 @@ class Device
     /**Get rates list for device
      * @return array
      */
-    public function GetRatesList()
+    public function getRates()
     {
         $queryDeviceRates = "SELECT dr.rate, dr.id, dr.rate_id, dr.min_use_time, r.rate_name, dr.rate_type_id FROM device_rate dr, rates r WHERE r.id=dr.rate_id AND dr.device_id=:device_id";
         $deviceRatesPrep = $this->db->prepare($queryDeviceRates);
@@ -183,31 +169,17 @@ class Device
      * @param $minTime
      * @param $rateTypeId
      */
-    public function UpdateDeviceRate($rateId, $rate, $minTime, $rateTypeId)
+    public function updateRate($rateId, $rate, $minTime, $rateTypeId)
     {
         $queryUpdateDeviceRate = "UPDATE device_rate SET rate=:rate, min_use_time=:mintime, rate_type_id=:rate_type_id WHERE rate_id=:rate_id AND device_id=:device_id";
         $updateDeviceRatePrep = $this->db->prepare($queryUpdateDeviceRate);
         $updateDeviceRatePrep->execute(array(":rate"=>$rate,":mintime"=>$minTime,":rate_id"=>$rateId,":device_id"=>$this->deviceId,":rate_type_id"=>$rateTypeId));
     }
 
-    /**Get device rate by rate_id
-     * @param $rateId
-     * @return mixed
-     */
-    public function GetRate($rateId)
-    {
-        $queryRateForDevice = "SELECT rate FROM device_rate WHERE device=:device_id AND rate_id=:rate_id";
-        $rateForDevicePrep = $this->db->prepare($queryRateForDevice);
-        $rateForDevicePrep->execute((array(":device_id"=>$this->deviceId,":rate_id"=>$rateId)));
-        $rateForDeviceArr = $rateForDevicePrep->fetch(PDO::FETCH_ASSOC);
-
-        return $rateForDeviceArr['rate'];
-    }
-
-    public function DeviceStatusList()
+    public static function deviceStatusList($db)
     {
         $queryDeviceStatusList = "SELECT * FROM status WHERE type=:type";
-        $deviceStatusList = $this->db->prepare($queryDeviceStatusList);
+        $deviceStatusList = $db->prepare($queryDeviceStatusList);
         $deviceStatusList->execute(array('type'=>Device::STATUS_TYPE_DEVICE));
         $deviceStatusListArr = $deviceStatusList->fetchAll(PDO::FETCH_ASSOC);
 
@@ -215,18 +187,18 @@ class Device
     }
 
     //Getters and setters for device
-    public function SetDeviceId($id){
+    public function setDeviceId($id){
 	    if($this->deviceId != $id){
 		    $this->deviceId = $id;
 			log::log_message("Set id of device '".$this->shortName."' to $id");
 		}
     }
-    public function GetDeviceId()
+    public function getId()
 	{
 		return $this->deviceId;
 	}
 
-	public function SetShortName($dn)
+	public function setShortName($dn)
 	{
 		if($this->shortName != $dn){
 			log::log_message("Set short name of device '".$this->shortName."' to '$dn'");
@@ -239,17 +211,17 @@ class Device
 		return $this->shortName;
 	}
 
-	public function GetLDAPGroup(){
+	public function getLDAPGroup(){
 		return $this->ldap_group;
 	}
-	public function SetLDAPGroup($ldap_group){
+	public function setLDAPGroup($ldap_group){
 		if($this->ldap_group != $ldap_group){
 			$this->ldap_group = $ldap_group;
 			log::log_message("Set LDAP group of device '".$this->shortName."' to $ldap_group");
 		}
 	}
 
-	public function SetFullName($name)
+	public function setFullName($name)
 	{
 		if($this->full_name != $name){
 			$this->full_name = $name;
@@ -257,12 +229,12 @@ class Device
 		}
 	}
 	
-	public function GetFullName()
+	public function getFullName()
 	{
 		return $this->full_name;
 	}
 
-	public function SetLocation($location)
+	public function setLocation($location)
 	{
 		if($this->location != $location){
 			$this->location = $location;
@@ -270,17 +242,17 @@ class Device
 		}
 	}
 
-	public function GetLocation()
+	public function getLocation()
 	{
 		return $this->location;
 	}
 
-	public function GetStatus()
+	public function getStatus()
 	{
 		return $this->status;
 	}	
 
-	public function SetStatus($status)
+	public function setStatus($status)
 	{
 		if($this->status != $status){
 			$this->status = $status;
@@ -288,7 +260,7 @@ class Device
 		}
 	}
 
-	public function SetDescription($description)
+	public function setDescription($description)
 	{
 		if($this->description != $description){
 			$this->description = $description;
@@ -296,24 +268,14 @@ class Device
 		}
 	}
 
-	public function GetDescription()
+	public function getDescription()
 	{
 		return $this->description;
 	}
 
-	public function GetDeviceToken()
+	public function getDeviceToken()
 	{
 		return $this->deviceToken;
-	}
-
-	public function GetLoggedUser()
-	{
-		return $this->loggedUser();
-	}
-	
-	public function GetUnauthorizedUser()
-	{
-		return $this->unauthorizedUser;
 	}
 
 }

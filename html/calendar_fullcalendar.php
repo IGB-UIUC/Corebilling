@@ -4,9 +4,9 @@ $device = new Device($db);
 
 if (isset ($_POST ['deviceSelected'])) {
 	if($_POST['deviceSelected']<0){
-		$device->SetDeviceId($_POST['deviceSelected']);
+		$device->setDeviceId($_POST['deviceSelected']);
 	} else {
-		$device->LoadDevice($_POST['deviceSelected']);
+		$device->load($_POST['deviceSelected']);
 	}
 }
 
@@ -29,8 +29,8 @@ if (isset ($_POST ['deviceSelected'])) {
 		<form class="form-inline" method="post" action="report.php">
 			<input type="hidden" name="month" id="excelmonth"/>
 			<input type="hidden" name="year" id="excelyear"/>
-			<input type="hidden" name="user_id" value="<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>"/>
-			<input type="hidden" name="device_id" value="<?php echo $device->GetDeviceId(); ?>"/>
+			<input type="hidden" name="user_id" value="<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>"/>
+			<input type="hidden" name="device_id" value="<?php echo $device->getId(); ?>"/>
 			<input type="hidden" name="training" value="<?php echo isset($_POST['filterTraining'])?1:0; ?>"/>
 			<select name="report_type" class="form-control">
 				<option value="xls">Excel 2003</option>
@@ -44,19 +44,19 @@ if (isset ($_POST ['deviceSelected'])) {
 		<div class="form-group">
 			<select name="deviceSelected" class="form-control" onChange='document.calform.submit();'>
 				<?php if($login_user->isAdmin()){ ?>
-				<option value="-1" <?php if($device->GetDeviceId()==-1) echo 'selected'; ?>>Missed Reservations</option>
-				<option value="-3" <?php if($device->GetDeviceId()==-3) echo 'selected'; ?>>Deleted Reservations</option>
-				<option value="-2" <?php if($device->GetDeviceId()==-2) echo 'selected'; ?>>All Devices</option>
+				<option value="-1" <?php if($device->getId()==-1) echo 'selected'; ?>>Missed Reservations</option>
+				<option value="-3" <?php if($device->getId()==-3) echo 'selected'; ?>>Deleted Reservations</option>
+				<option value="-2" <?php if($device->getId()==-2) echo 'selected'; ?>>All Devices</option>
 				<?php } ?>
 				<option value=0 <?php if(!isset($_POST['deviceSelected']) || $_POST['deviceSelected']==0) echo 'selected'; ?>>My Reservations</option>
 				<?php
-				$deviceList = $device->GetDevicesList();
+				$deviceList = Device::getAllDevices($db);
 				foreach ($deviceList as $id => $availDevices) {
 					
 					// For now, let anyone schedule any device
 					if ( $availDevices['status_id']==1 || $availDevices['status_id']==3 ) {
 						echo "<option value=" . $availDevices ['id'];
-						if ($availDevices['id'] == $device->GetDeviceId()) {
+						if ($availDevices['id'] == $device->getId()) {
 							echo " SELECTED";
 						}
 						echo ">" . $availDevices ['full_device_name'] . "</option>";
@@ -89,6 +89,7 @@ $(document).ready(function () {
 	var initialMonth = '<?php echo (isset($_POST['month'])&&is_numeric($_POST['month']))?$_POST['month']:date('m'); ?>';
 	var initialYear = '<?php echo (isset($_POST['year'])&&is_numeric($_POST['year']))?$_POST['year']:date('Y'); ?>';
 
+	console.log("calendar_api.php?action=get_events&device_id=<?php echo $device->getId(); ?>&user_id=<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>&key=<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>");
 	$('#calendar').fullCalendar({
 		editable: true,
 		header: {
@@ -98,13 +99,13 @@ $(document).ready(function () {
 		},
 		events: {
 			url: 'calendar_api.php',
-			type: 'POST',
+			type: 'GET',
 			allDayDefault: false,
 			data: {
 				action: 'get_events',
-				device_id: '<?php echo $device->GetDeviceId(); ?>',
-				user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-				key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>',
+				device_id: '<?php echo $device->getId(); ?>',
+				user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+				key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>',
 				training: '<?php echo isset($_POST['filterTraining'])?1:0; ?>'
 			}
 		},
@@ -159,7 +160,7 @@ $(document).ready(function () {
 					alert('Cannot create a reservation in the past');
 					$('#calendar').fullCalendar('unselect');
 					$('#calendar').fullCalendar('refetchEvents');
-				} else if (<?php echo $device->GetDeviceId(); ?> > 0) {
+				} else if (<?php echo $device->getId(); ?> > 0) {
 					//alert('event clicked');
 					var rangeString = start.format('HH:mm:ss') + ' - ' + end.format('HH:mm:ss');
 					$('#modifyReservationModal #reservationWindowTitle').html('Create Reservation');
@@ -170,9 +171,9 @@ $(document).ready(function () {
 					$('#modifyReservationModal #reservationEndDate').val(end.format("YYYY-MM-DD"));
 					$('#modifyReservationModal #reservationEndTime').val(end.format('h:mma'));
 					$('#modifyReservationModal #reservationRange').text(rangeString);
-					$('#modifyReservationModal #reservationDevice').text("<?php echo $device->GetFullName(); ?>");
-					$('#modifyReservationModal #reservationUsername').text("<?php echo $authenticate->getAuthenticatedUser()->GetUserName(); ?>");
-					$('#modifyReservationModal #reservationUserId').val("<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>");
+					$('#modifyReservationModal #reservationDevice').text("<?php echo $device->getFullName(); ?>");
+					$('#modifyReservationModal #reservationUsername').text("<?php echo $authenticate->getAuthenticatedUser()->getUsername(); ?>");
+					$('#modifyReservationModal #reservationUserId').val("<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>");
 					// Enable all fields
 					$('#modifyReservationModal #reservationDescription').prop("readonly",false);
 					$('#modifyReservationModal #reservationTraining').prop("disabled",false);
@@ -202,13 +203,13 @@ $(document).ready(function () {
 		},
 		eventClick: function (calEvent, jsEvent, view) {
 			// If the event is in progress and belongs to us, show the I Finished Early button
-			if(calEvent.userid==<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?> && calEvent.start.format('X')<new Date().getTime()/1000 && calEvent.end.format('X')>new Date().getTime()/1000 && calEvent.finishedEarly == null){
+			if(calEvent.userid==<?php echo $authenticate->getAuthenticatedUser()->getId(); ?> && calEvent.start.format('X')<new Date().getTime()/1000 && calEvent.end.format('X')>new Date().getTime()/1000 && calEvent.finishedEarly == null){
 				$('#modifyReservationModal #finishedEarlyDiv').show();
 			} else {
 				$('#modifyReservationModal #finishedEarlyDiv').hide();
 			}
 			// Cannot edit/delete events less than 2 hours before they start
-			if(<?php echo $device->GetDeviceId(); ?>==-1 || calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000){
+			if(<?php echo $device->getId(); ?>==-1 || calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000){
 				$('#modifyReservationModal #reservationWindowTitle').html('Reservation Info');				
 			} else {
 				$('#modifyReservationModal #reservationWindowTitle').html('Edit Reservation');
@@ -242,7 +243,7 @@ $(document).ready(function () {
 			?>
 			// Can't update or delete events in the past, or that don't belong to us, unless we're an admin
 			<?php if(!$login_user->isAdmin()){ ?>
-			if( calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>){
+			if( calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>){
 				$('#modifyReservationModal #reservationDescription').prop("readonly",true);
 				$('#modifyReservationModal #reservationTraining').prop("disabled",true);
 				$('#modifyReservationModal #reservationStartTime').prop( "readonly", true );
@@ -282,9 +283,9 @@ $(document).ready(function () {
 					start: event.start.format("YYYY-MM-DD HH:mm:ss"),
 					end: event.end.format("YYYY-MM-DD HH:mm:ss"),
 					id: event.id,
-					device_id: '<?php echo $device->GetDeviceId(); ?>',
-					user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-					key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>'
+					device_id: '<?php echo $device->getId(); ?>',
+					user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>'
 				},
 				type: "POST",
 				success: function (json) {
@@ -301,9 +302,9 @@ $(document).ready(function () {
 					start: event.start.format("YYYY-MM-DD HH:mm:ss"),
 					end: event.end.format("YYYY-MM-DD HH:mm:ss"),
 					id: event.id,
-					device_id: '<?php echo $device->GetDeviceId(); ?>',
-					user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-					key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>'
+					device_id: '<?php echo $device->getId(); ?>',
+					user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>'
 				},
 				type: "POST",
 				success: function (json) {
@@ -356,8 +357,8 @@ $(document).ready(function () {
 				data: {
 					action: "delete_event",
 					id: reservationId,
-					user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-					key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>'
+					user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>'
 				}
 			});
 			$('#calendar').fullCalendar('refetchEvents');
@@ -390,9 +391,9 @@ $(document).ready(function () {
 				end: reservationEnd,
 				id: reservationId,
 				res_user_id: reservationUser,
-				device_id: '<?php echo $device->GetDeviceId(); ?>',
-				user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-				key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>'
+				device_id: '<?php echo $device->getId(); ?>',
+				user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+				key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>'
 			},
 			success: function(data){
 				console.log(data);
@@ -419,8 +420,8 @@ $(document).ready(function () {
 			data: {
 				action: "finish_early",
 				id: reservationId,
-				user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-				key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>'
+				user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+				key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>'
 			},
 			success: function(data){
 				console.log(data);
@@ -457,9 +458,9 @@ $(document).ready(function () {
 					end: reservationEnd,
 					id: reservationId,
 					training: reservationTraining,
-					device_id: '<?php echo $device->GetDeviceId(); ?>',
-					user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-					key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>',
+					device_id: '<?php echo $device->getId(); ?>',
+					user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>',
 					interval: reservationRepeatInterval,
 					repeat: reservationRepeat
 				}
@@ -476,9 +477,9 @@ $(document).ready(function () {
 					start: reservationStart,
 					end: reservationEnd,
 					training: reservationTraining,
-					device_id: '<?php echo $device->GetDeviceId(); ?>',
-					user_id: '<?php echo $authenticate->getAuthenticatedUser()->GetUserId(); ?>',
-					key: '<?php echo $authenticate->getAuthenticatedUser()->GetSecureKey(); ?>',
+					device_id: '<?php echo $device->getId(); ?>',
+					user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
+					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>',
 					interval: reservationRepeatInterval,
 					repeat: reservationRepeat
 				},
@@ -502,7 +503,7 @@ $(document).ready(function () {
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
 						class="sr-only">Close</span></button>
-				<h3 class="modal-title" id="reservationWindowTitle"><?php if($device->GetDeviceId()==-1){echo 'Reservation Info';}else{echo 'Edit Reservation';} ?></h3>
+				<h3 class="modal-title" id="reservationWindowTitle"><?php if($device->getId()==-1){echo 'Reservation Info';}else{echo 'Edit Reservation';} ?></h3>
 			</div>
 			<div class="modal-body">
 				<form id="editReservationForm" class="form-horizontal">
@@ -533,7 +534,7 @@ $(document).ready(function () {
 
 						<div class="col-sm-9">
 							<input type="text" class="form-control" value="" name="reservationDescription"
-								   id="reservationDescription" <?php if($device->GetDeviceId()==-1){echo 'readonly';} ?>>
+								   id="reservationDescription" <?php if($device->getId()==-1){echo 'readonly';} ?>>
 							<input type="hidden" name="reservationId" id="reservationId">
 							<input type="hidden" name="reservationStart" id="reservationStart">
 							<input type="hidden" name="reservationEnd" id="reservationEnd">
@@ -608,7 +609,7 @@ $(document).ready(function () {
 
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<?php if($device->GetDeviceId()!=-1){ ?>
+				<?php if($device->getId()!=-1){ ?>
 				<button type="submit" id="deleteReservation" class="btn btn-primary">Delete</button>
 				<button type="submit" id="updateReservation" class="btn btn-primary">Save</button>
 				<?php } ?>

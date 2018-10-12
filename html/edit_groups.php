@@ -14,10 +14,10 @@ if (isset($_POST['Submit'])) {
 	$description = $_POST['description'];
 	$departmentId = $_POST['department'];
 
-	if ($group->Exists($groupName)) {
+	if (Group::exists($db,$groupName)) {
 		$warnings .= html::error_message("Group name already exists.");
 	} else {
-		$group->AddGroup($groupName, $description, $departmentId);
+		$group->create($groupName, $description, $departmentId);
 	}
 }
 
@@ -27,17 +27,17 @@ if (isset($_POST['Modify'])) {
 	$description = $_POST['description'];
 	$departmentId = $_POST['department'];
 
-	$group->LoadGroup($groupID);
+	$group->load($groupID);
 	$group->setDepartmentId($departmentId);
-	$group->setGroupName($groupName);
+	$group->setName($groupName);
 	$group->setDescription($description);
-	$group->UpdateGroup();
+	$group->update();
 }
 
 
 if (isset($_POST['Select'])) {
 	$groupID = $_POST['selectGroup'];
-	$group->LoadGroup($groupID);
+	$group->load($groupID);
 
 	$announce = "<h4>Modify Group:</h4>Modify group details, click modify to apply changes.";
 	$newGroupBtn = ' <input name="Reset" type="submit" class="btn btn-primary" id="reset" value="Reset" >';
@@ -55,7 +55,7 @@ if (isset($_POST['Select'])) {
 					<div class="col-sm-6">
 						<select name="selectGroup" class="form-control">
 							<?php
-							$groupList = $group->GetGroupsList();
+							$groupList = Group::getAllGroups($db);
 							echo "<option value=\"0\">New Group</optionv>";
 							foreach ($groupList as $groupInfo) {
 								echo "<option value=" . $groupInfo["id"] . ">" . $groupInfo["group_name"] . "</option>";
@@ -72,7 +72,7 @@ if (isset($_POST['Select'])) {
 				<div class="form-group">
 					<label class="col-sm-3 control-label">Group Name</label>
 					<div class="col-sm-9">
-						<input name="group_name" type="text" value="<?php echo $group->getGroupName(); ?>" class="form-control">
+						<input name="group_name" type="text" value="<?php echo $group->getName(); ?>" class="form-control">
 					</div>
 				</div>
 				<div class="form-group">
@@ -81,7 +81,7 @@ if (isset($_POST['Select'])) {
 						<select name="department" class="form-control">
 							<option value=0>Not Set</option>
 							<?php
-							$departmentList = $department->GetDepartmentList();
+							$departmentList = Department::getAllDepartments($db);
 							foreach ($departmentList as $departmentInfo) {
 								echo "<option value=" . $departmentInfo['id'];
 								if ($departmentInfo['id'] == $group->getDepartmentId()) {
@@ -102,8 +102,8 @@ if (isset($_POST['Select'])) {
 				<div class="form-group">
 					<div class="col-sm-9 col-sm-offset-3">
 						<?php
-						echo "<input name=\"groupID\" type=\"hidden\" value=\"" . $group->getGroupId() . "\">";
-						if ($group->getGroupId() != 0) {
+						echo "<input name=\"groupID\" type=\"hidden\" value=\"" . $group->getId() . "\">";
+						if ($group->getId() != 0) {
 							echo '<input name="Modify" type="submit" class="btn btn-primary" id="Modify" value="Modify">';
 						} else {
 							echo '<input name="Submit" type="submit" class="btn btn-primary" id="Submit" value="Create" >  <input name="Reset" type="submit" class="btn btn-primary" id="reset" value="Reset" >';
@@ -123,7 +123,7 @@ if (isset($_POST['Select'])) {
 						<th>NetId</th>
 						<th>Full Name</th>
 						<?php
-						$members = $group->GetMembers();
+						$members = $group->getMembers();
 						foreach ($members as $id => $member) {
 							echo "<tr><td>" . $member['user_name'] . "</td><td>" . $member['first'] . " " . $member['last'] . "</td></tr>";
 						}

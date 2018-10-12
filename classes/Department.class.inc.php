@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: nevoband
- * Date: 12/5/13
- * Time: 10:52 AM
- */
-
 class Department {
 
     private $db;
@@ -29,7 +22,7 @@ class Department {
      * @param $departmentName
      * @param $description
      */
-    public function AddDepartment($departmentName, $description)
+    public function create($departmentName, $description)
     {
         $queryAddDepartment= "INSERT INTO departments (department_name, description)VALUES(:department_name,:description)";
         $addDepartmentPrep = $this->db->prepare($queryAddDepartment);
@@ -44,7 +37,7 @@ class Department {
     /**
      * Update department row in database with changes made to this object
      */
-    public function UpdateDepartment()
+    public function update()
     {
         $queryUpdateDepartment = "UPDATE departments SET
                                 department_name=\"".$this->departmentName."\",
@@ -56,7 +49,7 @@ class Department {
     /** Load department by id from database into this object
      * @param $id
      */
-    public function LoadDepartment($id)
+    public function load($id)
     {
         $queryDepartmentById = "SELECT department_name,id,department_code FROM departments WHERE id=:id";
         $departmentInfo = $this->db->prepare($queryDepartmentById);
@@ -70,10 +63,10 @@ class Department {
     /** Get a list of available departments
      * @return array
      */
-    public function GetDepartmentList()
+    public static function getAllDepartments($db)
     {
         $queryDepartmentList= "SELECT department_name,id FROM departments ORDER BY department_name";
-        $departmentInfo = $this->db->query($queryDepartmentList);
+        $departmentInfo = $db->query($queryDepartmentList);
         return $departmentInfo->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -81,10 +74,10 @@ class Department {
      * @param $departmentName
      * @return bool
      */
-    public function Exists($departmentName)
+    public static function exists($db,$departmentName)
     {
         $queryDepartment= "SELECT COUNT(*) FROM departments WHERE department_name=:department_name";
-        $department= $this->db->prepare($queryDepartment);
+        $department= $db->prepare($queryDepartment);
         $department->execute(array(':department_name'=>$departmentName));
         $departmentCount = $department->fetchColumn();
 
@@ -98,13 +91,16 @@ class Department {
     /**Get all members of this department
      * @return array
      */
-    public function GetMembers()
+    public function getMembers()
     {
         if($this->getDepartmentId())
         {
-            $user = new User($this->db);
-            $departmentMembers = $user->GetDepartmentUsers($this->departmentId);
-            return $departmentMembers;
+	        $queryDepartmentUsers = "SELECT * FROM users WHERE department_id=:department_id";
+			$departmentUsers = $this->db->prepare($queryDepartmentUsers);
+			$departmentUsers->execute(array(":department_id"=>$this->getDepartmentId()));
+			$departmentUsersArr = $departmentUsers->fetchAll(PDO::FETCH_ASSOC);
+            
+            return $departmentUsersArr;
         }
         return array();
     }

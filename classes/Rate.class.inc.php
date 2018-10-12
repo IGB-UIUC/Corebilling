@@ -1,13 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: nevoband
- * Date: 2/20/14
- * Time: 4:07 PM
- */
-
-class Rate
-{
+class Rate {
     private $db;
     
     private $rateId;
@@ -28,7 +20,7 @@ class Rate
      * @param $rateName
      * @param $rateTypeId
      */
-    public function CreateRate($rateName,$rateTypeId)
+    public function create($rateName,$rateTypeId)
     {
         $queryAddRate = "INSERT INTO rates (rate_name)VALUES(:rate_name)";
         $addRate = $this->db->prepare($queryAddRate);
@@ -37,7 +29,7 @@ class Rate
         $this->rateId = $this->db->lastInsertId();
 
         $device = new Device($this->db);
-        $devicesArr = $device->GetDevicesList();
+        $devicesArr = Device::getAllDevices($db);
 
 
         foreach($devicesArr as $id=>$rateDevice)
@@ -55,7 +47,7 @@ class Rate
     /**Load a rate by id form database into this object
      * @param $rateId
      */
-    public function LoadRate($rateId)
+    public function load($rateId)
     {
         $queryLoadRate = "SELECT rate_name, rateytpeid FROM rates WHERE id=:rate_id";
         $loadRatePrep = $this->db->prepare($queryLoadRate);
@@ -72,7 +64,7 @@ class Rate
     /**
      * Update rate rows in database with tihs object's values
      */
-    public function UpdateRate()
+    public function update()
     {
         $queryUpdateRate = "UPDATE rates SET rate_name=:rate_name, rate_type_id=:rate_type_id";
         $updateRatePrep = $this->db->prepare($queryUpdateRate);
@@ -82,20 +74,20 @@ class Rate
     /**Get a list of rate types continuous, monthly etc...
      * @return array
      */
-    public function GetRateTypes()
+    public static function getAllRateTypes($db)
     {
         $queryRateTypes = "SELECT rate_type_name, id FROM rate_types";
-        $rateTypes = $this->db->query($queryRateTypes);
+        $rateTypes = $db->query($queryRateTypes);
         return $rateTypes->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
      * @return array
      */
-    public function GetRates()
+    public static function getAllRates($db)
     {
         $queryRatesList = "SELECT rate_name, id FROM rates";
-        $rateList = $this->db->query($queryRatesList);
+        $rateList = $db->query($queryRatesList);
         return $rateList->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -119,7 +111,7 @@ class Rate
     /**
      * @param mixed $rateId
      */
-    public function setRateId($rateId)
+    public function setId($rateId)
     {
         $this->rateId = $rateId;
     }
@@ -127,7 +119,7 @@ class Rate
     /**
      * @return mixed
      */
-    public function getRateId()
+    public function getId()
     {
         return $this->rateId;
     }
@@ -135,7 +127,7 @@ class Rate
     /**
      * @param mixed $rateName
      */
-    public function setRateName($rateName)
+    public function setName($rateName)
     {
         $this->rateName = $rateName;
     }
@@ -143,7 +135,7 @@ class Rate
     /**
      * @return mixed
      */
-    public function getRateName()
+    public function getName()
     {
         return $this->rateName;
     }

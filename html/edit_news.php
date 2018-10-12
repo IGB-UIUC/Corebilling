@@ -9,16 +9,16 @@ if(!$login_user->isAdmin()){
 $adminType = 1;
 $selectedArticle = 0;
 
-$article = new Articles($db);
+$article = new Article($db);
 $user = new User($db);
 
 if (isset($_GET['edit'])) {
 	$selectedArticle = $_GET['edit'];
-	$article->LoadArticle($selectedArticle);
+	$article->load($selectedArticle);
 }
 
 if (isset($_GET['delete']) && $login_user->isAdmin()) {
-	$article->RemoveArticle($_GET['delete']);
+	Article::removeArticle($db,$_GET['delete']);
 	header('location: news.php');
 	exit();
 }
@@ -28,11 +28,11 @@ if (isset($_POST['applyEdit']) && $login_user->isAdmin()) {
 	$title = $_POST['title'];
 	$bodyText = $_POST['text'];
 	$articleId = $_POST['editArticleId'];
-	$article->LoadArticle($articleId);
+	$article->load($articleId);
 	$article->setTitle($title);
 	$article->setDescription($bodyText);
-	$article->setUserid($authenticate->getAuthenticatedUser()->GetUserId());
-	$article->UpdateArticle();
+	$article->setUserid($authenticate->getAuthenticatedUser()->getId());
+	$article->update();
 	header('location: news.php');
 	exit();
 }
@@ -40,11 +40,11 @@ if (isset($_POST['applyEdit']) && $login_user->isAdmin()) {
 if (isset($_POST['createNew']) && $login_user->isAdmin()) {
 	$title = $_POST['title'];
 	$bodyText = $_POST['text'];
-	$article->CreateArticle($authenticate->getAuthenticatedUser()->GetUserId(), $title, $bodyText);
+	$article->create($authenticate->getAuthenticatedUser()->getId(), $title, $bodyText);
 	header('location: news.php');
 	exit();
 }
-$articlesList = $article->GetArticles();
+$articlesList = Article::getAllArticles($db);
 ?>
 
 <div>

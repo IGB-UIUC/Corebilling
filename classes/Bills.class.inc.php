@@ -29,17 +29,6 @@ class Bills
     }
 
     /**
-     * Verify a session by id
-     * @param $billId
-     */
-    public function VerifyBill($billId)
-    {
-        $session = new Session($this->db);
-        $session->LoadSession($billId);
-        $session->Verify();
-    }
-
-    /**
      * Return one month of bills
      * @param $year
      * @param $month
@@ -178,10 +167,10 @@ left join departments de on de.id=u.department_id";
         foreach($sessionIdArray as $sessionId)
         {
             //Update each session with the user's default CFOP
-            $billSession->LoadSession($sessionId);
-            $userDefaultCfopId = $userCfop->LoadDefaultCfopl($billSession->GetUserID());
-            $billSession->SetCfopId($userDefaultCfopId);
-            $billSession->UpdateSession();
+            $billSession->load($sessionId);
+            $userDefaultCfopId = $userCfop->loadDefaultCfop($billSession->getUserId());
+            $billSession->setCfopId($userDefaultCfopId);
+            $billSession->update();
         }
     }
 

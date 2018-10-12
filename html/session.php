@@ -5,50 +5,22 @@
 if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key'])) {
     include('includes/initializer.php');
     $deviceInfo = new Device($db);
-    $deviceInfo->LoadDevice(0, $_POST['key']);
+    $deviceInfo->load(0, $_POST['key']);
     //check if device token matches
 
-    if ($deviceInfo->GetDeviceId() > 0) {
-        $sessionInfo = new Session($db);
-        $userInfo = new User($db);
-        $userId = $userInfo->Exists($_POST['username']);
+    if ($deviceInfo->getId() > 0) {
+        $userId = User::exists($db,$_POST['username']);
 
         //check if user_name exists
         if ($userId) {
             //Start tracking session
-            $sessionInfo->TrackSession($deviceInfo->GetDeviceId(), $userId);
+            Session::trackSession($db,$deviceInfo->getId(), $userId);
         } else {
             //User was not found in website database so check for user exceptions
-/*
-            if (!in_array(strtolower($_POST['username']), array_map('strtolower', $USER_EXCEPTIONS_ARRAY))) {
-
-                //Email admin that a new user was detected on instrument and that a new account was created on the website for them
-                //error_log('creating user from session', 0);
-                $mail = new Mailer();
-                $mail->setFrom(PAGE_TITLE, ADMIN_EMAIL);
-                foreach ($ADMIN_EMAIL as $adminMail) {
-                    $mail->addRecipient('Admin', $adminMail);
-                }
-                $mail->fillSubject("Unregistered user: " . $_POST['username'] . " on " . $deviceInfo->GetFullName());
-                $mail->fillMessage($_POST['username'] . " has logged into " . $deviceInfo->getShortName() . ", the user does not have a registered account on " . PAGE_TITLE . "."
-                    . "\nCreating a new account on instrument tracking software.");
-                $mail->send();
-
-                //Create a user account so we have a record
-                $userInfo->CreateUser($_POST['username'], '', '',
-                    $_POST['username'] . '@' . DEFAULT_USER_EMAIL_DOMAIN,
-                    DEFAULT_USER_DEPARTMENT_ID,
-                    DEFAULT_USER_GROUP_ID,
-                    DEFAULT_USER_RATE_ID,
-                    DEFAULT_USER_STATUS_ID,
-                    DEFAULT_USER_ROLE_ID);
-
-            }
-*/
 			if (in_array(strtolower($_POST['username']), array_map('strtolower', $USER_EXCEPTIONS_ARRAY))){
-	            $deviceInfo->UpdateLastTick();
+	            $deviceInfo->updateLastTick();
 	        } else {
-   	            $deviceInfo->UpdateLastTick($_POST['username']);
+   	            $deviceInfo->updateLastTick($_POST['username']);
 	        }
 	            
         }
