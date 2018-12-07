@@ -83,7 +83,7 @@ class Group
      * @param $groupName
      * @return bool
      */
-    public static function exists($groupName)
+    public static function exists($db, $groupName)
     {
         $queryGroup = "SELECT COUNT(*) FROM groups WHERE group_name=:group_name";
         $group = $db->prepare($queryGroup);
