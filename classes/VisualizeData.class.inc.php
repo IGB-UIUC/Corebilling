@@ -82,8 +82,18 @@ class VisualizeData {
      * @param bool $checkBoxes
      * @return string
      */
-    public static function ListSessionsTableHiddenCols($tableData,$tableHeaders,$dataColumns,$hiddenColumns,$spreadsheetColumns,$tableNameId,$checkBoxes=false,$filter=true)
+    public static function ListSessionsTableHiddenCols($tableData,$tableHeaders,$dataColumns,$hiddenColumns,$spreadsheetColumns,$tableNameId,$checkBoxes=false,$filter=true,$order=null)
     {
+	    $orderstr = "[]";
+	    if($order !== null){
+		    $ordercol = array_search($order, $dataColumns);
+		    if($ordercol !== false){
+			    if($checkBoxes){
+				    $ordercol = $ordercol+1;
+			    }
+			    $orderstr = "[[$ordercol,'asc']]";
+		    }
+	    }
 	    $buttonLocation = ".prependTo($('#".$tableNameId."_heading'))";
 	    if($filter){$buttonLocation = ".appendTo($('#".$tableNameId."_filter'))";}
         $tableString =  " <script type=\"text/javascript\" class=\"init\">
@@ -92,6 +102,7 @@ class VisualizeData {
             ".$tableNameId." = $('#".$tableNameId."').DataTable({
                 \"dom\": '".($filter?'f':'')."Brti',
                 \"paging\": false,
+                \"order\": $orderstr,
                 \"buttons\": {
                 	buttons: ['copy',{
                 		extend:'csv',
