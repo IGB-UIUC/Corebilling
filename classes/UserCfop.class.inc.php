@@ -108,7 +108,7 @@ class UserCfop {
     public static function getAllCFOPs($db,$userId)
     {
         $queryListCfops = "SELECT * FROM user_cfop WHERE user_id=:user_id AND active=".UserCfop::ACTIVE_CFOP;
-        $listCfops = $this->db->prepare($queryListCfops);
+        $listCfops = $db->prepare($queryListCfops);
         $listCfops->execute(array(':user_id'=>$userId));
         $listCfopsArr = $listCfops->fetchAll(PDO::FETCH_ASSOC);
 

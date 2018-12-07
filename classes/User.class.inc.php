@@ -257,7 +257,7 @@ class User {
 
 	public function getAllCFOPs()
 	{
-		return UserCfop::getAllCFOPs($db,$this->userId);
+		return UserCfop::getAllCFOPs($this->db,$this->userId);
 	}
 
 	public function getDefaultCFOP(){

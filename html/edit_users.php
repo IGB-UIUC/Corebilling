@@ -44,7 +44,7 @@ if (isset($_POST['update_user'])) {
 	}
 
 	$_POST['cfop_to_add']=UserCfop::formatCfop($_POST['cfop_to_add']);
-	if( $_POST['cfop_to_add']!="---" && $_POST['cfop_to_add']!=$userCfop->loadDefaultCfop($selectedUser->getUserId()) )
+	if( $_POST['cfop_to_add']!="---" && $_POST['cfop_to_add']!=$userCfop->loadDefaultCfop($selectedUser->getId()) )
 	{
 		// Look in old cfops to see if we're reusing an old one
 		$cfopList = $selectedUser->getAllCFOPs();
