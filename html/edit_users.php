@@ -43,6 +43,12 @@ if (isset($_POST['update_user'])) {
 		$selectedUser->setCertified(isset($_POST['safetyquiz']));
 	}
 
+    $demo = $selectedUser->getDemographics();
+    $demo->setEdulevel($_POST['edulevel']);
+    $demo->setGender($_POST['gender']);
+    $demo->setUnderrep($_POST['underrep']);
+    $demo->update();
+
 	$_POST['cfop_to_add']=UserCfop::formatCfop($_POST['cfop_to_add']);
 	if( $_POST['cfop_to_add']!="---" && $_POST['cfop_to_add']!=$userCfop->loadDefaultCfop($selectedUser->getId()) )
 	{
@@ -113,8 +119,16 @@ if (isset($_POST['create_user'])) {
 			}
 		}
 		$selectedUser->update();
+
+		$demo = $selectedUser->getDemographics();
+		$demo->setEdulevel($_POST['edulevel']);
+		$demo->setGender($_POST['gender']);
+		$demo->setUnderrep($_POST['underrep']);
+		$demo->update();
+
 		$_REQUEST['user_id'] = $selectedUser->getId();
 		$message .= html::success_message("User ".$_POST['user_name']." added to database.");
+        $ldapinfo = $ldapman->getUser($selectedUser->getUsername());
 	}
 }
 
@@ -292,6 +306,67 @@ if (isset($_REQUEST['user_id'])) {
 			</div> <!-- .panel -->
 		</div>
 	</div> <!-- .row -->
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4>Demographic Info</h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="form-horizontal">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="edulevel-select">Education Level</label>
+                                    <div class="col-sm-9">
+                                        <select name="edulevel" class="form-control" id="edulevel-select">
+                                            <option value="">No response</option>
+                                            <?php
+                                                foreach (UserDemographics::allEduLevels() as $eduLevel){
+                                                    $selected = ($selectedUser->getDemographics()->getEdulevel() == $eduLevel)?'selected':'';
+                                                    echo "<option value='$eduLevel' $selected>$eduLevel</option>";
+                                                }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="underrep-select">Underrepresented</label>
+                                    <div class="col-sm-9">
+                                        <select name="underrep" class="form-control" id="underrep-select">
+                                            <option value="">No response</option>
+                                            <?php
+                                                foreach(UserDemographics::allUnderrepOptions() as $option){
+                                                    $selected = ($selectedUser->getDemographics()->getUnderrep() == $option)?'selected':'';
+                                                    echo "<option value='$option' $selected>$option</option>";
+                                                }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="gender-select">Gender</label>
+                                    <div class="col-sm-9">
+                                        <select name="gender" class="form-control" id="gender-select">
+                                            <option value="">No response</option>
+                                            <?php
+                                                foreach (UserDemographics::allGenders() as $gender){
+                                                    $selected = ($selectedUser->getDemographics()->getGender() == $gender)?'selected':'';
+                                                    echo "<option value='$gender' $selected>$gender</option>";
+                                                }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 	<div class="row">
 		<div class="col-sm-12">
 			<div class="panel panel-default">

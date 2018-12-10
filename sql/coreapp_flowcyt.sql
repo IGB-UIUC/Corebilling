@@ -429,6 +429,16 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=940 ;
 
+
+CREATE TABLE `user_demographics` (
+   `user_id` int(11) unsigned NOT NULL,
+   `edu_level` varchar(128) DEFAULT NULL,
+   `gender` varchar(64) DEFAULT NULL,
+   `underrepresented` varchar(64) DEFAULT NULL,
+   PRIMARY KEY (`user_id`),
+   CONSTRAINT `user_demographics_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -- --------------------------------------------------------
 
 --

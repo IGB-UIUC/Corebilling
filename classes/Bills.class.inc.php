@@ -86,9 +86,12 @@ left join departments de on de.id=u.department_id";
         return $monthUsage;
     }
     
-    public function GetMonthsCharges($startyear, $startmonth, $endyear, $endmonth, $rateType){
+    public function GetMonthsCharges($startyear, $startmonth, $endyear, $endmonth, $rateType = null, $demographics = false){
 	    $pdoParameters = array();
         $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.first,' ',u.last) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id, de.department_name ";
+        if($demographics){
+            $querySelectClauseMonthUsage .= ", ud.edu_level, ud.gender, ud.underrepresented ";
+        }
         $queryTablesClauseMonthUsage = " FROM 
 	`session` s
 	left join users u on u.id=s.user_id
@@ -98,12 +101,18 @@ left join departments de on de.id=u.department_id";
 	left join rates r on r.id=s.rate_id
 	LEFT JOIN user_cfop uc ON (uc.id=s.cfop_id AND uc.default_cfop=1) 
 	left join departments de on de.id=u.`department_id`";
-        $queryWhereClauseMonthUsage = " WHERE ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear) AND dr.rate_type_id=:rate_type_id";
+        if($demographics){
+            $queryTablesClauseMonthUsage .= " left join user_demographics ud on ud.user_id=u.id";
+        }
+        $queryWhereClauseMonthUsage = " WHERE ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear)";
+        if($rateType !== null){
+            $queryWhereClauseMonthUsage .= " AND dr.rate_type_id=:rate_type_id";
+			$pdoParameters[':rate_type_id'] = $rateType;
+        }
         $pdoParameters[':startyear'] = $startyear;
         $pdoParameters[':startmonth'] = $startmonth;
         $pdoParameters[':endyear'] = $endyear;
         $pdoParameters[':endmonth'] = $endmonth;
-        $pdoParameters[':rate_type_id'] = $rateType;
 
         if ($this->userId) {
             $queryWhereClauseMonthUsage .= " AND s.user_id=:user_id";

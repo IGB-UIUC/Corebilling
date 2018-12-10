@@ -30,8 +30,8 @@ $group = new Group($db);
 				<?php
 				$usersFullInfoList = User::getAllUsersFullInfo($db);
 				echo VisualizeData::ListSessionsTable($usersFullInfoList,
-					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Created', 'Last Login', 'Status', ''),
-					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'date_added', 'last_login', 'status', 'edit'), 'usersTable',0);
+					array('Name', 'E-Mail', 'CFOP', 'Group', 'Department', 'Created', 'Last Login', 'Status', 'Edu. Level', 'Gender', 'Underrep.', ''),
+					array('full_name', 'email', 'cfop', 'group_name', 'department_name', 'date_added', 'last_login', 'status', 'edu_level', 'gender', 'underrepresented', 'edit'), 'usersTable',0);
 				?>
 				<script type="text/javascript">
 					// Sort by status, then name to show active users first

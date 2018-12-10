@@ -20,6 +20,8 @@ class User {
 	private $userCfop;
 	private $certified;
 
+	private $demographics = null;
+
 	public function __construct(PDO $db)
 	{
 		$this->db = $db;
@@ -202,7 +204,27 @@ class User {
 	}
 
 	public static function getAllUsersFullInfo($db) {
-		$queryAllUserInfo = "SELECT u.first, u.last, u.email, u.department_id, u.group_id, g.group_name, uc.cfop, d.department_name, u.date_added, (select max(`stop`) from `session` where user_id=u.`id`) as last_login, CONCAT(u.last, ', ', u.first) as full_name, s.statusname as status, u.id FROM users u LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1) LEFT JOIN groups g ON (g.id=u.group_id) LEFT JOIN departments d ON (d.id=u.department_id) LEFT JOIN status s ON s.id=u.status_id";
+		$queryAllUserInfo = "SELECT u.first, 
+       								u.last, 
+								   	u.email, 
+								   	u.department_id,
+								   	u.group_id, 
+								   	g.group_name, 
+								   	uc.cfop, 
+								   	d.department_name, 
+								  	u.date_added, 
+								   	(select max(`stop`) from `session` where user_id=u.`id`) as last_login, 
+								   	CONCAT(u.last, ', ', u.first) as full_name, 
+								   	s.statusname as status, 
+								   	u.id, ud.edu_level, 
+								   	ud.gender,
+								   	ud.underrepresented 
+								FROM users u 
+								  LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1) 
+								  LEFT JOIN groups g ON (g.id=u.group_id) 
+								  LEFT JOIN departments d ON (d.id=u.department_id) 
+								  LEFT JOIN status s ON s.id=u.status_id 
+								  left join user_demographics ud on u.id = ud.user_id";
 		$allUserInfo = $db->prepare($queryAllUserInfo);
 		$allUserInfo->execute();
 		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
@@ -217,9 +239,23 @@ class User {
 
 	public static function getActiveUsers($db,$startyear,$startmonth,$endyear,$endmonth)
 	{
-		$queryAllUserInfo = "SELECT u.first, u.last, u.id, u.user_name, u.email, u.department_id, u.group_id, g.group_name, d.department_name, CONCAT(u.last, ', ', u.first) as full_name
-								from users u left join groups g on g.id=u.group_id left join departments d on d.id=u.department_id left join `session` s on s.user_id=u.id
-								where u.`status_id`=5 and ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear)
+		$queryAllUserInfo = "SELECT u.first, 
+								   u.last, 
+								   u.id, 
+								   u.user_name, 
+								   u.email, 
+								   u.department_id, 
+								   u.group_id, 
+								   g.group_name, 
+								   d.department_name, 
+								   CONCAT(u.last, ', ', u.first) as full_name
+								from users u 
+								  left join groups g on g.id=u.group_id 
+								  left join departments d on d.id=u.department_id 
+								  left join `session` s on s.user_id=u.id
+								where u.`status_id`=5 
+								  and ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) 
+								  AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear)
 								group by u.user_name";
 		$allUserInfo = $db->prepare($queryAllUserInfo);
 		$allUserInfo->execute(array(':startyear'=>$startyear, ':startmonth'=>$startmonth, ':endyear'=>$endyear, ':endmonth'=>$endmonth));
@@ -276,6 +312,13 @@ class User {
 	}
 	public function isSupervisor(){
 		 return $this->getRoleId()==2;
+	}
+
+	public function getDemographics(){
+		if($this->demographics === null){
+            $this->demographics = new UserDemographics($this->db,$this->getId());
+		}
+		return $this->demographics;
 	}
 
 	//Getters and setters

@@ -15,6 +15,7 @@
 					<li><a href="edit_devices.php">Devices</a></li>
 					<hr>
 					<li><a href="facility_billing.php">Facility Billing</a></li>
+					<li><a href="facility_demographics.php">Facility Demographics</a></li>
 					<li><a href="active_users.php">Active Users</a></li>
 					<li><a href="reservation_use.php">Reservation Usage Data</a></li>
 					<li><a href="usage_compare.php">Reservation-Usage Comparison</a></li>

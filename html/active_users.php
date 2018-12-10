@@ -9,7 +9,6 @@ if(!$login_user->isAdmin()){
 $bills = new Bills($db);
 $rowSelected = 0;
 
-//TODO check permissions here
 
 if (isset($_POST['startMonthSelected'])) {
 	list($startmonth, $startyear) = explode(" ", $_POST['startMonthSelected']);
