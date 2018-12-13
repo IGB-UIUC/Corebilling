@@ -177,7 +177,7 @@ else
 						array('id', 'NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Hrs', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department', 'Edu. Level', 'Gender', 'Underrep.'),
 						array('id', 'user_name', 'full_name', 'start','stop', 'Date', 'cfop', 'full_device_name', 'elapsed', 'elapsed_unrounded', 'min_use_time', 'rate', 'rate_name', 'total', 'group_name', 'department_name', 'edu_level', 'gender', 'underrepresented'),
 						array('Date','Elapsed','elapsed_unrounded'),
-						array('NetId', 'Name', 'Date', 'CFOP', 'Inst.', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department', 'Edu. Level', 'Gender', 'Underrep.'), "Rate".$rateTypeSelected, true, false, 'start');
+						array('NetId', 'Name', 'Start','End', 'Date', 'CFOP', 'Inst.', 'Elapsed', 'Min. Hrs', '$/h', 'Rate', 'Total', 'Group', 'Department', 'Edu. Level', 'Gender', 'Underrep.'), "Rate".$rateTypeSelected, true, false, 'start');
 					?>
 				</div>
 			</div>
