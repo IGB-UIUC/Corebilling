@@ -26,8 +26,6 @@ if (isset($_POST['username']) && $_POST['username']!="" && isset($_POST['key']))
         }
 
     }
-
-    include('includes/mysql_close.php');
 }
 
 
