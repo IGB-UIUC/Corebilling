@@ -193,6 +193,7 @@ class User {
 	}
 
 	/**List all users by id and username on the application
+	 * @param PDO $db
 	 * @return array
 	 */
 	public static function getAllUsers($db) {
@@ -201,6 +202,18 @@ class User {
 	   $allUsers->execute();
 	   $allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
 	   return $allUsersArr;
+	}
+
+	/**List all active users by id and username on the application
+	 * @param PDO $db
+	 * @return array
+	 */
+	public static function getAllActiveUsers($db) {
+		$queryAllUsers = "SELECT id, user_name FROM users where status_id=5 ORDER BY user_name";
+		$allUsers = $db->prepare($queryAllUsers);
+		$allUsers->execute();
+		$allUsersArr = $allUsers->fetchAll(PDO::FETCH_ASSOC);
+		return $allUsersArr;
 	}
 
 	public static function getAllUsersFullInfo($db) {

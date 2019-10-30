@@ -11,8 +11,7 @@ if(LDAPMAN_API_ENABLED){
 	$ldapman = new LdapManager(LDAPMAN_API_URL);
 }
 
-$selectedUser = new User($db);
-$allUsers = $selectedUser->GetUsers(5);
+$allUsers = User::getAllActiveUsers($db);
 
 foreach($allUsers as $user){
 	if($ldapman->getUser($user['user_name']) == null){
