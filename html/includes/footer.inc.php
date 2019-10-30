@@ -28,7 +28,8 @@
 		</div> <!-- row -->
 		<div class="row">
 			<div class='col-sm-12' style='text-align: center; padding: 15px 0'>
-				<em>&copy 2015 University of Illinois Board of Trustees</em>
+				For assistance, please contact <a href="mailto:joyce2@igb.illinois.edu">Joyce Koeberlein</a><br/>
+				&copy 2015-2019 University of Illinois Board of Trustees
 			</div>
 		</div>
 	</body>
