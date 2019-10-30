@@ -37,7 +37,7 @@
 	
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-3 col-md-offset-4">
+				<div class="col-md-4 col-md-offset-4">
 					<form role="form" class="form-signin" action="./login.php" method="POST"  style="margin-bottom:1em">
 						<div class="form-group">
 							<label for="username">Username: </label>
@@ -58,6 +58,14 @@
 					<?php if (isset($message)) { 
 						echo $message;
 					} ?>
+					<div style="text-align: center;">
+						<a href="http://illinoisauth.igb.illinois.edu/password">Forgot password?</a>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class='col-sm-12' style='text-align: center; padding: 15px 0'>
+					&copy 2015-2019 University of Illinois Board of Trustees
 				</div>
 			</div>
 		</div>
