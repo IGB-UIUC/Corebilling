@@ -6,8 +6,8 @@
 	
 	include 'includes/authenticate.php';
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 	<head>
 		<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
 		<link href="css/fullcalendar.css" rel='stylesheet' />
@@ -26,22 +26,22 @@
 <!-- 		<link href="css/dataTables.tableTools.min.css"  rel="stylesheet" /> -->
 		<link href="css/main.inc.css" rel="stylesheet" />
 		
-		<script src='js/jquery/jquery-1.11.1.min.js'></script>
-		<script src='js/jquery-ui.js'></script>
+		<script src='js/jquery/jquery-1.11.1.min.js' type="text/javascript"></script>
+		<script src='js/jquery-ui.js' type="text/javascript"></script>
 		<script type="text/javascript" src="includes/select2/js/select2.full.js"></script>
 <!-- 		<script src='js/jquery/jquery.dataTables.min.js'></script> -->
 <!-- 		<script type="text/javascript" src="https://cdn.datatables.net/r/bs/jszip-2.5.0,pdfmake-0.1.18,dt-1.10.9,b-1.0.3,b-html5-1.0.3,b-print-1.0.3/datatables.js"></script> -->
 		<script type="text/javascript" src="https://cdn.datatables.net/v/bs/jszip-2.5.0/pdfmake-0.1.18/dt-1.10.12/b-1.2.1/b-colvis-1.2.1/b-html5-1.2.1/b-print-1.2.1/r-2.1.0/se-1.2.0/datatables.min.js"></script>
 		<script type="text/javascript" src="js/jquery.timepicker.js"></script>
 <!-- 		<script src='js/jquery/dataTables.tableTools.min.js'></script> -->
-		<script src='js/jquery/fnDisplayRow.js'></script>
-		<script src='js/full_calendar/moment.min.js'></script>
-		<script src='js/full_calendar/fullcalendar.min.js'></script>
-		<script src='js/bootstrap/bootstrap.min.js'></script>
-		<script src='js/highcharts/highcharts.js'></script>
-		<script src='js/highcharts/exporting.js'></script>
-		<script src='js/excel/excellentexport.min.js'></script>
-		<script src='js/main.inc.js'></script>
+		<script src='js/jquery/fnDisplayRow.js' type="text/javascript"></script>
+		<script src='js/full_calendar/moment.min.js' type="text/javascript"></script>
+		<script src='js/full_calendar/fullcalendar.min.js' type="text/javascript"></script>
+		<script src='js/bootstrap/bootstrap.min.js' type="text/javascript"></script>
+		<script src='js/highcharts/highcharts.js' type="text/javascript"></script>
+		<script src='js/highcharts/exporting.js' type="text/javascript"></script>
+		<script src='js/excel/excellentexport.min.js' type="text/javascript"></script>
+		<script src='js/main.inc.js' type="text/javascript"></script>
 		
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
