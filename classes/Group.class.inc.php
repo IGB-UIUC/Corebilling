@@ -104,7 +104,7 @@ class Group
     {
         if($this->getId())
         {
-            $queryGroupUsers = "SELECT * FROM users WHERE group_id=:group_id";
+            $queryGroupUsers = "SELECT * FROM users u left join user_groups ug on u.id = ug.user_id WHERE ug.group_id=:group_id order by u.user_name";
 			$groupUsers = $this->db->prepare($queryGroupUsers);
 			$groupUsers->execute(array(":group_id"=>$this->getId()));
 			$groupUsersArr = $groupUsers->fetchAll(PDO::FETCH_ASSOC);

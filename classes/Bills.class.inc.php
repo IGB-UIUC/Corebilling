@@ -38,12 +38,11 @@ class Bills
     public function GetMonthCharges($year, $month, $rateType)
     {
         $pdoParameters = array();
-        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.first,' ',u.last) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id, de.department_name ";
+        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.first,' ',u.last) as full_name, s.description,r.rate_name, dr.min_use_time, dr.rate_type_id, de.department_name ";
         $queryTablesClauseMonthUsage = " FROM `session` s 
 left join users u on u.id=s.user_id
 left join device_rate dr on dr.rate_id=u.rate_id and dr.device_id=s.device_id
 left join device d on d.id=s.device_id
-LEFT JOIN groups g ON (g.id=u.group_id)
 left join rates r on r.id=u.rate_id
 LEFT JOIN user_cfop uc ON (uc.id=s.cfop_id AND uc.default_cfop=1) 
 left join departments de on de.id=u.department_id";
@@ -88,7 +87,7 @@ left join departments de on de.id=u.department_id";
     
     public function GetMonthsCharges($startyear, $startmonth, $endyear, $endmonth, $rateType = null, $demographics = false){
 	    $pdoParameters = array();
-        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.first,' ',u.last) as full_name, s.description,r.rate_name, dr.min_use_time, g.group_name, dr.rate_type_id, de.department_name ";
+        $querySelectClauseMonthUsage = "SELECT s.id, uc.cfop,s.cfop_id, s.rate, s.user_id, s.device_id,  d.full_device_name, u.user_name, s.start, s.stop,CONCAT(u.first,' ',u.last) as full_name, s.description,r.rate_name, dr.min_use_time, GROUP_CONCAT(g.group_name separator ', ') as group_name, dr.rate_type_id, de.department_name ";
         if($demographics){
             $querySelectClauseMonthUsage .= ", ud.edu_level, ud.gender, ud.underrepresented ";
         }
@@ -97,7 +96,8 @@ left join departments de on de.id=u.department_id";
 	left join users u on u.id=s.user_id
 	left join device d on d.id=s.device_id
 	left join device_rate dr on (dr.device_id=d.id and dr.rate_id=u.rate_id) 
-	LEFT JOIN groups g ON (g.id=u.group_id)
+	left join user_groups ug on ug.user_id=u.id
+    LEFT JOIN groups g ON (g.id=ug.group_id)
 	left join rates r on r.id=s.rate_id
 	LEFT JOIN user_cfop uc ON (uc.id=s.cfop_id AND uc.default_cfop=1) 
 	left join departments de on de.id=u.`department_id`";
@@ -143,6 +143,7 @@ left join departments de on de.id=u.department_id";
             	break;
             default:
                 $querySelectClauseMonthUsage .= ", s.elapsed";
+                $queryWhereClauseMonthUsage .= " GROUP BY s.id";
         }
 
         $queryMonthUsagePrepare = $this->db->prepare($querySelectClauseMonthUsage . $queryTablesClauseMonthUsage . $queryWhereClauseMonthUsage, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));

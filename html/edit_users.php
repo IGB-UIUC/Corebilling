@@ -39,7 +39,7 @@ if (isset($_POST['update_user'])) {
 		$selectedUser->setRateId($_POST['rate']);
 		$selectedUser->setStatusId($_POST['status']);
 		$selectedUser->setRoleId($_POST['user_role_id']);
-		$selectedUser->setGroupId($_POST['group']);
+		$selectedUser->setGroupIds($_POST['group']);
 		$selectedUser->setCertified(isset($_POST['safetyquiz']));
 	}
 
@@ -108,7 +108,8 @@ if (isset($_POST['create_user'])) {
 	if(User::exists($db,$_POST['user_name'])){
 		$message .= html::error_message("User ".$_POST['user_name']." already exists in database.");
 	} else {
-		$selectedUser->create($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['group'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], isset($_POST['safetyquiz']));
+		$selectedUser->create($_POST['user_name'], $_POST['first'], $_POST['last'], $_POST['email'], $_POST['department'], $_POST['rate'], $_POST['status'], $_POST['user_role_id'], isset($_POST['safetyquiz']));
+		$selectedUser->setGroupIds($_POST['group']);
 		$selectedUser->addCFOP($_POST['cfop_to_add']);
 		if(isset($_POST['access'])){
 			$deviceList = Device::getAllDevices($db);
@@ -228,12 +229,13 @@ if (isset($_REQUEST['user_id'])) {
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Group</label>
 									<div class="col-sm-10">
-										<select name="group" class="form-control">
+										<select name="group[]" class="form-control" multiple>
 											<?php
 											$listGroups = Group::getAllGroups($db);
+											$userGroups = $selectedUser->getGroupIds();
 											foreach ($listGroups as $id => $groupToSelect) {
 												echo "<option value=" . $groupToSelect['id'];
-												if ($selectedUser->getGroupId() == $groupToSelect['id']) {
+												if (in_array($groupToSelect['id'], $userGroups)) {
 													echo " SELECTED";
 												}
 												echo ">" . $groupToSelect['group_name'] . "</option>";

@@ -206,8 +206,8 @@ class Reservation {
 	 * @return array
 	 */
 	public static function getEventsInRange($db, $start, $end, $userId, $deviceId, $training) {
-		$queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training, e.finished_early, g.group_name
-                            FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id LEFT JOIN groups g ON g.id=u.group_id";
+		$queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training, e.finished_early, GROUP_CONCAT(g.group_name separator ', ') as group_name
+                            FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id left join user_groups ug on u.id=ug.user_id LEFT JOIN `groups` g ON g.id=ug.group_id";
 		if ($training) {
 			$trainingTest = " and e.training=1";
 		} else {
@@ -219,6 +219,7 @@ class Reservation {
                             AND UNIX_TIMESTAMP(e.stop)<= UNIX_TIMESTAMP(:stop)
                             AND e.deleted=0
                             AND u.id=:user_id".$trainingTest."
+                            GROUP BY e.id
                             ORDER BY e.device_id, e.start";
 			$queryParameters[':user_id'] =$userId;
 		} else if ($deviceId==-1) { // Missed Reservations
@@ -229,18 +230,21 @@ class Reservation {
 	     					AND e.deleted=:deleted
 	     					and e.stop<NOW()".$trainingTest."
 	     					and d.status_id!=3
+	     					GROUP BY e.id
 	     					order by e.start";
 			} else if ($deviceId==-2) { // All devices
 				$queryEvents.=" WHERE
 	     					UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
 	     					and UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
 	     					AND e.deleted=0
+	     					GROUP BY e.id
 	     					order by e.start";
 			} else if ($deviceId == -3) { // Deleted reservations
 				$queryEvents .= " WHERE
 							UNIX_TIMESTAMP(e.start)>=UNIX_TIMESTAMP(:start)
 							AND UNIX_TIMESTAMP(e.start)<=UNIX_TIMESTAMP(:stop)".$trainingTest."
 							AND e.deleted=1
+							GROUP BY e.id
 							ORDER BY e.start";
 			} else {
 			$queryEvents.=" WHERE
@@ -248,6 +252,7 @@ class Reservation {
                             AND UNIX_TIMESTAMP(e.start)<= UNIX_TIMESTAMP(:stop)
                             AND e.deleted=0
                             AND e.device_id=:device_id".$trainingTest."
+                            GROUP BY e.id
                             ORDER BY e.start";
 			$queryParameters[':device_id']=$deviceId;
 		}

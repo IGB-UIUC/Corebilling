@@ -11,7 +11,7 @@ class User {
 	private $last;
 	private $email;
 	private $departmentId;
-	private $groupId;
+	private $groupIds;
 	private $rateid;
 	private $statusid;
 	private $userRoleId;
@@ -31,7 +31,7 @@ class User {
 		$this->last="";
 		$this->email="";
 		$this->departmentId=0;
-		$this->groupId=0;
+		$this->groupIds=[];
 		$this->rateid=9;
 		$this->statusid=7;
 		$this->dateAdded="";
@@ -52,19 +52,17 @@ class User {
 	 * @param $last
 	 * @param $email
 	 * @param $departmentId
-	 * @param $groupId
 	 * @param $rateId
 	 * @param $statusId
 	 * @param $userRoleId
 	 */
-	public function create($username, $first, $last, $email,$departmentId,$groupId,$rateId,$statusId,$userRoleId,$certified)
+	public function create($username, $first, $last, $email,$departmentId,$rateId,$statusId,$userRoleId,$certified)
 	{
 		$this->username = $username;
 		$this->first = $first;
 		$this->last = $last;
 		$this->email = $email;
 		$this->departmentId = $departmentId;
-		$this->groupId = $groupId;
 		$this->rateid = $rateId;
 		$this->statusid = $statusId;
 		$this->userRoleId = $userRoleId;
@@ -72,10 +70,10 @@ class User {
 		$this->certified = $certified;
 		if(User::exists($this->db,$this->username)==0)
 		{
-			$queryAddUser = "INSERT INTO users (user_name, first,last,email,department_id,group_id,rate_id,status_id,date_added,secure_key,user_role_id,certified)
-								   VALUES(:user_name,:first,:last,:email,:department_id,:group_id,:rate_id,:status_id,NOW(), MD5(RAND()),:user_role_id,:certified)";
+			$queryAddUser = "INSERT INTO users (user_name, first,last,email,department_id,rate_id,status_id,date_added,secure_key,user_role_id,certified)
+								   VALUES(:user_name,:first,:last,:email,:department_id,:rate_id,:status_id,NOW(), MD5(RAND()),:user_role_id,:certified)";
 			$addUserPrepare = $this->db->prepare($queryAddUser);
-			$addUserPrepare->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$rateId,':status_id'=>$statusId,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0));
+			$addUserPrepare->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':rate_id'=>$rateId,':status_id'=>$statusId,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0));
 			$this->userId=$this->db->lastInsertId();
 			log::log_message("Added user '$username'");
 		}
@@ -96,7 +94,6 @@ class User {
 		$this->last=$userInfoArr["last"];
 		$this->email=$userInfoArr["email"];
 		$this->departmentId=$userInfoArr["department_id"];
-		$this->groupId=$userInfoArr["group_id"];
 		$this->rateid=$userInfoArr["rate_id"];
 		$this->statusid=$userInfoArr["status_id"];
 		$this->userRoleId= $userInfoArr["user_role_id"];
@@ -117,17 +114,17 @@ class User {
 							last=:last,
 							email=:email,
 							department_id=:department_id,
-							group_id=:group_id,
 							rate_id=:rate_id,
 							status_id=:status_id,
 							user_role_id=:user_role_id,
 							certified=:certified
 							WHERE id=:user_id";
 		$updateUserPrep = $this->db->prepare($queryUpdateUser);
-		return $updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':group_id'=>$this->groupId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0,':user_id'=>$this->userId));
+		return $updateUserPrep->execute(array(':user_name'=>$this->username,':first'=>$this->first,':last'=>$this->last,':email'=>$this->email,':department_id'=>$this->departmentId,':rate_id'=>$this->rateid,':status_id'=>$this->statusid,':user_role_id'=>$this->userRoleId,':certified'=>$this->certified?1:0,':user_id'=>$this->userId));
 	}
 
 	/**Check if a user exists by netid
+	 * @param PDO $db
 	 * @param $username
 	 * @return int
 	 */
@@ -221,8 +218,7 @@ class User {
        								u.last, 
 								   	u.email, 
 								   	u.department_id,
-								   	u.group_id, 
-								   	g.group_name, 
+								   	GROUP_CONCAT(g.group_name separator ', ') as group_name, 
 								   	uc.cfop, 
 								   	d.department_name, 
 								  	u.date_added, 
@@ -234,10 +230,12 @@ class User {
 								   	ud.underrepresented 
 								FROM users u 
 								  LEFT JOIN user_cfop uc ON (uc.user_id = u.id AND uc.default_cfop=1) 
-								  LEFT JOIN groups g ON (g.id=u.group_id) 
+								  LEFT JOIN user_groups ug ON (u.id=ug.user_id)
+								  LEFT JOIN groups g ON (g.id=ug.group_id) 
 								  LEFT JOIN departments d ON (d.id=u.department_id) 
 								  LEFT JOIN status s ON s.id=u.status_id 
-								  left join user_demographics ud on u.id = ud.user_id";
+								  left join user_demographics ud on u.id = ud.user_id
+								  GROUP BY u.id";
 		$allUserInfo = $db->prepare($queryAllUserInfo);
 		$allUserInfo->execute();
 		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
@@ -258,18 +256,18 @@ class User {
 								   u.user_name, 
 								   u.email, 
 								   u.department_id, 
-								   u.group_id, 
-								   g.group_name, 
+								   GROUP_CONCAT(distinct g.group_name separator ', ') as group_name, 
 								   d.department_name, 
 								   CONCAT(u.last, ', ', u.first) as full_name
 								from users u 
-								  left join groups g on g.id=u.group_id 
+								  LEFT JOIN user_groups ug ON (u.id=ug.user_id)
+								  LEFT JOIN groups g ON (g.id=ug.group_id) 
 								  left join departments d on d.id=u.department_id 
 								  left join `session` s on s.user_id=u.id
 								where u.`status_id`=5 
 								  and ((MONTH(start)>=:startmonth AND YEAR(start)=:startyear) OR YEAR(start)>:startyear) 
 								  AND ((MONTH(start)<=:endmonth AND YEAR(start)=:endyear) OR YEAR(start)<:endyear)
-								group by u.user_name";
+								group by u.id";
 		$allUserInfo = $db->prepare($queryAllUserInfo);
 		$allUserInfo->execute(array(':startyear'=>$startyear, ':startmonth'=>$startmonth, ':endyear'=>$endyear, ':endmonth'=>$endmonth));
 		$allUserInfoArr = $allUserInfo->fetchAll(PDO::FETCH_ASSOC);
@@ -405,16 +403,39 @@ class User {
 		}
 	}
 
-	public function getGroupId()
+	public function getGroupIds()
 	{
-		return $this->groupId;
+		$sql = "select group_id from user_groups where user_id=:id";
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute([':id'=>$this->getId()]);
+
+		$ids = [];
+		while($row = $stmt->fetch()){
+			$ids[] = $row['group_id'];
+		}
+
+		return $ids;
 	}
 
-	public function setGroupId($groupId)
+	public function setGroupIds($ids)
 	{
-		if($this->groupId != $groupId){
-			$this->groupId = $groupId;
-			log::log_message("Set group of user '".$this->username."' to '$groupId'");
+		$addStmt = $this->db->prepare('insert into user_groups (user_id, group_id) values (:user, :group)');
+		$deleteStmt = $this->db->prepare('delete from user_groups where group_id=:group and user_id=:user limit 1');
+
+		$currentIds = $this->getGroupIds();
+		foreach ($ids as $id){
+			if(!in_array($id, $currentIds)){
+				// not in group; add to group
+				$addStmt->execute([':user'=>$this->getId(), ':group'=>$id]);
+				log::log_message("Added user '".$this->getUsername()."' to group '".$id."'");
+			}
+		}
+		foreach ($currentIds as $oldId){
+			if(!in_array($oldId, $ids)){
+				// removed from group
+				$deleteStmt->execute([':user'=>$this->getId(), ':group'=>$oldId]);
+				log::log_message("Removed user '".$this->getUsername()."' from group '".$oldId."'");
+			}
 		}
 	}
 
