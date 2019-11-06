@@ -26,11 +26,13 @@ if (isset($_POST['Modify'])) {
 	$groupID = $_POST['groupID'];
 	$description = $_POST['description'];
 	$departmentId = $_POST['department'];
+	$netid = $_POST['netid'];
 
 	$group->load($groupID);
 	$group->setDepartmentId($departmentId);
 	$group->setName($groupName);
 	$group->setDescription($description);
+	$group->setNetid($netid);
 	$group->update();
 }
 
@@ -73,6 +75,12 @@ if (isset($_POST['Select'])) {
 					<label class="col-sm-3 control-label">Group Name</label>
 					<div class="col-sm-9">
 						<input name="group_name" type="text" value="<?php echo $group->getName(); ?>" class="form-control">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label">PI netid</label>
+					<div class="col-sm-9">
+						<input name="netid" type="text" value="<?php echo $group->getNetid(); ?>" class="form-control">
 					</div>
 				</div>
 				<div class="form-group">

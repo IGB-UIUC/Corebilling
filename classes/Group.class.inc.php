@@ -7,6 +7,7 @@ class Group
     private $groupName;
     private $description;
     private $departmentId;
+    private $netid;
 
 	public function __construct(PDO $db)
 	{
@@ -57,14 +58,15 @@ class Group
      */
     public function update()
     {
-        $queryUpdateGroup = "UPDATE groups SET
+        $queryUpdateGroup = "UPDATE `groups` SET
                                 group_name=:group_name,
                                 description=:description,
-                                department_id=:department_id
+                                department_id=:department_id,
+                                netid=:netid
                                 WHERE id=:group_id";
 
         $updateGroup = $this->db->prepare($queryUpdateGroup);
-        $updateGroup->execute(array(":group_name"=>$this->groupName,":description"=>$this->description,":department_id"=>$this->departmentId,":group_id"=>$this->groupId));
+        $updateGroup->execute(array(":group_name"=>$this->groupName,":description"=>$this->description,":department_id"=>$this->departmentId,":group_id"=>$this->groupId, ":netid"=>$this->netid));
     }
 
     /**Get a list of all groups by id and group_name
@@ -153,6 +155,25 @@ class Group
     {
         return $this->description;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getNetid() {
+        return $this->netid;
+    }
+
+    /**
+     * @param mixed $netid
+     */
+    public function setNetid($netid) {
+        if($this->netid != $netid) {
+            $this->netid = $netid;
+            log::log_message("Set owner netid for group '".$this->groupName."' to '$netid'");
+        }
+    }
+
+
 
     /**
      * @param mixed $groupId
