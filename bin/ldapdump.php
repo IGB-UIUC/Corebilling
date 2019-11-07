@@ -23,8 +23,8 @@ foreach($allDevices as $device){
 		foreach($allUsers as $user){
 			$accessExists = $accessControl->AccessExists(AccessControl::RESOURCE_DEVICE, $device['id'], AccessControl::PARTICIPANT_USER, $user['id']);
 			if($accessExists !== 0 && $accessExists['permission'] != 0){
-				echo "\tAdding ".$user['user_name']." to ".LDAPMAN_GROUP_PREFIX.$device['device_name']."... ";
-				if($ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$device['device_name'],$user['user_name'])){
+				echo "\tAdding ".$user['user_name']." to ".LDAPMAN_DEVICE_PREFIX. $device['device_name']."... ";
+				if($ldapman->addGroupMember(LDAPMAN_DEVICE_PREFIX. $device['device_name'], $user['user_name'])){
 					echo "\n";
 				} else {
 					echo $user['user_name']." does not exist.\n";

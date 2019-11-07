@@ -450,6 +450,8 @@ class User
     }
 
     public function setGroupIds($ids) {
+    	/** @var LdapManager $ldapman */
+    	global $ldapman;
         $addStmt = $this->db->prepare('insert into user_groups (user_id, group_id) values (:user, :group)');
         $deleteStmt = $this->db->prepare('delete from user_groups where group_id=:group and user_id=:user limit 1');
 
@@ -457,8 +459,15 @@ class User
         foreach ( $ids as $id ) {
             if ( !in_array($id, $currentIds) ) {
                 // not in group; add to group
+				$group = new Group($this->db);
+				$group->load($id);
                 $addStmt->execute([':user' => $this->getId(), ':group' => $id]);
-                log::log_message("Added user '" . $this->getUsername() . "' to group '" . $id . "'");
+                log::log_message("Added user '" . $this->getUsername() . "' to group '" . $group->getName() . "'");
+                if(LDAPMAN_API_ENABLED){
+                	if($group->getNetid() != null) {
+						$ldapman->addGroupMember(LDAPMAN_PI_PREFIX . $group->getNetid(), $this->getUsername());
+					}
+				}
             }
         }
         foreach ( $currentIds as $oldId ) {
@@ -466,6 +475,11 @@ class User
                 // removed from group
                 $deleteStmt->execute([':user' => $this->getId(), ':group' => $oldId]);
                 log::log_message("Removed user '" . $this->getUsername() . "' from group '" . $oldId . "'");
+				if(LDAPMAN_API_ENABLED){
+					if($group->getNetid() != null) {
+						$ldapman->removeGroupMember(LDAPMAN_PI_PREFIX . $group->getNetid(), $this->getUsername());
+					}
+				}
             }
         }
     }

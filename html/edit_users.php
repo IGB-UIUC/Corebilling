@@ -74,14 +74,14 @@ if (isset($_POST['update_user'])) {
 			if(isset($_POST['access']) && array_key_exists($deviceInfo['id'],$_POST['access'])){
 				if(!$selectedUser->hasAccessTo($deviceInfo['id'])){
 					if(LDAPMAN_API_ENABLED){
-						$ldapman->addGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->getUsername());
+						$ldapman->addGroupMember(LDAPMAN_DEVICE_PREFIX. $deviceInfo['device_name'], $selectedUser->getUsername());
 					}
 					$selectedUser->giveAccessTo($deviceInfo['id']);
 				}
 			} else {
 				if($selectedUser->hasAccessTo($deviceInfo['id'])){
 					if(LDAPMAN_API_ENABLED){
-						$ldapman->removeGroupMember(LDAPMAN_GROUP_PREFIX.$deviceInfo['device_name'],$selectedUser->getUsername());
+						$ldapman->removeGroupMember(LDAPMAN_DEVICE_PREFIX. $deviceInfo['device_name'], $selectedUser->getUsername());
 					}
 					$selectedUser->removeAccessTo($deviceInfo['id']);
 				}
@@ -229,7 +229,7 @@ if (isset($_REQUEST['user_id'])) {
 								<div class="form-group">
 									<label class="col-sm-2 control-label" for="editUser">Group</label>
 									<div class="col-sm-10">
-										<select name="group[]" class="form-control" multiple>
+										<select name="group[]" class="form-control" id="group-select" multiple>
 											<?php
 											$listGroups = Group::getAllGroups($db);
 											$userGroups = $selectedUser->getGroupIds();
@@ -420,6 +420,7 @@ if (isset($_REQUEST['user_id'])) {
 	$('#depart-select').select2({
 		placeholder: "Select a Department"
 	});
+	$('#group-select').select2();
 	$('#copy-button').click(function(e){
 		var cfop = $('#cfop').text();
 		var $textarea = $('#cfop-copy-area');
