@@ -12,9 +12,12 @@ if(LDAPMAN_API_ENABLED){
 }
 
 $allUsers = User::getAllActiveUsers($db);
-
+$selectedUser = new User($db);
 foreach($allUsers as $user){
 	if($ldapman->getUser($user['user_name']) == null){
 		echo $user['user_name']."\n";
+        $selectedUser->load($user['id']);
+        $selectedUser->setStatusId(User::DISABLED);
+        $selectedUser->update();
 	}
 }

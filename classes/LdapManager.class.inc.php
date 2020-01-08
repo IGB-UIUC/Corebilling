@@ -26,12 +26,19 @@
 			if($result === FALSE){
 				$this->code = 500;
 				$this->msg = 'Error completing POST query';
-				return json_decode("{code:500,msg:'Error completing POST query'}");
+				return json_decode("{'code':500,'msg':'Error completing POST query'}");
 			} else {
-				$result = json_decode($result);
-				$this->code = $result->code;
-				$this->msg = $result->msg;
-				return $result;
+				$data = json_decode($result);
+				if($data == null){
+				    return array(
+				        "code"=>500,
+                        'msg'=>'Error completing POST query',
+                        'response'=>$result
+                    );
+                }
+				$this->code = $data->code;
+				$this->msg = $data->msg;
+				return $data;
 			}
 		}
 		
@@ -47,6 +54,38 @@
 				return null;
 			}
 		}
+
+		function getGroup($gid){
+		    $data = array(
+		        'task'=>'group',
+                'gid'=>$gid
+            );
+		    $result = self::queryPOST($data);
+		    if($result->code == 200){
+		        return $result->group;
+            } else {
+		        return null;
+            }
+        }
+
+        function addGroup($gid, $description = null){
+		    $data = array(
+		        'task'=>'add_group',
+                'username'=>$this->username,
+                'password'=>$this->password,
+                'gid'=>$gid,
+                'description'=>$description
+            );
+            $result = self::queryPOST($data);
+            if($result->code == 200){
+                log::log_message("Added ldap group '$gid'");
+                return true;
+            } else {
+                var_dump($result);
+                log::log_message("Failed trying to add ldap group '$gid'");
+                return false;
+            }
+        }
 		
 		function getGroupMembers($gid){
 			$data = array(
@@ -60,6 +99,21 @@
 				return array();
 			}
 		}
+		function isMemberOf($uid,$gid){
+		    $data = array(
+		        'task' => 'member_of',
+                'uid' => $uid,
+                'gid' => $gid
+            );
+            $result = self::queryPOST($data);
+            if($result->code == 200){
+                return $result->memberOf;
+            } else {
+                var_dump($result);
+                exit();
+                return false;
+            }
+        }
 		
 		function addGroupMember($gid,$uid){
 			$data = array(

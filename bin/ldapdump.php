@@ -12,24 +12,62 @@ if(LDAPMAN_API_ENABLED){
 }
 
 $selectedUser = new User($db);
-$allUsers = $selectedUser->GetAllUsers();
-$dev = new Device($db);
-$allDevices = $dev->GetDevicesList();
-$accessControl = new AccessControl($db);
+$selectedGroup = new Group($db);
+$allUsers = User::getAllActiveUsers($db);
+$allDevices = Device::getAllDevices($db);
+$allGroups = Group::getAllGroups($db);
 
-foreach($allDevices as $device){
-	if($device['status_id']==1){ // Only devices with tracking enabled
-		echo "Processing ".$device['device_name']."\n";
-		foreach($allUsers as $user){
-			$accessExists = $accessControl->AccessExists(AccessControl::RESOURCE_DEVICE, $device['id'], AccessControl::PARTICIPANT_USER, $user['id']);
-			if($accessExists !== 0 && $accessExists['permission'] != 0){
-				echo "\tAdding ".$user['user_name']." to ".LDAPMAN_DEVICE_PREFIX. $device['device_name']."... ";
-				if($ldapman->addGroupMember(LDAPMAN_DEVICE_PREFIX. $device['device_name'], $user['user_name'])){
-					echo "\n";
-				} else {
-					echo $user['user_name']." does not exist.\n";
-				}
-			}
-		}
-	}
+
+// First, add ldap groups
+foreach($allGroups as $group){
+    if($group['netid'] !== null){
+        $gid = LDAPMAN_PI_PREFIX.$group['netid'];
+        if($ldapman->getGroup($gid) === null){
+            echo "Adding ldap group '$gid'\n";
+            $ldapman->addGroup($gid, "Core ".$group['netid']." PI group");
+        }
+    }
+}
+
+// Next, add users to groups
+foreach($allUsers as $user){
+    echo "Processing ".$user['user_name']."\n";
+    $selectedUser->load($user['id']);
+    foreach($allDevices as $device){
+        $ldapGroup = LDAPMAN_DEVICE_PREFIX. $device['device_name'];
+        if($selectedUser->hasAccessTo($device['id'])){
+            if(!$ldapman->isMemberOf($user['user_name'], $ldapGroup)) {
+                echo "\tAdding " . $user['user_name'] . " to " . $ldapGroup . "... ";
+                if ( $ldapman->addGroupMember($ldapGroup, $user['user_name']) ) {
+                    echo "\n";
+                } else {
+                    echo "failed.\n";
+                }
+            }
+        } else {
+            if($ldapman->isMemberOf($user['user_name'], $ldapGroup)){
+                echo "\tRemoving ".$user['user_name']." from ".$ldapGroup."... ";
+                if($ldapman->removeGroupMember($ldapGroup, $user['user_name'])){
+                    echo "\n";
+                } else {
+                    echo "failed.\n";
+                }
+            }
+        }
+    }
+    foreach($selectedUser->getGroupIds() as $groupId){
+        $selectedGroup->load($groupId);
+        if($selectedGroup->getNetid() != null) {
+            $ldapGroup = LDAPMAN_PI_PREFIX . $selectedGroup->getNetid();
+            if(!$ldapman->isMemberOf($user['user_name'], $ldapGroup)) {
+                echo "\tAdding " . $user['user_name'] . " to " . $ldapGroup . "... ";
+                if ( $ldapman->addGroupMember($ldapGroup, $user['user_name']) ) {
+                    echo "\n";
+                } else {
+                    echo "failed.\n";
+                }
+            }
+        }
+        // TODO we need a way to remove users if they are no longer in the PI group. Not urgent
+    }
 }

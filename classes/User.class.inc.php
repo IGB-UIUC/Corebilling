@@ -473,6 +473,8 @@ class User
         foreach ( $currentIds as $oldId ) {
             if ( !in_array($oldId, $ids) ) {
                 // removed from group
+                $group = new Group($this->db);
+                $group->load($oldId);
                 $deleteStmt->execute([':user' => $this->getId(), ':group' => $oldId]);
                 log::log_message("Removed user '" . $this->getUsername() . "' from group '" . $oldId . "'");
 				if(LDAPMAN_API_ENABLED){

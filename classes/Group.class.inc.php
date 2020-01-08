@@ -51,6 +51,7 @@ class Group
         $this->description = $groupInfoArr['description'];
         $this->departmentId = $groupInfoArr['department_id'];
         $this->groupId = $groupId;
+        $this->netid = $groupInfoArr['netid'];
 	}
 
     /**
@@ -74,7 +75,7 @@ class Group
      */
     public static function getAllGroups($db)
 	{
-		$queryGroupList = "SELECT id, group_name FROM groups ORDER BY group_name";
+		$queryGroupList = "SELECT id, group_name, netid FROM groups ORDER BY group_name";
         $groupList = $db->query($queryGroupList);
         $groupListArr = $groupList->fetchAll(PDO::FETCH_ASSOC);
 
