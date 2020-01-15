@@ -168,9 +168,26 @@ class Group
      * @param mixed $netid
      */
     public function setNetid($netid) {
+        /** @var LdapManager $ldapman */
+        global $ldapman;
+        /** @var CoreServerManager $coreserverman */
+        global $coreserverman;
         if($this->netid != $netid) {
             $this->netid = $netid;
             log::log_message("Set owner netid for group '".$this->groupName."' to '$netid'");
+            if(LDAPMAN_API_ENABLED){
+                if($netid != null){
+                    $gid = LDAPMAN_PI_PREFIX . $netid;
+                    $ldapman->addGroupMember($gid, $netid);
+                    $coreserverman->createDirectory($gid, $netid, $netid);
+                    foreach($this->getMembers() as $member) {
+                        $ldapman->addGroupMember($gid, $member['user_name']);
+                        if ( CORESERVER_ENABLED ) {
+                            $coreserverman->createDirectory($gid, $netid, $member['user_name']);
+                        }
+                    }
+                }
+            }
         }
     }
 

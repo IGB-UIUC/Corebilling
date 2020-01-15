@@ -80,7 +80,7 @@ if (isset($_POST['Select'])) {
 				<div class="form-group">
 					<label class="col-sm-3 control-label">PI netid</label>
 					<div class="col-sm-9">
-						<input name="netid" type="text" value="<?php echo $group->getNetid(); ?>" class="form-control">
+						<input name="netid" type="text" value="<?php echo $group->getNetid(); ?>" class="form-control"<?php if($group->getNetid() != null){echo " readonly";}?>>
 					</div>
 				</div>
 				<div class="form-group">

@@ -6,6 +6,15 @@
 @define ('LDAP_GROUP_DN', ''); // Leave blank for no group check
 @define ('LDAP_PORT','389');
 
+@define('LDAPMAN_API_ENABLED',false);
+@define('LDAPMAN_API_URL','');
+@define('LDAPMAN_API_USERNAME','');
+@define('LDAPMAN_API_PASSWORD','');
+@define('LDAPMAN_DEVICE_PREFIX', '');
+@define('LDAPMAN_PI_PREFIX', '');
+
+@define('CORESERVER_ENABLED', false);
+
 //MySQL settings
 @define ('DB_USER','');
 @define ('DB_PASSWORD','');

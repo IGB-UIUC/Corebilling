@@ -452,6 +452,8 @@ class User
     public function setGroupIds($ids) {
     	/** @var LdapManager $ldapman */
     	global $ldapman;
+    	/** @var CoreServerManager $coreserverman */
+    	global $coreserverman;
         $addStmt = $this->db->prepare('insert into user_groups (user_id, group_id) values (:user, :group)');
         $deleteStmt = $this->db->prepare('delete from user_groups where group_id=:group and user_id=:user limit 1');
 
@@ -465,7 +467,11 @@ class User
                 log::log_message("Added user '" . $this->getUsername() . "' to group '" . $group->getName() . "'");
                 if(LDAPMAN_API_ENABLED){
                 	if($group->getNetid() != null) {
-						$ldapman->addGroupMember(LDAPMAN_PI_PREFIX . $group->getNetid(), $this->getUsername());
+                	    $gid = LDAPMAN_PI_PREFIX . $group->getNetid();
+						$ldapman->addGroupMember($gid, $this->getUsername());
+						if(CORESERVER_ENABLED) {
+                            $coreserverman->createDirectory($gid, $group->getNetid(), $this->getUsername());
+                        }
 					}
 				}
             }
