@@ -130,9 +130,10 @@ class Device
 		}
 	}
 
-    /**List all devices
-     * @return array
-     */
+	/**List all devices
+	 * @param PDO $db
+	 * @return array
+	 */
     public static function getAllDevices($db)
     {
         $queryAllDevices = "SELECT id, device_name, full_device_name, status_id FROM device ORDER BY full_device_name";
@@ -141,6 +142,18 @@ class Device
 
         return $allDevicesArr;
     }
+
+	/**
+	 * @param PDO $db
+	 * @param int $id
+	 * @return mixed
+	 */
+    public static function getDevicesInSameRoom($db, $id){
+    	$query = "select id from device where location = (select location from device where id=? limit 1) and id != ?";
+    	$devices = $db->prepare($query);
+    	$devices->execute(array($id, $id));
+		return $devices->fetchAll(PDO::FETCH_ASSOC);
+	}
 
     public static function getAllDevicesStatus($db)
     {

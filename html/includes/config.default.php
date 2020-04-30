@@ -39,6 +39,9 @@
 @define ('CAL_DEFAULT_COLOR','#3a87ad');
 @define ('CAL_TRAINING_COLOR','#6c3cae');
 @define ('CAL_MISSED_COLOR','#ae3c3c');
+@define ('CAL_ROOM_COLOR','#ad603a');
+
+@define ('RESERVE_ROOM', false);
 
 //Admin Default
 @define ('ADMIN_EMAIL','');
@@ -49,4 +52,3 @@ $USER_EXCEPTIONS_ARRAY = array();
 
 @define('__ENABLE_LOG__',true);
 @define('__LOG_FILE__','');
-?>

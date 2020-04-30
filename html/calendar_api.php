@@ -33,13 +33,27 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
 //                     TODO implement repeat
                     break;
                 case 'delete_event':
+                    $reservationsInRoom = Reservation::getSubEvents($db, $reservation->getReservationId());
                     $reservation->delete();
+                    foreach($reservationsInRoom as $reservationInRoom){
+                        $reservation->load($reservationInRoom['id']);
+                        $reservation->delete();
+                    }
                     break;
                 case 'update_event_time':
                 	if(Reservation::checkEventTime($db,strtotime($_REQUEST['start']), strtotime($_REQUEST['end']), $_REQUEST['id']) != 0){
 	                    $reservation->setStart($_REQUEST ['start']);
 	                    $reservation->setStop($_REQUEST ['end']);
 	                    $reservation->update();
+
+                        // update reservations for other devices in room
+                        $reservationsInRoom = Reservation::getSubEvents($db, $reservation->getReservationId());
+                        foreach($reservationsInRoom as $reservationInRoom){
+                            $reservation->load($reservationInRoom['id']);
+                            $reservation->setStart($_REQUEST ['start']);
+                            $reservation->setStop($_REQUEST ['end']);
+                            $reservation->update();
+                        }
 	                }
                     break;
                 case 'finish_early':
@@ -56,23 +70,35 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
                     if ($reservation->getReservationId() == 0) {
                         for($i=0; $i<=$repeat; $i++) {
                             $reservation->create($_REQUEST['device_id'], $_REQUEST ['user_id'], $dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'), $_REQUEST['description'], $training);
+                            if(RESERVE_ROOM){
+                                // when enabled, add reservation to other devices in room
+                                $devicesInRoom = Device::getDevicesInSameRoom($db, $_REQUEST['device_id']);
+                                $masterId = $reservation->getReservationId();
+                                foreach ($devicesInRoom as $device){
+                                    $reservation->create($device['id'], $_REQUEST['user_id'], $dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'), $_REQUEST['description'], $training, $masterId);
+                                }
+                            }
                             $dateStart->add(new DateInterval("P".($interval)."D"));
                             $dateEnd->add(new DateInterval("P".($interval)."D"));
                        }
-                    }
-
-                    else {
-                        for($i=1; $i<=$repeat; $i++) {
-                            $dateStart->add(new DateInterval("P".($interval)."D"));
-                            $dateEnd->add(new DateInterval("P".($interval)."D"));
-                            $reservation->create($_REQUEST['device_id'], $_REQUEST ['user_id'], $dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'), $_REQUEST['description'], $training);
+                    } else {
+                        if($reservation->getMasterReservationId() === null) { // Do not allow edits on sub-events
+                            $reservation->setDescription($_REQUEST['description']);
+                            $reservation->setTraining($training);
+                            $reservation->setStart($dateStart->format('Y-m-d H:i:s'));
+                            $reservation->setStop($dateEnd->format('Y-m-d H:i:s'));
+                            $reservation->update();
+                            // update reservations for other devices in room
+                            $reservationsInRoom = Reservation::getSubEvents($db, $reservation->getReservationId());
+                            foreach ($reservationsInRoom as $reservationInRoom) {
+                                $reservation->load($reservationInRoom['id']);
+                                $reservation->setDescription($_REQUEST['description']);
+                                $reservation->setTraining($training);
+                                $reservation->setStart($dateStart->format('Y-m-d H:i:s'));
+                                $reservation->setStop($dateEnd->format('Y-m-d H:i:s'));
+                                $reservation->update();
+                            }
                         }
-
-                        $reservation->setDescription($_REQUEST['description']);
-                        $reservation->setTraining($training);
-                        $reservation->setStart($dateStart->format('Y-m-d H:i:s'));
-                        $reservation->setStop($dateEnd->format('Y-m-d H:i:s'));
-                        $reservation->update();
                     }
 
                     break;

@@ -77,6 +77,7 @@ if (isset ($_POST ['deviceSelected'])) {
 		
 		&nbsp;<span class="legend-pip" style="background-color:<?php echo CAL_TRAINING_COLOR; ?>;border-color:<?php echo CAL_TRAINING_COLOR; ?>"></span> Training
 		&nbsp;<span class="legend-pip" style="background-color:<?php echo CAL_MISSED_COLOR; ?>;border-color:<?php echo CAL_MISSED_COLOR; ?>"></span> Missed Reservation
+        &nbsp;<span class="legend-pip" style="background-color:<?php echo CAL_ROOM_COLOR; ?>;border-color:<?php echo CAL_ROOM_COLOR; ?>"></span> Room Reserved
 	</form>
 	
 </div>
@@ -89,7 +90,6 @@ $(document).ready(function () {
 	var initialMonth = '<?php echo (isset($_POST['month'])&&is_numeric($_POST['month']))?$_POST['month']:date('m'); ?>';
 	var initialYear = '<?php echo (isset($_POST['year'])&&is_numeric($_POST['year']))?$_POST['year']:date('Y'); ?>';
 
-	console.log("calendar_api.php?action=get_events&device_id=<?php echo $device->getId(); ?>&user_id=<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>&key=<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>");
 	$('#calendar').fullCalendar({
 		editable: true,
 		header: {
@@ -123,10 +123,10 @@ $(document).ready(function () {
 				finishedEarlyDate = new Date(dateParts[0],dateParts[1]-1,dateParts[2],dateParts[3],dateParts[4],dateParts[5]);
 				finishedEarlyDate = finishedEarlyDate.getTime();
 			}
-			if(view.name == 'agendaWeek' || view.name == 'agendaDay'){
+			if(view.name === 'agendaWeek' || view.name === 'agendaDay'){
 				element.find('.fc-content').append('<div class="fc-description">'+event.description+'</div>');
 			}
-			if( (view.name == 'agendaWeek' || view.name == 'agendaDay') && finishedEarlyDate != null && Date.parse(event.end)>finishedEarlyDate && Date.parse(event.start)<finishedEarlyDate){
+			if( (view.name === 'agendaWeek' || view.name === 'agendaDay') && finishedEarlyDate != null && Date.parse(event.end)>finishedEarlyDate && Date.parse(event.start)<finishedEarlyDate){
 				var finishedEarlyPerc = (finishedEarlyDate-Date.parse(event.start))/(Date.parse(event.end)-Date.parse(event.start)) * 100;
 				element.find('.fc-bg').before('<div class="fc-early" style="top:'+finishedEarlyPerc+'%"></div>');
 			}
@@ -140,7 +140,7 @@ $(document).ready(function () {
 			}
 		},
 		viewRender: function(view,element){
-			if(view.name=="month"){
+			if(view.name==="month"){
 				// Update month, year inputs for excel button
 				$("#excelmonth, #filtermonth").val( moment(view.start).add(7,'days').format('MM') );
 				$("#excelyear, #filteryear").val( moment(view.start).add(7,'days').format('YYYY') );
@@ -165,6 +165,7 @@ $(document).ready(function () {
 					var rangeString = start.format('HH:mm:ss') + ' - ' + end.format('HH:mm:ss');
 					$('#modifyReservationModal #reservationWindowTitle').html('Create Reservation');
 					$('#modifyReservationModal #reservationId').val("0");
+					$('#modifyReservationModal #roomReservation').hide();
 					//$('#modifyReservationModal #reservationDescription').val(calEvent.description);
 					$('#modifyReservationModal #reservationStartDate').val(start.format("YYYY-MM-DD"));
 					$('#modifyReservationModal #reservationStartTime').val(start.format("h:mma"));
@@ -208,8 +209,17 @@ $(document).ready(function () {
 			} else {
 				$('#modifyReservationModal #finishedEarlyDiv').hide();
 			}
+			// If the event is a room-reservation, show the room reservation info
+            if(calEvent.masterDevice!=null){
+                $('#modifyReservationModal #roomReservation').show();
+                $('#modifyReservationModal #instrumentDiv').hide();
+                $('#modifyReservationModal #roomReservation #roomReservationDescription').html(calEvent.masterDevice+' in use');
+            } else {
+                $('#modifyReservationModal #roomReservation').hide();
+                $('#modifyReservationModal #instrumentDiv').show();
+            }
 			// Cannot edit/delete events less than 2 hours before they start
-			if(<?php echo $device->getId(); ?>==-1 || calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000){
+			if(<?php echo $device->getId(); ?>==-1 || calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.masterDevice != null){
 				$('#modifyReservationModal #reservationWindowTitle').html('Reservation Info');				
 			} else {
 				$('#modifyReservationModal #reservationWindowTitle').html('Edit Reservation');
@@ -224,6 +234,7 @@ $(document).ready(function () {
 			$('#modifyReservationModal #reservationDevice').text(calEvent.device_name);
 			$('#modifyReservationModal #reservationUsername').text(calEvent.username);
 			$('#modifyReservationModal #reservationUserId').val(calEvent.userid);
+            $('#modifyReservationModal #repeatFormGroup').hide();
 			<?php
 			if($login_user->isAdmin())
 			{
@@ -243,7 +254,7 @@ $(document).ready(function () {
 			?>
 			// Can't update or delete events in the past, or that don't belong to us, unless we're an admin
 			<?php if(!$login_user->isAdmin()){ ?>
-			if( calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>){
+			if( calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->getId(); ?> || calEvent.masterDevice != null){
 				$('#modifyReservationModal #reservationDescription').prop("readonly",true);
 				$('#modifyReservationModal #reservationTraining').prop("disabled",true);
 				$('#modifyReservationModal #reservationStartTime').prop( "readonly", true );
@@ -359,7 +370,10 @@ $(document).ready(function () {
 					id: reservationId,
 					user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
 					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>'
-				}
+				},
+                success: function(data) {
+                    console.log(data);
+                }
 			});
 			$('#calendar').fullCalendar('refetchEvents');
 		}
@@ -463,7 +477,10 @@ $(document).ready(function () {
 					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>',
 					interval: reservationRepeatInterval,
 					repeat: reservationRepeat
-				}
+				},
+                success: function(data){
+                    console.log(data);
+                }
 			});
 			$('#calendar').fullCalendar('refetchEvents');
 		} else {
@@ -518,8 +535,15 @@ $(document).ready(function () {
 							<input type="hidden" name="reservationUserId" id="reservationUserId">
 						</div>
 					</div>
-					
-					<div class="form-group">
+
+                    <div class="form-group" id="roomReservation">
+                        <label class="col-sm-3 control-label">Info</label>
+                        <div class="col-sm-9" id="roomReservationDescription" style="margin-top: 5px">
+
+                        </div>
+                    </div>
+
+					<div class="form-group" id="instrumentDiv">
 						<label class="col-sm-3 control-label">Instrument</label>
 
 						<div class="col-sm-9">
