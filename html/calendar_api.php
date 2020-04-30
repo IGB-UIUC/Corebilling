@@ -33,11 +33,13 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
 //                     TODO implement repeat
                     break;
                 case 'delete_event':
-                    $reservationsInRoom = Reservation::getSubEvents($db, $reservation->getReservationId());
-                    $reservation->delete();
-                    foreach($reservationsInRoom as $reservationInRoom){
-                        $reservation->load($reservationInRoom['id']);
+                    if($reservation->getMasterReservationId() == null) {
+                        $reservationsInRoom = Reservation::getSubEvents($db, $reservation->getReservationId());
                         $reservation->delete();
+                        foreach ($reservationsInRoom as $reservationInRoom) {
+                            $reservation->load($reservationInRoom['id']);
+                            $reservation->delete();
+                        }
                     }
                     break;
                 case 'update_event_time':

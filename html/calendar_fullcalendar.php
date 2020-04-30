@@ -253,8 +253,8 @@ $(document).ready(function () {
 
 			?>
 			// Can't update or delete events in the past, or that don't belong to us, unless we're an admin
-			<?php if(!$login_user->isAdmin()){ ?>
-			if( calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->getId(); ?> || calEvent.masterDevice != null){
+            const admin = <?php echo $login_user->isAdmin()?"true":"false"; ?>;
+			if( calEvent.masterDevice != null || (!admin && (calEvent.start.format('X') - 2*60*60 < new Date().getTime()/1000 || calEvent.userid!=<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>)) ){
 				$('#modifyReservationModal #reservationDescription').prop("readonly",true);
 				$('#modifyReservationModal #reservationTraining').prop("disabled",true);
 				$('#modifyReservationModal #reservationStartTime').prop( "readonly", true );
@@ -262,16 +262,13 @@ $(document).ready(function () {
 				$('#modifyReservationModal #deleteReservation').hide();
 				$('#modifyReservationModal #updateReservation').hide();
 			} else {
-			<?php } ?>
-				$('#modifyReservationModal #reservationDescription').prop("readonly",false);
-				$('#modifyReservationModal #reservationTraining').prop("disabled",false);
-				$('#modifyReservationModal #reservationStartTime').prop( "readonly", false );
-				$('#modifyReservationModal #reservationEndTime').prop( "readonly", false );
-				$('#modifyReservationModal #deleteReservation').show();
-				$('#modifyReservationModal #updateReservation').show();
-			<?php if(!$login_user->isAdmin()){ ?>
-				}
-			<?php } ?>
+                $('#modifyReservationModal #reservationDescription').prop("readonly", false);
+                $('#modifyReservationModal #reservationTraining').prop("disabled", false);
+                $('#modifyReservationModal #reservationStartTime').prop("readonly", false);
+                $('#modifyReservationModal #reservationEndTime').prop("readonly", false);
+                $('#modifyReservationModal #deleteReservation').show();
+                $('#modifyReservationModal #updateReservation').show();
+            }
 			$('#modifyReservationModal').appendTo("body").modal('show');
 
 
