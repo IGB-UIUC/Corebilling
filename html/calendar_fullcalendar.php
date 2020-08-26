@@ -30,6 +30,7 @@ if (isset ($_POST ['deviceSelected'])) {
 			<input type="hidden" name="month" id="excelmonth"/>
 			<input type="hidden" name="year" id="excelyear"/>
 			<input type="hidden" name="user_id" value="<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>"/>
+            <input type="hidden" name="key" value="<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>"/>
 			<input type="hidden" name="device_id" value="<?php echo $device->getId(); ?>"/>
 			<input type="hidden" name="training" value="<?php echo isset($_POST['filterTraining'])?1:0; ?>"/>
 			<select name="report_type" class="form-control">
@@ -248,6 +249,7 @@ $(document).ready(function () {
 				{
 					$('#modifyReservationModal #reservationTraining').removeAttr("checked");
 				}
+				$('#modifyReservationModal #staffNotes').val(calEvent.staffNotes);
 			<?php
 			}
 
@@ -453,6 +455,7 @@ $(document).ready(function () {
 		var reservationTraining = $('#reservationTraining').is(":checked")?1:0;
 		var reservationRepeatInterval = $('#reservationRepeatInterval').val();
 		var reservationRepeat =  $('#reservationRepeat').val();
+		const staffNotes = $('#staffNotes').val();
 		
 		var reservationStart = reservationStartDate+' '+reservationStartTime;
 		var reservationEnd = reservationEndDate+' '+reservationEndTime;
@@ -473,7 +476,8 @@ $(document).ready(function () {
 					user_id: '<?php echo $authenticate->getAuthenticatedUser()->getId(); ?>',
 					key: '<?php echo $authenticate->getAuthenticatedUser()->getSecureKey(); ?>',
 					interval: reservationRepeatInterval,
-					repeat: reservationRepeat
+					repeat: reservationRepeat,
+                    staffNotes: staffNotes
 				},
                 success: function(data){
                     console.log(data);
@@ -613,7 +617,7 @@ $(document).ready(function () {
 							<input type="text" name="reservationEndTime" id="reservationEndTime" class="form-control">
 						</div>
 					</div>
-					
+
 					<div class="form-group" id="finishedEarlyDiv" style="display:none">
 						<div class="col-sm-3"></div>
 						<div class="col-sm-9">
@@ -621,6 +625,15 @@ $(document).ready(function () {
 							Click here if you are finished with the instrument, to let other users know it's available.
 						</div>
 					</div>
+
+                    <?php if($login_user->isAdmin()){ ?>
+                    <div class="form-group" id="staffNotesDiv">
+                        <label class="col-sm-3 control-label" for="staffNotes">Staff Notes</label>
+                        <div class="col-sm-9">
+                            <textarea name="staffNotes" id="staffNotes" class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <?php } ?>
 					
 					<input type="hidden" name="reservationId" id="reservationId">
 					<input type="hidden" name="reservationStart" id="reservationStart">

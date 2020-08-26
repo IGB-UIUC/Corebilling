@@ -1,6 +1,7 @@
 <?php
 	require_once 'includes/initializer.php';
-	
+
+//	phpinfo();
 	if(isset($_POST['login'])) {
 		$username = trim(rtrim($_POST['user_name']));
 		$password = $_POST['password'];

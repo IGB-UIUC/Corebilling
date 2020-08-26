@@ -67,11 +67,16 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
                     $training = (isset($_REQUEST['training']))?$_REQUEST['training']:0;
                     $repeat = (isset($_REQUEST['repeat']))?(int)$_REQUEST['repeat']:0;
                     $interval = (isset($_REQUEST['interval']))?(int)$_REQUEST['interval']:0;
+                    $staffNotes = (isset($_REQUEST['staffNotes']))?$_REQUEST['staffNotes']:null;
                     $dateStart = new DateTime($_REQUEST['start']);
                     $dateEnd = new DateTime($_REQUEST['end']);
                     if ($reservation->getReservationId() == 0) {
                         for($i=0; $i<=$repeat; $i++) {
                             $reservation->create($_REQUEST['device_id'], $_REQUEST ['user_id'], $dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'), $_REQUEST['description'], $training);
+                            if($staffNotes) {
+                                $reservation->setStaffNotes($staffNotes);
+                                $reservation->update();
+                            }
                             if(RESERVE_ROOM){
                                 // when enabled, add reservation to other devices in room
                                 $devicesInRoom = Device::getDevicesInSameRoom($db, $_REQUEST['device_id']);
@@ -89,6 +94,9 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
                             $reservation->setTraining($training);
                             $reservation->setStart($dateStart->format('Y-m-d H:i:s'));
                             $reservation->setStop($dateEnd->format('Y-m-d H:i:s'));
+                            if($staffNotes) {
+                                $reservation->setStaffNotes($staffNotes);
+                            }
                             $reservation->update();
                             // update reservations for other devices in room
                             $reservationsInRoom = Reservation::getSubEvents($db, $reservation->getReservationId());

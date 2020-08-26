@@ -15,6 +15,7 @@ class Reservation
     private $deleted;
     private $finishedEarly;
     private $masterReservationId;
+    private $staffNotes;
 
     public function __construct(PDO $db)
     {
@@ -87,6 +88,7 @@ class Reservation
             $this->deleted = $reservationInfoArr['deleted'];
             $this->finishedEarly = $reservationInfoArr['finished_early'];
             $this->masterReservationId = $reservationInfoArr['master_reservation_id'];
+            $this->staffNotes = $reservationInfoArr['staff_notes'];
         }
     }
 
@@ -109,9 +111,9 @@ class Reservation
     {
         //No update feature needed yet
         if (self::checkEventConflicts($this->db, $this->deviceId, $this->userId, $this->start, $this->stop, $this->reservationId) == 1) {
-            $queryUpdateReservation = "UPDATE reservation_info SET start=:start, stop=:stop, description=:description, training=:training WHERE id=:reservation_id";
+            $queryUpdateReservation = "UPDATE reservation_info SET start=:start, stop=:stop, description=:description, training=:training, staff_notes=:staffNotes WHERE id=:reservation_id";
             $updateReservation = $this->db->prepare($queryUpdateReservation);
-            $updateReservation->execute(array(':start' => $this->start, ':stop' => $this->stop, ':reservation_id' => $this->reservationId, ':description' => $this->description, ':training' => $this->training));
+            $updateReservation->execute(array(':start' => $this->start, ':stop' => $this->stop, ':reservation_id' => $this->reservationId, ':description' => $this->description, ':training' => $this->training, ':staffNotes'=>$this->staffNotes));
 
             return 1;
         } else {
@@ -262,7 +264,8 @@ class Reservation
                 'missed' => $missed,
                 'borderColor' => $borderColor,
                 'finishedEarly' => $event['finished_early'],
-                'masterDevice' => $event['master_device']
+                'masterDevice' => $event['master_device'],
+                'staffNotes' => $event['staff_notes']
             );
             array_push($eventsArr, $buildJson);
         }
@@ -279,7 +282,7 @@ class Reservation
      */
     public static function getEventsInRange($db, $start, $end, $userId, $deviceId, $training)
     {
-        $queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training, e.finished_early, GROUP_CONCAT(g.group_name separator ', ') as group_name, md.full_device_name as master_device
+        $queryEvents = "SELECT e.id, d.device_name, d.full_device_name, e.device_id, u.user_name, u.first, u.last, u.email, e.user_id, e.description, e.start AS starttime, e.stop AS stoptime, e.training, e.finished_early, GROUP_CONCAT(g.group_name separator ', ') as group_name, md.full_device_name as master_device, e.staff_notes
                             FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id left join user_groups ug on u.id=ug.user_id LEFT JOIN `groups` g ON g.id=ug.group_id left join reservation_info m on e.master_reservation_id=m.id left join device md on m.device_id=md.id";
         if ($training) {
             $trainingTest = " and e.training=1";
@@ -345,7 +348,13 @@ class Reservation
 
     public static function getEventsInRangeForSpreadsheet($db, $start, $end, $userId, $deviceId, $training)
     {
-        $queryEvents = "SELECT d.full_device_name as Device, u.user_name as Username, concat(u.first,concat(' ',u.last)) as Name, u.email as Email, e.description as Description, e.start as 'Start Time', e.stop as 'Stop Time', e.description as 'Description', e.training as Training, c.cfop as CFOP FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id left join user_cfop c ON c.created = (select max(c1.created) from user_cfop c1 where c1.user_id=e.user_id and c1.created < e.start) and c.user_id=e.user_id";
+        $user = new User($db);
+        $user->load($userId);
+        $queryEvents = "SELECT d.full_device_name as Device, u.user_name as Username, concat(u.first,concat(' ',u.last)) as Name, u.email as Email, e.description as Description, e.start as 'Start Time', e.stop as 'Stop Time', e.description as 'Description', e.training as Training, c.cfop as CFOP";
+        if($user->isAdmin()){
+            $queryEvents .= ", e.staff_notes as 'Staff Notes'";
+        }
+        $queryEvents .= " FROM reservation_info e INNER JOIN device d ON d.id=e.device_id INNER JOIN users u ON u.id=e.user_id left join user_cfop c ON c.created = (select max(c1.created) from user_cfop c1 where c1.user_id=e.user_id and c1.created < e.start) and c.user_id=e.user_id";
 
         if ($training) {
             $trainingTest = " and e.training=1";
@@ -544,6 +553,24 @@ class Reservation
     {
         return $this->masterReservationId;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getStaffNotes()
+    {
+        return $this->staffNotes;
+    }
+
+    /**
+     * @param mixed $staffNotes
+     */
+    public function setStaffNotes($staffNotes): void
+    {
+        $this->staffNotes = $staffNotes;
+    }
+
+
 
 }
 

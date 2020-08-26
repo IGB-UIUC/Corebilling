@@ -5,11 +5,9 @@
 
 //Open SQL connection
 //$db = new SQLDataBase(DB_HOST,DB_NAME, DB_USER, DB_PASSWORD);
-try{
-    $db = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME,DB_USER,DB_PASSWORD);
-}catch(PDOException $e)
-{
-    echo "Error initializing PDO: ".$e->getMessage();
+try {
+    $db = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASSWORD);
+} catch (PDOException $e) {
+    die("Error initializing PDO: " . $e->getMessage());
 }
 
-?>

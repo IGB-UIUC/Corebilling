@@ -2,9 +2,9 @@
 ob_start();
 @session_start();
 // setting up the web root and server root for
-include('includes/config.php');
-include('includes/auto_load_classes.php');
-include('includes/mysql_connect.php');
+include('config.php');
+include('auto_load_classes.php');
+include('mysql_connect.php');
 
 //Sets up ldap connection
 $authen = new LdapAuth ( LDAP_HOST, LDAP_PEOPLE_DN, LDAP_GROUP_DN,LDAP_PORT);
@@ -20,4 +20,3 @@ if(CORESERVER_ENABLED){
 //Authenticates to website database
 $authenticate = new Authenticate($db, $authen);
 
-?>

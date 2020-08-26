@@ -1,5 +1,4 @@
 <?php
-
 $authenticate->VerifySession();
 
 if (!$authenticate->isVerified()){
@@ -7,4 +6,4 @@ if (!$authenticate->isVerified()){
 }
 
 $login_user = $authenticate->getAuthenticatedUser();
-?>
+
