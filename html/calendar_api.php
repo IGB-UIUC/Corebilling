@@ -73,7 +73,7 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
                     if ($reservation->getReservationId() == 0) {
                         for($i=0; $i<=$repeat; $i++) {
                             $reservation->create($_REQUEST['device_id'], $_REQUEST ['user_id'], $dateStart->format('Y-m-d H:i:s'), $dateEnd->format('Y-m-d H:i:s'), $_REQUEST['description'], $training);
-                            if($staffNotes) {
+                            if($staffNotes !== null) {
                                 $reservation->setStaffNotes($staffNotes);
                                 $reservation->update();
                             }
@@ -94,7 +94,7 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
                             $reservation->setTraining($training);
                             $reservation->setStart($dateStart->format('Y-m-d H:i:s'));
                             $reservation->setStop($dateEnd->format('Y-m-d H:i:s'));
-                            if($staffNotes) {
+                            if($staffNotes !== null) {
                                 $reservation->setStaffNotes($staffNotes);
                             }
                             $reservation->update();
@@ -106,6 +106,9 @@ if (isset($_REQUEST['action']) && isset($_REQUEST['user_id']) && isset($_REQUEST
                                 $reservation->setTraining($training);
                                 $reservation->setStart($dateStart->format('Y-m-d H:i:s'));
                                 $reservation->setStop($dateEnd->format('Y-m-d H:i:s'));
+                                if($staffNotes !== null) {
+                                    $reservation->setStaffNotes($staffNotes);
+                                }
                                 $reservation->update();
                             }
                         }
