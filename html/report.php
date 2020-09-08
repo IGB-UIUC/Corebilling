@@ -14,7 +14,11 @@ if (isset($_POST['create_cal_report'])) {
         $type = $_POST['report_type'];
 
         $start_date = $year . $month . "01";
-        $end_date = date('Ymd', strtotime('-1 second', strtotime('+1 month', strtotime($start_date))));
+        try {
+            $end_date = (new DateTime($start_date))->format('Y-m-t 23:59:59');
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
 
         $events = Reservation::getEventsInRangeForSpreadsheet(
             $db,
