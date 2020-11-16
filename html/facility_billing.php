@@ -192,7 +192,7 @@ if ($sessionIdSelected > 0) {
 		</div>
 		<div class="form-group">
 			<label style="font-weight:normal">Group:</label>
-			<select id="groupfilter" class="form-control" onchange="matchCol(<?php echo "Rate".$rateTypeSelected; ?>,14,'groupfilter')">
+			<select id="groupfilter" class="form-control" onchange="matchCol(<?php echo "Rate".$rateTypeSelected; ?>,15,'groupfilter')">
 				<option value="">All</option>
 				<?php
 					foreach($groupList as $group){
